@@ -1,0 +1,111 @@
+%% LyX 2.2.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[11pt]{article}
+
+
+% from the pdf to make awesome tables 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable} 
+\usepackage{threeparttablex} 
+\usepackage[normalem]{ulem} 
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\usepackage[sc]{mathpazo}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true, pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{pdfstartview={XYZ null null 1}}
+
+\usepackage{graphics}
+\usepackage{comment}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\newcommand{\Ell}{\mathcal{L}}
+
+\newcommand{\Th}{\widehat{T}}
+\newcommand{\Ih}{\widehat{I}}
+
+\newcommand{\Rh}{\widehat{R}}
+\newcommand{\Nh}{\widehat{N}}
+\newcommand{\Fh}{\widehat{F}}
+
+\newcommand{\Vh}{\widehat{V}}
+\newcommand{\Ph}{\widehat{P}}
+
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+#library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/plot-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90, 
+        tinytex.verbose = TRUE)
+@
+
+\title{Mumps2021}
+\author{Gokhale et al.}
+\maketitle
+
+%% Captions live here, share with overleaf.tex
+\input{captions}
+
+
+<<loading_chunk, echo = FALSE, message=FALSE, warning=FALSE, results = 'hide', fig.show='hide'>>=
+# This chunk executes preliminaries
+# project setup - packages and plotting themes
+
+# mk_path <- function(x, dir) {paste0(dir, x)}
+
+
+source("00/src.R", chdir = TRUE)
+
+# all these are where the plot data are synthesized
+script_var <- c("data_cov_plot.R")
+
+
+# plot load
+lapply(script_var, function(x) {
+  source(mk_path(x, dir = "plotting/"), chdir = TRUE)
+  })
+
+@
+
+
+<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[2]>>=
+
+plot(incidence_w_legend_plt)
+
+@
+
+
+<<contact_matrix_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capContact', out.width = outwidth[1]>>=
+
+plot(contact_plt)
+
+@
+
+<<cov_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capCov', out.width = outwidth[3]>>=
+
+plot(mumps_covariates_plt_data)
+
+@
+
+
+\end{document}

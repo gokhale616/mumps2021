@@ -5,3 +5,6 @@
 *.Rdata
 *.txt
 *.rds
+*.pdf
+.Rhistory
+.DS_Store

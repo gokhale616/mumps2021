@@ -383,6 +383,7 @@ treat_covar_data <- function(par = log_par_defaults) {
 
 # function: plot all the co-variates 
 plot_covars <- function(covar_data, filter_from = 1950) {
+  # browser()
   # levels of the age specific (as) data 
   cov_levels_as <- c("Population", "Migration (Year^-1)")
   
@@ -391,16 +392,19 @@ plot_covars <- function(covar_data, filter_from = 1950) {
   
   covar_data %>% nrow() -> cov_nrow
   
+  
+  # generating 
+  
   anno_data1 <- data.frame(Covariate = cov_levels_as, 
-                           y = c(0.3e8, -2.35e-1), 
+                           y = c(0.3e8, -4.7e-2), 
                            x = 2015, 
                            labs = c("bold(e)", "bold(f)"))
   
   
   anno_data2 <- data.frame(Covariate = cov_levels_ai, 
-                           ycord = c(3.4e6, 0.65, 0.1, 0.1), 
+                           ycord = c(3.2e6, 0.65, 0.1, 0.1), 
                            lab = c("","bold(Case~Data)","",""), 
-                           y = c(3450000, 0.38, 0.08, 0.08), 
+                           y = c(3250000, 0.38, 0.08, 0.08), 
                            x = 2016, 
                            labs = c("bold(a)", "bold(b)", "bold(c)", "bold(d)")) 
   
@@ -425,12 +429,13 @@ plot_covars <- function(covar_data, filter_from = 1950) {
     facet_wrap(.~Covariate, nrow = 1, scales = "free") +
     labs(y = "", 
          fill = "Age\nCohort") +
-    scale_fill_viridis_d() +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0), labels = scientific) +
+    scale_fill_brewer(palette = "Greens", direction = -1) +
+    scale_x_continuous(expand = c(0,0.005)) +
+    scale_y_continuous(expand = c(0,0.005), labels = scientific) +
     project_theme + 
     theme(strip.text.x = element_blank()) +
-    guides(linetype = "none") -> age_stratified_cov_plt
+    guides(linetype = "none", 
+           fill=guide_legend(nrow=2)) -> age_stratified_cov_plt
   
   age_class_legend <- get_legend(age_stratified_cov_plt)
   
@@ -455,7 +460,7 @@ plot_covars <- function(covar_data, filter_from = 1950) {
     filter(Year > filter_from) %>%
     ggplot(aes(x = Year, y = Value)) +
     geom_line(aes(colour = cond_colour_l, group = 1), size = 0.8) +
-    geom_point(aes(colour = cond_colour_p), pch = 20, size = 2) +
+    geom_point(aes(colour = cond_colour_p), pch = 21, fill = "white", size = 2) +
     annotate(geom = "rect", xmin = 1977, xmax = Inf, 
              ymin = -Inf, ymax = Inf, fill = "#B2022F", 
              colour = "#B2022F", linetype = "dotdash", alpha = 0.2) +
@@ -468,8 +473,8 @@ plot_covars <- function(covar_data, filter_from = 1950) {
     facet_wrap(.~Covariate, nrow = 2, scales = "free") +
     scale_colour_manual(name = "Vaccine\nCoverage", labels = c("Observed","Interpolated"), 
                         values = c("grey30", "#FFD92F")) +
-    scale_x_continuous(expand = c(0.02,0.02)) +
-    scale_y_continuous(expand = c(0.02,0.02)) +
+    scale_x_continuous(expand = c(0,0.005)) +
+    scale_y_continuous(expand = c(0,0.005)) +
     project_theme +
     theme(legend.spacing.y = unit(0., "cm"),
           panel.spacing.y = unit(1.75, "lines"), 
