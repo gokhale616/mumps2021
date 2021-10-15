@@ -6,17 +6,19 @@ lib_dep <- c("tidyverse", "pomp", "magrittr", "wrapr",
              "rootSolve", "GGally", "RColorBrewer", 
              "ggpubr", "reshape2",
              "readxl", "socialmixr", "ggthemes", 
-             "GA", "DEoptim", "doParallel", "doRNG", "xtable", "scales",
+             "DEoptim", "doParallel", "doRNG", "xtable", "scales",
              "parallel", "nloptr")
 
 sapply(lib_dep, require, character.only = TRUE)
 
 
 # read the processed data for analysis
-load("../processed_data/mumps_case_reports.rds")
-load("../processed_data/mumps_covariates.rds")
-load("../processed_data/contact_matrix.rds")
+path_processed_data <- "../processed_data/"
 
+list.files(path = path_processed_data, 
+           full.names = TRUE) %.>% 
+  lapply(., 
+         load, envir = .GlobalEnv)
 
 # Set the project theme and the base font size of all labels 
 # definintion some useful objects that can be used to quickly 
@@ -81,6 +83,13 @@ age_cols <- c(brewer_pal(palette = "Purples")(5)[5:1], "steelblue4") %.>%
 
 # colour schemes for models and data 
 mod_colours <- c("Black", "Green", "Purple", "Red")
+
+
+# percentile values
+percentile_vals <- c(0.025, 0.5, 0.975)
+
+
+
 
 
 

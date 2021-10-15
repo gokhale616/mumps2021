@@ -1,3 +1,15 @@
+# this 'convenience' function modifies vector of default params to set hypothesis specific param estimates
+sim_p_vals <- function(estm_vect, default_p_vals = param_vals_est) {
+  
+  replace_these <- names(default_p_vals)[names(default_p_vals) %in% names(estm_vect)] 
+  
+  tmp_p_vals <- default_p_vals
+  tmp_p_vals[replace_these] <- estm_vect[replace_these]
+  
+  tmp_p_vals
+  
+}
+
 # operator for easy analysis
 `%nin%` <- Negate(`%in%`)
 
@@ -6,13 +18,6 @@ calculate_aic <- function(loglik, npar) {
   return(2*npar - 2*loglik)
 }
 
-
-# function: calculate quantiles for sample of a distribution 
-give_quantile_list <- function(quantiles = c(0.025, 0.975), denominator = 100) {
-  # browser()
-  purrr::map(quantiles, ~purrr::partial(quantile, probs = .x, na.rm = TRUE)) %>% 
-    set_names(nm = map_chr(quantiles, ~paste0(.x*denominator, "%")))
-}
 
 # function: produces n replicates to implement R measure 
 param_replicate_matrix <- function(param_v, n = 1000) {

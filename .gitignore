@@ -6,5 +6,6 @@
 *.txt
 *.rds
 *.pdf
-.Rhistory
-.DS_Store
+*.Rhistory
+*.DS_Store
+*.log
