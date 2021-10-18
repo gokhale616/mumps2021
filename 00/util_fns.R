@@ -500,66 +500,24 @@ plot_covars <- function(covar_data, filter_from = 1950) {
 # plot_covars()
 
 # workshop related functions 
-plot_dynamics <- function(data, filter_from = 1976, dynamics, ...) {
+plot_dynamics <- function(data, only_cases = TRUE, filter_from = 1976, ...) {
   
-  if(dynamics == "stoc") {
-    
-    comp_levels <- c(sprintf("S_%d",1:5),  
-                     sprintf("E1_%d",1:5), sprintf("I1_%d",1:5),
-                     sprintf("E2_%d",1:5), sprintf("I2_%d",1:5),
-                     sprintf("R_%d",1:5), sprintf("V_%d",1:5), 
-                     sprintf("A_%d",1:5), sprintf("G_%d",1:5), 
-                     sprintf("D_%d",1:5), "Du",
-                     sprintf("Nsim_%d",1:5), 
-                     "Nsim", "Rcal","Ncal")
-  } else if (dynamics == "det") {
-  
-      comp_levels <- c(sprintf("S_%d",1:5),  
-                       sprintf("E1_%d",1:5), sprintf("I1_%d",1:5),
-                       sprintf("E2_%d",1:5), sprintf("I2_%d",1:5),
-                       sprintf("R_%d",1:5), sprintf("V_%d",1:5), 
-                       sprintf("A_%d",1:5), sprintf("G_%d",1:5), 
-                       sprintf("Nsim_%d",1:5), 
-                       "Nsim", "Rcal","Ncal")
+  if(only_cases == TRUE) {
+    data_int <- data %.>% 
+      select(., year, starts_with("C_"), `.id`)
   } else {
-      
-      stop("'plot' argument does not match stoc/det")
+    data_int <- data
   }
   
-  
-  data %>%
-    filter(Year > filter_from) %>% 
-    mutate(Nsim = S_1 + S_2 + S_3 + S_4 + S_5 + 
-             E1_1 + E1_2 + E1_3 + E1_4 + E1_5 +
-             I1_1 + I1_2 + I1_3 + I1_4 + I1_5 +
-             E2_1 + E2_2 + E2_3 + E2_4 + E2_5 +
-             I2_1 + I2_2 + I2_3 + I2_4 + I2_5 +
-             V_1 + V_2 + V_3 + V_4 + V_5 + 
-             R_1 + R_2 + R_3 + R_4 + R_5,
-           Nsim_1 = S_1 + E1_1 + I1_1 + E2_1 + I2_1 + R_1 + V_1,
-           Nsim_2 = S_1 + E1_1 + I1_1 + E2_1 + I2_1 + R_1 + V_1,
-           Nsim_3 = S_1 + E1_1 + I1_1 + E2_1 + I2_1 + R_1 + V_1,
-           Nsim_4 = S_1 + E1_1 + I1_1 + E2_1 + I2_1 + R_1 + V_1,
-           Nsim_5 = S_1 + E1_1 + I1_1 + E2_1 + I2_1 + R_1 + V_1, 
-           Rcal = 3.3e8 - (S_1 + S_2 + S_3 + S_4 + S_5 + 
-                             E1_1 + E1_2 + E1_3 + E1_4 + E1_5 +
-                             I1_1 + I1_2 + I1_3 + I1_4 + I1_5 +
-                             E2_1 + E2_2 + E2_3 + E2_4 + E2_5 +
-                             I2_1 + I2_2 + I2_3 + I2_4 + I2_5 +
-                             V_1 + V_2 + V_3 + V_4 + V_5),
-           Ncal = S_1 + S_2 + S_3 + S_4 + S_5 + 
-                  E1_1 + E1_2 + E1_3 + E1_4 + E1_5 +
-                  I1_1 + I1_2 + I1_3 + I1_4 + I1_5 +
-                  E2_1 + E2_2 + E2_3 + E2_4 + E2_5 +
-                  I2_1 + I2_2 + I2_3 + I2_4 + I2_5 +
-                  V_1 + V_2 + V_3 + V_4 + V_5 + 
-             Rcal) %>% 
-    gather(key = "Compartment", value = "Cases", -c(".id", "Year")) %>%
-    ggplot(aes(x = Year, group = .id, color = .id, y = Cases))+
-    geom_line()+
-    facet_wrap(~factor(Compartment, levels = comp_levels), scales="free_y", ncol = 5) +
+  data_int %>%
+    filter(year > filter_from) %>% 
+    gather(key = "compartment", value = "cases", -c(.id, year), factor_key = TRUE) %>%
+    ggplot(aes(x = year, y = cases))+
+    geom_line(size = 0.8)+
+    facet_wrap(.~compartment, scales="free_y", ncol = 5) +
     scale_y_continuous(labels = scales::scientific_format(digits = 2))+
-    theme(...)
+    project_theme +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
 }
 

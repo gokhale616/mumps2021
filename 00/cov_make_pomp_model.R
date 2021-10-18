@@ -844,9 +844,6 @@ vseir_init_est <- Csnippet("
     V[i]  = 0;
     C[i]  = 0;
   }
-
-                       
-                       
 ")
 
 
@@ -1042,21 +1039,10 @@ state_names_est <- c(sprintf("S_%d",1:5),
                      sprintf("V_%d",1:5), sprintf("C_%d", 1:5))
 
 
-state_names_sim <- c(sprintf("S_%d",1:5), 
-                     sprintf("E1_%d",1:5), sprintf("I1_%d",1:5),
-                     sprintf("E2_%d",1:5), sprintf("I2_%d",1:5),
-                     sprintf("R_%d",1:5), sprintf("V_%d",1:5), 
-                     sprintf("C_%d", 1:5),
+state_names_sim <- c(state_names_est,
+                     sprintf("R_%d",1:5),
                      sprintf("A_%d", 1:5), sprintf("G_%d", 1:5))
 
-
-param_names_sim <- c("S_0", "I1_0", "I2_0", "R_0", 
-                     "q", sprintf("q_age_%d", 1:5), 
-                     "gamma", "sigma", "rho","agegroups", 
-                     sprintf("rho_age_%d", 1:5), "rho_age_u", 
-                     sprintf("Cv%d",1:25), "iota", sprintf("lcv%d", 1:5), 
-                     "alpha", "delta", "t_intro", "p_intro",
-                     "epsilon1", "epsilon2", "beta1")
 
 param_names_est <- c("S_0", "I1_0", "I2_0",  
                       "q", sprintf("q_age_%d", 1:5), 
@@ -1067,15 +1053,21 @@ param_names_est <- c("S_0", "I1_0", "I2_0",
                       "epsilon1", "epsilon2", "beta1")
 
 
+param_names_sim <- c("R_0", 
+                     param_names_est)
+
+
+
 
 # testing parameter values 
-##### setting up paramter values ######
+##### setting up paramter values ###### setting up default q such that R0 is 10
 param_vals_est <- c(S_0 = 1e-1, I1_0 = 1e-4, I2_0 = 0,
-                    q = 1, q_age_1 = 1, q_age_2 = 1, q_age_3 = 1, q_age_4 = 1, q_age_5 = 1, 
+                    q = calculate_q(R0 = 10), 
+                    q_age_1 = 1, q_age_2 = 1, q_age_3 = 1, q_age_4 = 1, q_age_5 = 1, 
                     gamma = 365.25/5, sigma = 365.25/17, delta = 0, 
                     epsilon1 = 0, epsilon2 = 0, rho = 1,
                     rho_age_1 = 1, rho_age_2 = 1, rho_age_3 = 1, rho_age_4 = 1, rho_age_5 = 1, 
-                    rho_age_u = 1, agegroups = 5, Cv = C, alpha = 0.054, beta1 = 0,
+                    rho_age_u = 1, agegroups = 5, Cv = C, alpha = 1, beta1 = 0,
                     lcv = c(1/5, 1/10, 1/10, 1/15, 1/40), iota = 0, 
                     t_intro = 0, p_intro = 5)
 
@@ -1088,7 +1080,7 @@ param_vals_sim <- c(R_0 = 0, param_vals_est)
 # This can of course be changed as required by passing arguements
 
 make_pomp <- function(..., 
-                      start_t = 1900, 
+                      start_t = 1800, 
                       extrapolate_simulation = FALSE, dt = 1/365.25,  
                       extra_start_t = 1900, extra_end_t = 2100, temp_scale = 1, 
                       covar) {
