@@ -10,6 +10,15 @@ sim_p_vals <- function(estm_vect, default_p_vals = param_vals_est) {
   
 }
 
+
+# a wrapper to unlist and unname a list object.
+un_list_name <- function(x) {
+  x %.>% 
+    unlist(.) %.>% 
+    unname(.)
+}  
+
+
 # operator for easy analysis
 `%nin%` <- Negate(`%in%`)
 
@@ -86,76 +95,11 @@ sim_obs_model <- function(po_obj, params, times,
 }
  
 
-# break the migration term into two values 
-break_mu_into_2 <- function(x, c = 0.1) {
-    #browser()
-    abs_x <- abs(x)
-    
-    mu_into_2 <- case_when(
-      x > 0 ~ sort(c((abs_x+c), -c)),
-      x < 0 ~ sort(c(-(abs_x+c), c)),
-      x == 0 ~ c(0, 0))
-    
-    names(mu_into_2) <- c("efflux", "influx")
-    
-    as_tibble(t(mu_into_2))
-    
-}
-
-#break_mu_into_2(2)
-
-# convert  the list of profile likelihood results into a dataframe
-list_to_tibble <- function(counter = 1, res_obj,
-                           model_name = model_nms,
-                           give_everything_GA = FALSE) {
-  
-  # browser()
-  est_object <- res_obj[[counter]]
-  model_nm <- model_name[counter]
-  
-  
-  if(give_everything_GA == TRUE) {
-    return(est_object)
-    
-  } else {
-    # browser()
-    est_object$GAobj@solution[1,] %.>%
-      t(.) %.>% 
-      as_tibble(.) %.>% 
-      mutate(., 
-             logLik =  est_object$GAobj@fitnessValue[1], 
-             npar = length(est_object$GAobj@solution[1,]), 
-             model = model_nm) -> param_Est     
-    
-    return(param_Est)
-  }
-  
-}  
 
 # my if_else for NA to rplace na values for various parameter columns 
 
 na_if_else <- function(x, replace_na_with) {if_else(is.na(x) == TRUE, replace_na_with, x)}
 
-# find where two curves intersect - used to calculate confidence intervals for the likelihood surfaces
-# the function is sourced from andrewheiss's package reconPlots
-
-curve_intersect <- function(curve1, curve2) {
-    
-    # browser()
-    
-    # Approximate the functional form of both curves
-    curve1_f <- approxfun(curve1$x, curve1$y, rule = 2)
-    curve2_f <- approxfun(curve2$x, curve2$y, rule = 2)
-    
-    # Calculate the intersection of curve 1 and curve 2 along the x-axis
-    point_x <- uniroot.all(function(x) curve1_f(x) - curve2_f(x), 
-                           c(min(curve1$x), max(curve1$x)))
-    
-    # Find where point_x is in curve 2
-    point_y <- c(min(curve2_f(point_x)), max(curve2_f(point_x)))
-  
-  return(list(x = point_x, y = point_y))
-}
 
 # utility functions around the contact matrix - Know that this bit of analysis is going to useful for quickly 
 # accessing the next genertaion matrix for use contact matrix, calculate R0 based on the NextGen method and 
@@ -307,6 +251,24 @@ plot_contact_matrix <- function(contact_matrix = contact_sym_Lm10,
 #################################### functions for preprocessing ############################################# 
 ######################################## demography data #####################################################
 ##############################################################################################################
+# break the migration term into two values 
+break_mu_into_2 <- function(x, c = 0.1) {
+  #browser()
+  abs_x <- abs(x)
+  
+  mu_into_2 <- case_when(
+    x > 0 ~ sort(c((abs_x+c), -c)),
+    x < 0 ~ sort(c(-(abs_x+c), c)),
+    x == 0 ~ c(0, 0))
+  
+  names(mu_into_2) <- c("efflux", "influx")
+  
+  as_tibble(t(mu_into_2))
+  
+}
+
+#break_mu_into_2(2)
+
 
 # function: to make the spline for the mu
 mu_splinefun <- function(t) {
@@ -339,48 +301,48 @@ logistic <- function(t, t0 = 1970, a = 0.86, b = 1,
 #                       t0_p2 = 1994, b_p2 = 1, c_p2 = 1, d_p2 = 1) 
 
 treat_covar_data <- function(par = log_par_defaults) {
-  
+  # browser()
   # Extract p1 
-  mumps_covar_data %>% 
-    select(p1, Year) %>% 
-    filter(!(Year > 1967 & Year < 1980)) ->  p1 
+  p1 <- mumps_covariates %.>% 
+    select(., p1, year) %.>% 
+    filter(., !(year > 1967 & year < 1980)) 
   # Treat p1
-  p1_log_in <- tibble(Year = seq(1968, 1979)) %>% 
-    mutate(p1 = logistic(t = Year, t0 = par["t0_p1"],
+  p1_log_in <- tibble(year = seq(1968, 1979)) %>% 
+    mutate(p1 = logistic(t = year, t0 = par["t0_p1"],
                          a = 0.86, b = par["b_p1"], 
                          c = par["c_p1"], d = par["d_p1"],
                          ts = 1968, te = 1979))
   # Reattach p1
   p1 %>% 
     bind_rows(p1_log_in) %>% 
-    arrange(Year) -> p1_in
+    arrange(year) -> p1_in
   
   
   # Extract p2
-  mumps_covar_data %>% 
-    select(p2, Year) %>% 
-    filter(!(Year > 1988 & Year < 2000)) ->  p2
+  mumps_covariates %>% 
+    select(p2, year) %>% 
+    filter(!(year > 1988 & year < 2000)) ->  p2
   # Treat p2
-  p2_log_in <- tibble(Year = seq(1989, 1999)) %>% 
-    mutate(p2 = logistic(t = Year, t0 = par["t0_p2"],
+  p2_log_in <- tibble(year = seq(1989, 1999)) %>% 
+    mutate(p2 = logistic(t = year, t0 = par["t0_p2"],
                          a = 0.85, b = par["b_p2"], 
                          c = par["c_p2"], d = par["d_p2"],  
                          ts = 1989, te = 1999))
   # Reattach p2
   p2 %>% 
     bind_rows(p2_log_in) %>% 
-    arrange(Year) -> p2_in
+    arrange(year) -> p2_in
   
   # get rid of right constant interpolation of p1 an p2 
-  mumps_covar_data %>% 
+  mumps_covariates %>% 
     select(-starts_with("p")) -> mumps_demog_data
   
   # Reattach p1 and p2 
   p1_in %>%
-    full_join(p2_in, by = "Year") %>% 
-    full_join(mumps_demog_data, by = "Year") -> treated_mumps_covar_data  
+    full_join(p2_in, by = "year") %>% 
+    full_join(mumps_demog_data, by = "year") -> treated_mumps_covariates  
   
-  return(treated_mumps_covar_data)
+  treated_mumps_covariates
   
   
 }
@@ -500,7 +462,12 @@ plot_covars <- function(covar_data, filter_from = 1950) {
 # plot_covars()
 
 # workshop related functions 
-plot_dynamics <- function(data, only_cases = TRUE, filter_from = 1976, ...) {
+plot_dynamics <- function(data, 
+                          filter_from = 1976,
+                          only_cases = TRUE, 
+                          param_sweep = TRUE, 
+                          lab_val = NULL,
+                          ...) {
   
   if(only_cases == TRUE) {
     data_int <- data %.>% 
@@ -509,19 +476,69 @@ plot_dynamics <- function(data, only_cases = TRUE, filter_from = 1976, ...) {
     data_int <- data
   }
   
-  data_int %>%
-    filter(year > filter_from) %>% 
-    gather(key = "compartment", value = "cases", -c(.id, year), factor_key = TRUE) %>%
-    ggplot(aes(x = year, y = cases))+
-    geom_line(size = 0.8)+
-    facet_wrap(.~compartment, scales="free_y", ncol = 5) +
-    scale_y_continuous(labels = scales::scientific_format(digits = 2))+
-    project_theme +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  # treat data_int for plotting 
+  plt_data <- data_int %.>%
+    filter(., 
+           year > filter_from) %.>% 
+    gather(., 
+           key = "compartment", value = "cases", 
+           -c(.id, year), factor_key = TRUE) 
+  
+  # gernerate a basic plot 
+  plt <- (
+    plt_data %.>% 
+      ggplot(., aes(x = year, y = cases)) + 
+      geom_line(size = 0.8) +
+      facet_wrap(.~compartment, scales="free_y", ncol = 5) +
+      scale_y_continuous(labels = scales::scientific_format(digits = 2))+
+      project_theme +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  )
+    
   
 }
 
-
+plot_sweep_dynamics <- function(data, 
+                                filter_from = 1976,
+                                only_cases = TRUE, 
+                                lab_val = NULL,
+                                ...) {
+  
+  if(only_cases == TRUE) {
+    data_int <- data %.>% 
+      select(., year, starts_with("C_"), Value)
+  } else {
+    data_int <- data 
+  }
+  
+  
+  # treat data_int for plotting 
+  plt_data <- data_int %.>%
+    filter(., 
+           year > filter_from) %.>% 
+    gather(., 
+           key = "compartment", value = "cases", 
+           -c(year, Value), factor_key = TRUE) 
+  
+  # browser()
+  plt <- (
+    plt_data %.>% 
+      ggplot(., aes(x = year, y = cases)) +
+      geom_line(aes(colour = Value, group = Value), size = 0.8) +
+      labs(colour = lab_val) +
+      facet_grid(rows = vars(compartment), scales="free_y") +
+      scale_y_continuous(labels = scales::scientific_format(digits = 2))+
+      scale_colour_continuous(low = "#2C5364", high = "#FF416C") +
+      # coord_capped_cart(bottom='both', left='both') +
+      project_theme + 
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+      
+    )
+  
+  
+  plt
+  
+}
 
 
 

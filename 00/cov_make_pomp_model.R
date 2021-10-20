@@ -6,6 +6,9 @@ C <- contact_matrix*365.25
 
 ##### stochastic process: demographic and observation #### 
 vseir_step <- Csnippet("
+  // define  the 
+  double delta = 1/dwan; 
+  
   int i,j,k,l;
   int n = agegroups; 
   
@@ -16,16 +19,16 @@ vseir_step <- Csnippet("
   const double *lvlocal = &lcv1;
   const double *qvlocal = &q_age_1;
   
-   double *Slocal  = &S_1;
-   double *E1local = Slocal+n;
-   double *I1local = E1local+n;
-   double *E2local = I1local+n;
-   double *I2local = E2local+n;
-   double *Rlocal  = I2local+n;
-   double *Vlocal  = Rlocal+n;
-   double *Clocal  = Vlocal+n;
-   double *Alocal  = Clocal+n;
-   double *Glocal  = Alocal+n;
+  double *Slocal  = &S_1;
+  double *E1local = Slocal+n;
+  double *I1local = E1local+n;
+  double *E2local = I1local+n;
+  double *I2local = E2local+n;
+  double *Rlocal  = I2local+n;
+  double *Vlocal  = Rlocal+n;
+  double *Clocal  = Vlocal+n;
+  double *Alocal  = Clocal+n;
+  double *Glocal  = Alocal+n;
   
   #define CM(J,K) Cvlocal[(J)+n*(K)]
   #define LV(K) lvlocal[(K)]
@@ -389,6 +392,9 @@ vseir_step <- Csnippet("
 
 ##### deterministic skeleton - for estimation #####
 vseir_skel_est <- Csnippet("
+    // define  the 
+    double delta = 1/dwan; 
+
     int i,j,k,l;
     int n = agegroups; 
     
@@ -597,6 +603,10 @@ vseir_skel_est <- Csnippet("
 
 ##### determinstic skeleton - for simulation ##### 
 vseir_skel_sim <- Csnippet("
+  
+    // define  the 
+    double delta = 1/dwan; 
+  
     int i,j,k,l;
     int n = agegroups; 
     
@@ -920,26 +930,96 @@ vseir_rmeas <- Csnippet("
     C_5_tmp = C_5;
   }
   
-  double C_u = (C_1_tmp + C_2_tmp + C_3_tmp + C_4_tmp + C_5_tmp)*(1-eta_a);
+  // define scalar multiples to take care of all types of reporting
+  double s_1 = rho*rho_age_1*eta_a;
+  double s_2 = rho*rho_age_2*eta_a;
+  double s_3 = rho*rho_age_3*eta_a;
+  double s_4 = rho*rho_age_4*eta_a;
+  double s_5 = rho*rho_age_5*eta_a;
+  double s_u = rho*rho_age_u*(1-eta_a);
+  
+  // define scalar multiples to take care of age specific/independent over-dispersion
+  double p_sq_1 = (psi*psi)*(psi_1*psi_1);
+  double p_sq_2 = (psi*psi)*(psi_2*psi_2);
+  double p_sq_3 = (psi*psi)*(psi_3*psi_3);
+  double p_sq_4 = (psi*psi)*(psi_4*psi_4);
+  double p_sq_5 = (psi*psi)*(psi_5*psi_5);
+  double p_sq_u = (psi*psi)*(psi_u*psi_u);
+  
+  // define the age-specific mean of the reporting distribution
+  double m_1 = s_1*C_1_tmp; 
+  double m_2 = s_2*C_2_tmp; 
+  double m_3 = s_3*C_3_tmp; 
+  double m_4 = s_4*C_4_tmp; 
+  double m_5 = s_5*C_5_tmp; 
+  double m_u = s_u*(C_1_tmp + C_2_tmp + C_3_tmp + C_4_tmp + C_5_tmp);
+  
+  // define the age-specific variance of the reporting distribution
+  double v_1 = m_1*(1 - s_1 + p_sq_1*m_1);
+  double v_2 = m_2*(1 - s_2 + p_sq_2*m_2);
+  double v_3 = m_3*(1 - s_3 + p_sq_3*m_3);
+  double v_4 = m_4*(1 - s_4 + p_sq_4*m_4);
+  double v_5 = m_5*(1 - s_5 + p_sq_5*m_5);
+  double v_u = m_u*(1 - s_u + p_sq_u*m_u);
   
   if(ISNA(eta_a)) {
+    
     D_1  = NA_REAL;
     D_2  = NA_REAL;
     D_3  = NA_REAL;
     D_4  = NA_REAL;
     D_5  = NA_REAL;
-    D_u   = NA_REAL;
+    D_u  = NA_REAL;
   
   } else {
-      D_1 = rpois(rho*rho_age_1*eta_a*C_1_tmp);
-      D_2 = rpois(rho*rho_age_2*eta_a*C_2_tmp);
-      D_3 = rpois(rho*rho_age_3*eta_a*C_3_tmp);
-      D_4 = rpois(rho*rho_age_4*eta_a*C_4_tmp);
-      D_5 = rpois(rho*rho_age_5*eta_a*C_5_tmp);
       
-      D_u = rpois((rho*rho_age_u*C_u));
+      // a bit more book-keeeping 
+      double tol = 1.0e-18; 
       
-    }
+      double D_1_tmp = rnorm(m_1, sqrt(v_1)+tol); 
+      double D_2_tmp = rnorm(m_2, sqrt(v_2)+tol); 
+      double D_3_tmp = rnorm(m_3, sqrt(v_3)+tol); 
+      double D_4_tmp = rnorm(m_4, sqrt(v_4)+tol); 
+      double D_5_tmp = rnorm(m_5, sqrt(v_5)+tol); 
+      double D_u_tmp = rnorm(m_u, sqrt(v_u)+tol); 
+      
+      if (D_1_tmp < 0) {
+        D_1 = 0; 
+      } else {
+        D_1 = nearbyint(D_1_tmp);
+      }
+      
+      if (D_2_tmp < 0) {
+        D_2 = 0; 
+      } else {
+        D_2 = nearbyint(D_2_tmp);
+      }
+      
+      if (D_3_tmp < 0) {
+        D_3 = 0; 
+      } else {
+        D_3 = nearbyint(D_3_tmp);
+      }
+      
+      if (D_4_tmp < 0) {
+        D_4 = 0; 
+      } else {
+        D_4 = nearbyint(D_4_tmp);
+      }
+      
+      if (D_5_tmp < 0) {
+        D_5 = 0; 
+      } else {
+        D_5 = nearbyint(D_5_tmp);
+      }
+      
+      if (D_u_tmp < 0) {
+        D_u = 0; 
+      } else {
+        D_u = nearbyint(D_u_tmp);
+      }
+      
+  }
 ")
 
 
@@ -979,53 +1059,83 @@ vseir_dmeas <- Csnippet("
     C_5_tmp = C_5;
   }
   
-  // calculating the unstructured sub-population of the case data 
-  double C_u = (C_1_tmp + C_2_tmp + C_3_tmp + C_4_tmp + C_5_tmp)*(1-eta_a);
+  // define scalar multiples to take care of all types of reporting
+  double s_1 = rho*rho_age_1*eta_a;
+  double s_2 = rho*rho_age_2*eta_a;
+  double s_3 = rho*rho_age_3*eta_a;
+  double s_4 = rho*rho_age_4*eta_a;
+  double s_5 = rho*rho_age_5*eta_a;
+  double s_u = rho*rho_age_u*(1-eta_a);
+  
+  // define scalar multiples to take care of age specific/independent over-dispersion
+  double p_sq_1 = (psi*psi)*(psi_1*psi_1);
+  double p_sq_2 = (psi*psi)*(psi_2*psi_2);
+  double p_sq_3 = (psi*psi)*(psi_3*psi_3);
+  double p_sq_4 = (psi*psi)*(psi_4*psi_4);
+  double p_sq_5 = (psi*psi)*(psi_5*psi_5);
+  double p_sq_u = (psi*psi)*(psi_u*psi_u);
+  
+  // define the age-specific mean of the reporting distribution 
+  double m_1 = s_1*C_1_tmp; 
+  double m_2 = s_2*C_2_tmp; 
+  double m_3 = s_3*C_3_tmp; 
+  double m_4 = s_4*C_4_tmp; 
+  double m_5 = s_5*C_5_tmp; 
+  double m_u = s_u*(C_1_tmp + C_2_tmp + C_3_tmp + C_4_tmp + C_5_tmp);
+  
+  // define the the age-specific variance of the reporting distribution
+  double v_1 = m_1*(1 - s_1 + p_sq_1*m_1);
+  double v_2 = m_2*(1 - s_2 + p_sq_2*m_2);
+  double v_3 = m_3*(1 - s_3 + p_sq_3*m_3);
+  double v_4 = m_4*(1 - s_4 + p_sq_4*m_4);
+  double v_5 = m_5*(1 - s_5 + p_sq_5*m_5);
+  double v_u = m_u*(1 - s_u + p_sq_u*m_u);
   
   // defining dummy variables to take on likelihood values 
   double lik_D_1, lik_D_2, lik_D_3, lik_D_4, lik_D_5, lik_D_u;
+  
+  // some more book-keeping
+  double tol = 1.0e-18;
   
   // assigning zero log-likelihood to missing data
   
   if(ISNA(D_1)) {
     lik_D_1 = (give_log) ? 0:1;
   } else {
-      lik_D_1 = dpois(nearbyint(D_1), rho*rho_age_1*eta_a*C_1_tmp, give_log);  
+      lik_D_1 = dnorm(D_1, m_1, sqrt(v_1)+tol, give_log);  
   }
   
   if(ISNA(D_2)) {
     lik_D_2 = (give_log) ? 0:1;
   } else {
-      lik_D_2 = dpois(nearbyint(D_2), rho*rho_age_2*eta_a*C_2_tmp, give_log);  
-  }  
-      
+      lik_D_2 = dnorm(D_2, m_2, sqrt(v_2)+tol, give_log);  
+  }
+  
   if(ISNA(D_3)) {
     lik_D_3 = (give_log) ? 0:1;
   } else {
-      lik_D_3 = dpois(nearbyint(D_3), rho*rho_age_3*eta_a*C_3_tmp, give_log);  
+      lik_D_3 = dnorm(D_3, m_3, sqrt(v_3)+tol, give_log);  
   }
   
   if(ISNA(D_4)) {
     lik_D_4 = (give_log) ? 0:1;
   } else {
-      lik_D_4 = dpois(nearbyint(D_4), rho*rho_age_4*eta_a*C_4_tmp, give_log);  
+      lik_D_4 = dnorm(D_4, m_4, sqrt(v_4)+tol, give_log);  
   }
   
   if(ISNA(D_5)) {
     lik_D_5 = (give_log) ? 0:1;
   } else {
-      lik_D_5 = dpois(nearbyint(D_5), rho*rho_age_5*eta_a*C_5_tmp, give_log);  
+      lik_D_5 = dnorm(D_5, m_5, sqrt(v_5)+tol, give_log);  
   }
-  
   
   if(ISNA(D_u)) {
     lik_D_u = (give_log) ? 0:1;
   } else {
-      lik_D_u = dpois(nearbyint(D_u), rho*rho_age_u*C_u, give_log);
-  }  
+      lik_D_u = dnorm(D_u, m_u, sqrt(v_u)+tol, give_log);  
+  }
   
   // calculating the final value of log likelihood
-  
   lik = lik_D_1 + lik_D_2 + lik_D_3 + lik_D_4 + lik_D_5 + lik_D_u;     
   
 ")  
@@ -1045,12 +1155,17 @@ state_names_sim <- c(state_names_est,
 
 
 param_names_est <- c("S_0", "I1_0", "I2_0",  
-                      "q", sprintf("q_age_%d", 1:5), 
-                      "gamma", "sigma", "rho","agegroups", 
-                      sprintf("rho_age_%d", 1:5), "rho_age_u", sprintf("Cv%d",1:25), "iota", 
-                      sprintf("lcv%d", 1:5), 
-                      "alpha", "delta", "t_intro", "p_intro",
-                      "epsilon1", "epsilon2", "beta1")
+                     "q", sprintf("q_age_%d", 1:5), 
+                     "gamma", "sigma", "beta1",
+                     "rho",
+                     sprintf("rho_age_%d", 1:5), "rho_age_u", 
+                     "psi",
+                     sprintf("psi_%d", 1:5), "psi_u", 
+                     sprintf("Cv%d",1:25), "iota", 
+                     sprintf("lcv%d", 1:5), 
+                     "alpha", "dwan", "t_intro", "p_intro",
+                     "epsilon1", "epsilon2",  
+                     "agegroups")
 
 
 param_names_sim <- c("R_0", 
@@ -1060,16 +1175,20 @@ param_names_sim <- c("R_0",
 
 
 # testing parameter values 
-##### setting up paramter values ###### setting up default q such that R0 is 10
+##### setting up parameter values ###### setting up default q such that R0 is 10
 param_vals_est <- c(S_0 = 1e-1, I1_0 = 1e-4, I2_0 = 0,
-                    q = calculate_q(R0 = 10), 
+                    q = 1, 
                     q_age_1 = 1, q_age_2 = 1, q_age_3 = 1, q_age_4 = 1, q_age_5 = 1, 
-                    gamma = 365.25/5, sigma = 365.25/17, delta = 0, 
-                    epsilon1 = 0, epsilon2 = 0, rho = 1,
-                    rho_age_1 = 1, rho_age_2 = 1, rho_age_3 = 1, rho_age_4 = 1, rho_age_5 = 1, 
-                    rho_age_u = 1, agegroups = 5, Cv = C, alpha = 1, beta1 = 0,
+                    gamma = 365.25/5, sigma = 365.25/17, 
+                    dwan = Inf, 
+                    epsilon1 = 0, epsilon2 = 0, 
+                    rho = 1,
+                    rho_age_1 = 1, rho_age_2 = 1, rho_age_3 = 1, rho_age_4 = 1, rho_age_5 = 1, rho_age_u = 1, 
+                    psi = 1, 
+                    psi_1 = 1, psi_2 = 1, psi_3 = 1, psi_4 = 1, psi_5 = 1, psi_u = 1,
+                    agegroups = 5, Cv = C, alpha = 0.054, beta1 = 0.11,
                     lcv = c(1/5, 1/10, 1/10, 1/15, 1/40), iota = 0, 
-                    t_intro = 0, p_intro = 5)
+                    t_intro = 500, p_intro = 6)
 
 param_vals_sim <- c(R_0 = 0, param_vals_est) 
 
@@ -1077,7 +1196,7 @@ param_vals_sim <- c(R_0 = 0, param_vals_est)
 ##### build the pomp object #####
 # Here the model is defined at an annual scale with a time step of that of a day (dt = 1/365.25)
 # When extrapolating the simulation, default scale of simulation has been set to annual (temp_scale = 1)
-# This can of course be changed as required by passing arguements
+# This can of course be changed as required by passing arguments
 
 make_pomp <- function(..., 
                       start_t = 1800, 
@@ -1149,107 +1268,3 @@ make_pomp <- function(...,
   }
 
 
-if(FALSE) {
-##############################################################################################################
-########################################## Preliminaries #####################################################
-##############################################################################################################
-
-# Generate time varying rho_age covariate data by subsetting 
-mumps_covar_data %>% 
-  select(Year, eta_a) -> mumps_eta_a
-
-
-# Generate data in a long form for the objective function 
-mumps_inc_data %>%
-  gather(key = "age_class", value = "obs_cases", -Year) %>% 
-  select(-age_class) -> mumps_inc_data_l
-  
-
-##############################################################################################################
-########################################## Objective function ################################################
-################################################# and ########################################################
-####################################### Conditional log-likelihood ###########################################
-##############################################################################################################
-
-# NOTE: This can be modified to use the dmeasure workhorse - in pipeline 
-
-cond_logLik <- function(par, pomp_object = make_pomp(), est, params_all_int = param_vals, 
-                        target_data = mumps_inc_data_l, covar_data = mumps_eta_a, 
-                        fail_value = -1e9) {
-  
-  # generate an error message if lengths and contents of the par do not match the est vector
-  if (names(par) %nin% est && length(par) != length(est)) {
-    stop("There is a potential mis-match between 'par' and 'est'")
-  }
-  
-  
-  # Replace values for the parameters of interest
-  if(class(par) %in% c("tbl_df", "tbl", "data.frame")) {
-    params_all_int[est] <- unlist(par[,est])
-  } else if (class(par) == "numeric"){
-    params_all_int[est] <- par[est]  
-  } else {
-    stop("Class of input parameters should either be 'tbl_df', 'tbl','data.frame' or 'numeric'")
-  }
-  
-  # Collect all reporting probability parameters in a seperate vector 
-  rp <- params_all_int[c("rho", sprintf("rho_age_%d", 1:5))]
-  # browser()
-  # Use the defined pomp object and replace param vector with the one in the current optimization run
-  log_density_data <- (
-    pomp_object %.>% 
-    pomp(., 
-         params  = params_all_int) %.>% 
-    # generate trajectories using the replaced parameters
-    #MYSTERIOUS:: GENERATES different values - something to do with the integration method?
-    trajectory(., 
-               include.data = FALSE, format = "d") %.>% 
-    # trajectory(include.data = FALSE, format = "d", method = "ode23") %>% 
-    # select the columns associated with the true cases
-    select(., 
-           Year, starts_with("C_")) %.>% 
-    # set the first row to NA
-    mutate_at(., 
-              .vars = vars(starts_with("C_")), 
-              .funs = function(x) {ifelse(.$Year < 1977, NA, x)}) %.>%
-    # join by the covariates of time-specific reporting
-    right_join(., 
-               eta_a_data, by = "Year") %.>% 
-    mutate(., 
-           C_u = (C_1 + C_2 + C_3 + C_4 + C_5)*((1-eta_a)/eta_a)) %.>% 
-    # make into a long format data: convenience mostly 
-    gather(., 
-           key = "age_class", value = "true_cases", -c(Year, eta_a)) %.>% 
-    # scale the trajectories with respect to the corresponding reporting probabilities 
-    mutate(., 
-           s_true_cases = case_when(age_class == "C_1" ~ true_cases*rp["rho"]*rp["rho_age_1"], 
-                                    age_class == "C_2" ~ true_cases*rp["rho"]*rp["rho_age_2"], 
-                                    age_class == "C_3" ~ true_cases*rp["rho"]*rp["rho_age_3"], 
-                                    age_class == "C_4" ~ true_cases*rp["rho"]*rp["rho_age_4"], 
-                                    age_class == "C_5" ~ true_cases*rp["rho"]*rp["rho_age_5"], 
-                                    age_class == "C_u"  ~ true_cases*rp["rho"])) %.>% 
-    # Only select relevant columns from here on: NOTE time column is present in the data 
-    select(., age_class, s_true_cases) %.>% 
-    # Bind with observed data 
-    bind_cols(., target_data) %.>%
-    # Arrange for a better future: Potentially can be useful to generate conditional log-likelihood 
-    select(., 3, 1, 2, 4) %.>% 
-    # Calculate the poisson log densities 
-    mutate(., log_dpois = dpois(obs_cases, lambda = s_true_cases, log = TRUE))
-    )   
-    
-  result <- (
-    log_density_data %>% 
-        # NA's are given a conditional log-density of 0
-        replace_na(list(poisson_log_density = 0)) %.>% 
-        # Following two steps are used to generate age_class specific conditional log-likelihood
-        group_by(age_class) %.>% 
-        mutate(conditional_loglikelihood = cumsum(poisson_log_density)) %.>% 
-        # Remove grouping for a prosperous future! 
-        ungroup(.) 
-    )  
-    
-  result
-  
-}
-}

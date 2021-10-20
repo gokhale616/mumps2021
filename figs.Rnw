@@ -88,9 +88,15 @@ lapply(script_var, function(x) {
 @
 
 
-<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[2]>>=
+<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[3]>>=
 
 plot(incidence_w_legend_plt)
+
+@
+
+<<inc_data_line_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capIncLine', out.width = outwidth[3]>>=
+
+plot(incidence_line_plt)
 
 @
 

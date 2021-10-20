@@ -7,7 +7,8 @@ lib_dep <- c("tidyverse", "pomp", "magrittr", "wrapr",
              "ggpubr", "reshape2",
              "readxl", "socialmixr", "ggthemes", 
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
-             "parallel", "nloptr")
+             "parallel", "nloptr", 
+             "lemon")
 
 sapply(lib_dep, require, character.only = TRUE)
 
@@ -89,13 +90,12 @@ mod_colours <- c("Black", "Green", "Purple", "Red")
 percentile_vals <- c(0.025, 0.5, 0.975)
 
 
-
-
-
-
-
-
-
-
+# set up controls for deoptim
+### controls list for DEoptim - for MLE estimation
+np_val = 500
+my_controls <- list(itermax = 1e5,
+                    F = 0.6, CR = 0.9, 
+                    strategy = 1,
+                    steptol = 750, reltol = 1e-8)
 
 

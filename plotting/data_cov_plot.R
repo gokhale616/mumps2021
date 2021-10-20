@@ -62,6 +62,18 @@ incidence_w_legend_plt <- (
             rel_heights = c(1, 0.1), nrow = 2)
   ) 
 
+
+incidence_line_plt <- mumps_case_reports_l %.>% 
+  ggplot(., aes(x = year, y = sqrt_cases)) +
+  geom_line(size = 0.8) +
+  labs(y = expression(sqrt(Cases)), 
+       x = "Year") +
+  facet_grid(rows = vars(age_cohort), scales = "free_y") +
+  project_theme
+  
+
+
+
 # contact matrix
 contact_plt <- (
   contact_matrix %.>% 

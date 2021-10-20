@@ -1,11 +1,11 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.9.9)  9 SEP 2021 17:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  20 OCT 2021 09:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **output/figs.tex
 (./output/figs.tex
 LaTeX2e <2021-06-01> patch level 1
-L3 programming layer <2021-08-27> (/Users/devengokhale/Library/TinyTeX/texmf-di
+L3 programming layer <2021-10-18> (/Users/devengokhale/Library/TinyTeX/texmf-di
 st/tex/latex/base/article.cls
 Document Class: article 2021/02/12 v1.4n Standard LaTeX document class
 (/Users/devengokhale/Library/TinyTeX/texmf-dist/tex/latex/base/size11.clo
@@ -462,7 +462,7 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 Excluding comment 'comment')
 (/Users/devengokhale/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-p
 dftex.def
-File: l3backend-pdftex.def 2021-08-04 L3 backend support: PDF output (pdfTeX)
+File: l3backend-pdftex.def 2021-10-18 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count302
 \l__pdf_internal_box=\box71
 ) (./figs.aux)
@@ -585,53 +585,73 @@ File: figure/plot-inc_data_plot-1.pdf Graphic file (type pdf)
 <use figure/plot-inc_data_plot-1.pdf>
 Package pdftex.def Info: figure/plot-inc_data_plot-1.pdf  used on input line 12
 0.
-(pdftex.def)             Requested size: 324.36124pt x 324.36287pt.
+(pdftex.def)             Requested size: 506.45914pt x 506.46768pt.
 
-Package xcolor Warning: Incompatible color definition on input line 131.
+Overfull \hbox (34.4279pt too wide) in paragraph at lines 120--121
+ [][] 
+ []
 
-<figure/plot-contact_matrix_plot-1.pdf, id=5, 505.89pt x 505.89pt>
-File: figure/plot-contact_matrix_plot-1.pdf Graphic file (type pdf)
-<use figure/plot-contact_matrix_plot-1.pdf>
-Package pdftex.def Info: figure/plot-contact_matrix_plot-1.pdf  used on input l
-ine 133.
-(pdftex.def)             Requested size: 247.53888pt x 247.5409pt.
+
+Package xcolor Warning: Incompatible color definition on input line 130.
+
+<figure/plot-inc_data_line_plot-1.pdf, id=5, 505.89pt x 505.89pt>
+File: figure/plot-inc_data_line_plot-1.pdf Graphic file (type pdf)
+<use figure/plot-inc_data_line_plot-1.pdf>
+Package pdftex.def Info: figure/plot-inc_data_line_plot-1.pdf  used on input li
+ne 132.
+(pdftex.def)             Requested size: 506.45914pt x 506.46768pt.
+
+Overfull \hbox (34.4279pt too wide) in paragraph at lines 132--133
+ [][] 
+ []
+
 
 Package xcolor Warning: Incompatible color definition on input line 143.
 
-<figure/plot-cov_data_plot-1.pdf, id=6, 505.89pt x 505.89pt>
+<figure/plot-contact_matrix_plot-1.pdf, id=6, 505.89pt x 505.89pt>
+File: figure/plot-contact_matrix_plot-1.pdf Graphic file (type pdf)
+<use figure/plot-contact_matrix_plot-1.pdf>
+Package pdftex.def Info: figure/plot-contact_matrix_plot-1.pdf  used on input l
+ine 145.
+(pdftex.def)             Requested size: 247.53888pt x 247.5409pt.
+
+Package xcolor Warning: Incompatible color definition on input line 155.
+
+<figure/plot-cov_data_plot-1.pdf, id=7, 505.89pt x 505.89pt>
 File: figure/plot-cov_data_plot-1.pdf Graphic file (type pdf)
 <use figure/plot-cov_data_plot-1.pdf>
-Package pdftex.def Info: figure/plot-cov_data_plot-1.pdf  used on input line 14
-5.
+Package pdftex.def Info: figure/plot-cov_data_plot-1.pdf  used on input line 15
+7.
 (pdftex.def)             Requested size: 506.45914pt x 506.46768pt.
 
-Overfull \hbox (34.4279pt too wide) in paragraph at lines 145--146
+Overfull \hbox (34.4279pt too wide) in paragraph at lines 157--158
  [][] 
  []
 
 [1
 
 {/Users/devengokhale/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.m
-ap}] [2 <./figure/plot-inc_data_plot-1.pdf> <./figure/plot-contact_matrix_plot-
-1.pdf>] [3 <./figure/plot-cov_data_plot-1.pdf>] (./figs.aux)
+ap}] [2 <./figure/plot-inc_data_plot-1.pdf>] [3 <./figure/plot-inc_data_line_pl
+ot-1.pdf>] [4 <./figure/plot-contact_matrix_plot-1.pdf>] [5 <./figure/plot-cov_
+data_plot-1.pdf>] (./figs.aux)
 Package rerunfilecheck Info: File `figs.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 11207 strings out of 480559
- 165755 string characters out of 5902032
- 478490 words of memory out of 5000000
- 28617 multiletter control sequences out of 15000+600000
+ 11224 strings out of 480539
+ 166290 string characters out of 5901387
+ 480182 words of memory out of 5000000
+ 28650 multiletter control sequences out of 15000+600000
  417756 words of font info for 53 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  60i,7n,66p,260b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}<
 /Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplr8a.
 pfb>
-Output written on figs.pdf (3 pages, 58193 bytes).
+Output written on figs.pdf (5 pages, 65481 bytes).
 PDF statistics:
- 57 PDF objects out of 1000 (max. 8388607)
- 42 compressed objects within 1 object stream
- 7 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 72 PDF objects out of 1000 (max. 8388607)
+ 53 compressed objects within 1 object stream
+ 10 named destinations out of 1000 (max. 500000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 
