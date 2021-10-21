@@ -4,7 +4,7 @@
 #SBATCH --partition=rohani_p                 # Partition (queue) name
 #SBATCH --nodes=1                            # Number of nodes
 #SBATCH --ntasks=24                          # Number of cores	
-#SBATCH --mem=8gb                            # Job memory request
+#SBATCH --mem=16gb                            # Job memory request
 #SBATCH --time=500:00:00                      # Time limit hrs:min:sec
 #SBATCH --output=waning_slow_rapid.%j.out          # Standard output log
 #SBATCH --error=waning_slow_rapid.%j.err          # Standard error log          
@@ -13,7 +13,7 @@
           
 cd $SLURM_SUBMIT_DIR
           
-module load R/3.6.2-foss-2019b
-          
+module load R/4.0.0-foss-2019b
+
 R CMD BATCH waning_slow_rapid.R
 
