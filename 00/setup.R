@@ -1,6 +1,7 @@
 # Load packages ----------------------------------------------------------------------------------------------
 
-lib_dep <- c("tidyverse", "pomp", "magrittr", "wrapr",
+lib_dep <- c("tidyverse", 
+             "pomp", "magrittr", "wrapr",
              "readxl", "tictoc", "parallel", "subplex", 
              "LaplacesDemon", "cowplot", 
              "rootSolve", "GGally", "RColorBrewer", 
@@ -10,7 +11,15 @@ lib_dep <- c("tidyverse", "pomp", "magrittr", "wrapr",
              "parallel", "nloptr", 
              "lemon")
 
-sapply(lib_dep, require, character.only = TRUE)
+# Assumes the use of processed data and no plots
+lib_dep_cl <- c("tidyverse", 
+                "pomp", "magrittr", "wrapr",
+                "tictoc", "parallel", "subplex", 
+                "LaplacesDemon",
+                "DEoptim", "doParallel", "doRNG",
+                "nloptr")
+
+sapply(lib_dep_cl, require, character.only = TRUE)
 
 
 # read the processed data for analysis
