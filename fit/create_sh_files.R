@@ -1,12 +1,12 @@
 # This function prepares the .sh scripts for submitting estimation scripts to the cluster
-create_sh <- function(pattern = "hypothesis") {
+create_sh <- function(pattern = "hypo") {
   paste0("#!/bin/bash\n
 #SBATCH --job-name=", pattern, "              # Job name
 #SBATCH --partition=rohani_p                 # Partition (queue) name
 #SBATCH --nodes=1                            # Number of nodes
 #SBATCH --ntasks=24                          # Number of cores	
 #SBATCH --mem=8gb                            # Job memory request
-#SBATCH --time=240:00:00                      # Time limit hrs:min:sec
+#SBATCH --time=500:00:00                      # Time limit hrs:min:sec
 #SBATCH --output=", pattern, ".%j.out          # Standard output log
 #SBATCH --error=", pattern, ".%j.err          # Standard error log          
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
@@ -20,7 +20,7 @@ R CMD BATCH ", pattern, ".R
 ")
 }  
 
-write_sh <- function(pattern = "hypothesis" , path) {
+write_sh <- function(pattern = "hypo" , path) {
   
   fileConn <- file(paste0(path, pattern, ".sh"))
   writeLines(create_sh(pattern = pattern), fileConn)
@@ -30,17 +30,12 @@ write_sh <- function(pattern = "hypothesis" , path) {
 
 # name all the hypotheses - heterogenous mixing hypothesis
 
-n_hypotheses <- c("waning_lgs", sprintf("leaky2_%d_lgs", 0:4), 
-                  sprintf("waning_leaky2_%d_lgs", 0:4))
+n_hypotheses <- c("waning_slow", "waning_slow_sigmoid", 
+                  "waning_slow_rapid", "waning_slow_constant")
 
-lapply(n_hypotheses, function(x){write_sh(pattern = x, path = "./unknwn_popn_all_hypo/")})
+lapply(n_hypotheses, function(x){write_sh(pattern = x, path = "./")})
 
 
-# name all the hypotheses - homogenous mixing hypothesis
-
-n_hypotheses_homo <- c("waning_lgs", "waning_leaky2_lgs", "leaky2_lgs")
-
-lapply(n_hypotheses_homo, function(x){write_sh(pattern = x, path = "./unknwn_popn_homo_all_hypo/")})
 
 
 
