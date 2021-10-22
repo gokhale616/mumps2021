@@ -39,11 +39,9 @@ as_numeric_factor <- function(x) {as.numeric(levels(x))[x]}
 # function: simulates from the observation model specified in pomp
 sim_obs_model <- function(po_obj, params, times, 
                           nsim, method = "ode45", 
-                          long_form = FALSE, soln_only = FALSE) {
-  
-  # produce solution to the sys. of ode
-  if(soln_only == FALSE) {
+                          summarise_obs_process = TRUE) {
     
+    # browser()
     # apply the observation process and generate simulations   
     # solve the ode system
     soln_array <- po_obj %.>% 
@@ -56,40 +54,47 @@ sim_obs_model <- function(po_obj, params, times,
     
     # dress the result to produce a neat data frame that has the simulated obs process
     result_df <- do.call(rbind, lapply(1:nsim, function(x) {t(obs_soln_array[,x,])})) %.>% 
-      as.data.frame(.) %.>% 
+      as_tibble(.) %.>% 
       transmute(., 
                 D_1 = D_1, D_2 = D_2, D_3 = D_3, 
-                D_4 = D_4, D_5 = D_5, Du = Du,
-                Year = rep(times, times = nsim), 
+                D_4 = D_4, D_5 = D_5, D_u = D_u,
+                year = rep(times, times = nsim), 
                 `.id` = rep(1:nsim, each = length(times))
                 ) %.>% 
-      select(., Year, `.id`, starts_with("D")) %.>% 
-      mutate_at(., 
-                .vars = vars(starts_with("D")), 
-                .funs = function(x) {ifelse(.$Year == min(.$Year), NA, x)}
-                ) 
-  } else {
+      select(., year, `.id`, starts_with("D_"))
+  
+  
+    # feed the names of the age classes
+    change_these_colnames <- which(colnames(result_df) %in% c(sprintf("D_%d", 1:5), "D_u"))
+    
+    colnames(result_df)[change_these_colnames] <- age_names_u
+  
+    # preset in a long form
+    result_df_l <- result_df %.>% 
+      gather(., 
+             key = "age_class", 
+             value = "cases", -c(year, `.id`), factor_key = TRUE) 
       
-      # only solve the ODE system
-      result_df <- po_obj %.>% 
-        trajectory(., params = params, method = method, format = "data.frame")
-  
-  }
     
-  
-  # if the long form is required for plotting purposes
-  if(long_form == TRUE) {
-    
-    fin_result <- result_df %.>% 
-      gather(., key = "AgeClass", value = "SimObs", -c(Year, `.id`)) 
-    
-  } else { 
-    
-    fin_result <- result_df
-  
-  }
-  
-  
+    if(summarise_obs_process == TRUE) {
+      
+      fin_result <- result_df_l %.>%
+        select(., -`.id`) %.>% 
+        group_by(., year, age_class) %.>%
+        summarise(., 
+                  qs = quantile(cases, c(0.025, 0.5, 0.975), na.rm = TRUE), 
+                  prob = c("0.025", "0.5", "0.975"), 
+                  .groups = 'drop') %.>%
+        spread(., key = prob, value = qs) %.>% 
+        ungroup(.)
+        
+      
+    } else {
+      
+      fin_result <- result_df_l
+      
+    }
+      
     fin_result
   
 }
@@ -461,79 +466,78 @@ plot_covars <- function(covar_data, filter_from = 1950) {
 
 # plot_covars()
 
-# workshop related functions 
-plot_dynamics <- function(data, 
-                          filter_from = 1976,
-                          only_cases = TRUE, 
-                          param_sweep = TRUE, 
-                          lab_val = NULL,
-                          ...) {
-  
-  if(only_cases == TRUE) {
-    data_int <- data %.>% 
-      select(., year, starts_with("C_"), `.id`)
-  } else {
-    data_int <- data
-  }
-  
-  # treat data_int for plotting 
-  plt_data <- data_int %.>%
-    filter(., 
-           year > filter_from) %.>% 
-    gather(., 
-           key = "compartment", value = "cases", 
-           -c(.id, year), factor_key = TRUE) 
-  
-  # gernerate a basic plot 
-  plt <- (
-    plt_data %.>% 
-      ggplot(., aes(x = year, y = cases)) + 
-      geom_line(size = 0.8) +
-      facet_wrap(.~compartment, scales="free_y", ncol = 5) +
-      scale_y_continuous(labels = scales::scientific_format(digits = 2))+
-      project_theme +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  )
-    
-  
-}
-
 plot_sweep_dynamics <- function(data, 
                                 filter_from = 1976,
                                 only_cases = TRUE, 
-                                lab_val = NULL,
+                                colour_lab,
+                                y_lab = NULL,
+                                sim_cases = FALSE, 
                                 ...) {
+  # browser()
+  if(sim_cases == TRUE) {
+    
+    plt <- (
+      data %.>% 
+      ggplot(., aes(x = year, y = `0.5`, group = Value, colour = Value)) +
+      geom_line(aes(colour = Value), size = 0.8) +
+      geom_linerange(aes(ymin=`0.025`, ymax=`0.975`))+  
+      labs(colour = colour_lab, 
+           x = "Year", 
+           y = y_lab) +
+      facet_grid(rows = vars(age_class), scales="free_y") +
+      scale_x_continuous(expand = c(0,0)) +
+      scale_y_continuous(labels = scales::scientific_format(digits = 2))+
+      scale_colour_continuous(low = "#2C5364", high = "#FF416C", breaks = c(50, 150, 250, 350)) +
+      project_theme +
+      guides(colour = guide_colorbar(frame.colour = "black", 
+                                     ticks.colour = "black", 
+                                     title.position = "top")
+             )
+      )
   
-  if(only_cases == TRUE) {
-    data_int <- data %.>% 
-      select(., year, starts_with("C_"), Value)
   } else {
-    data_int <- data 
+    
+      if(only_cases == TRUE) {
+        data_int <- data %.>% 
+          select(., year, starts_with("C_"), Value)
+      } else {
+        data_int <- data 
+      }
+      
+      colnames(data_int)[which(colnames(data_int) %in% sprintf("C_%d", 1:5))] <- age_names
+      
+      # treat data_int for plotting 
+      plt_data <- data_int %.>%
+        filter(., 
+               year > filter_from) %.>% 
+        gather(., 
+               key = "compartment", value = "cases", 
+               -c(year, Value), factor_key = TRUE) 
+      
+      
+      
+      # browser()
+      plt <- (
+        plt_data %.>% 
+          ggplot(., aes(x = year, y = cases)) +
+          geom_line(aes(colour = Value, group = Value), size = 0.8) +
+          labs(colour = colour_lab, 
+               x = "Year", 
+               y = y_lab) +
+          facet_grid(rows = vars(compartment), scales="free_y") +
+          scale_x_continuous(expand = c(0,0)) +
+          scale_y_continuous(labels = scales::scientific_format(digits = 2))+
+          scale_colour_continuous(low = "#2C5364", high = "#FF416C", breaks = c(50, 150, 250, 350)) +
+          project_theme +
+          guides(colour = guide_colorbar(frame.colour = "black", 
+                                         ticks.colour = "black", 
+                                         title.position = "top")
+          )
+        
+      )  
   }
   
   
-  # treat data_int for plotting 
-  plt_data <- data_int %.>%
-    filter(., 
-           year > filter_from) %.>% 
-    gather(., 
-           key = "compartment", value = "cases", 
-           -c(year, Value), factor_key = TRUE) 
-  
-  # browser()
-  plt <- (
-    plt_data %.>% 
-      ggplot(., aes(x = year, y = cases)) +
-      geom_line(aes(colour = Value, group = Value), size = 0.8) +
-      labs(colour = lab_val) +
-      facet_grid(rows = vars(compartment), scales="free_y") +
-      scale_y_continuous(labels = scales::scientific_format(digits = 2))+
-      scale_colour_continuous(low = "#2C5364", high = "#FF416C") +
-      # coord_capped_cart(bottom='both', left='both') +
-      project_theme + 
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-      
-    )
   
   
   plt
