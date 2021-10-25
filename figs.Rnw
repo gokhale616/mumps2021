@@ -75,6 +75,7 @@ options(formatR.arrow=TRUE,width=90,
 
 
 source("00/src.R", chdir = TRUE)
+source("00/load_processed_data.R", chdir = TRUE)
 
 # all these are where the plot data are synthesized
 script_var <- c("data_cov_plot.R")
@@ -90,7 +91,7 @@ lapply(script_var, function(x) {
 
 <<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[3]>>=
 
-plot(incidence_w_legend_plt)
+plot(incidence_age_geog)
 
 @
 

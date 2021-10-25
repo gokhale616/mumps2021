@@ -6,6 +6,7 @@ lib_dep <- c("tidyverse",
              "LaplacesDemon", "cowplot", 
              "rootSolve", "GGally", "RColorBrewer", 
              "ggpubr", "reshape2",
+             "usmap",
              "readxl", "socialmixr", "ggthemes", 
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
              "parallel", "nloptr", 
@@ -22,19 +23,12 @@ lib_dep_cl <- c("tidyverse",
 sapply(lib_dep, require, character.only = TRUE)
 
 
-# read the processed data for analysis
-path_processed_data <- "../processed_data/"
-
-list.files(path = path_processed_data, 
-           full.names = TRUE) %.>% 
-  lapply(., 
-         load, envir = .GlobalEnv)
 
 # Set the project theme and the base font size of all labels 
 # definintion some useful objects that can be used to quickly 
 
 
-age_names <- c("[0,5)", "[5,15)", "[15,25)", "[25,40)", "<40") 
+age_names <- c("[0,5)", "[5,15)", "[15,25)", "[25,40)", ">40") 
 
 age_names_u <- c(age_names, "unknown") 
 

@@ -109,8 +109,8 @@ file_list <- list(f_v, r_v)
 # combine all data raw data sheets and adjust format
 demog_data_1900_1979 <- (
   map_df(1:length(f_v), .f = make_1demog_data, fr_ls = file_list) %.>% 
-    mutate(., age  = case_when(age == "75+"~75, 
-                               age == "85+"~85, 
+    mutate(., age  = case_when(age == "75+"~ 75, 
+                               age == "85+"~ 85, 
                                TRUE ~ as.numeric(age))
     )  
   )
@@ -379,7 +379,7 @@ eta_a_data <- (
 # combine into one covar tibble
 mumps_covariates <- demog_vacc_data %.>% 
   full_join(., 
-            eta_a_data, by = "year")
+            eta_a_data, by = "year") 
 
 
 save(mumps_covariates, file = "../processed_data/mumps_covariates.rds")
@@ -546,11 +546,6 @@ names(prop_sero_pos_data) <- age_names
 
 save(prop_sero_pos_data, file = "../processed_data/prop_sero_pos_data.rds")
 }
-
-message("NOTE :: data objects saved in '../processed_data'. To see intermediate objects run scripts individually.")
-
-rm(list = ls())
-
 
 
 

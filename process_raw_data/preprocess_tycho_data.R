@@ -1,15 +1,19 @@
 # load the setup
 # depends on preprocess_demog_data_5ac.R" 
 
-# look at tycho data
+# load age_idependent data
 non_cumulative_mumps <- read_csv(file = "../raw_data/tycho_20201118-150400.csv")
 
-mumps_by_states <- non_cumulative_mumps %.>% 
+
+# select spatio-temporal information
+mumps_by_states <- (
+  non_cumulative_mumps %.>% 
   transmute(.,
             State = Admin1Name, 
             Date = PeriodEndDate, 
             PeriodLength = PeriodEndDate-PeriodStartDate,
             Cases = CountValue) 
+  )
 
 # producing the a sequence of the state-year to generate missing values 
 n_states <- length(unique(mumps_by_states$State))
@@ -121,7 +125,8 @@ demog_by_states <- demog_data_1969_2017 %.>%
             population = sum(population, na.rm = TRUE)) %.>% 
   ungroup(.) 
 
-# pick the states' full names and abrevation for seasmless integration with the case data    
+# pick the states' full names and abbreviation for seamless integration with the case data
+# data-frame "statepop" is available after loading library "usmap"
 state_names_abbr <- statepop %.>%
   transmute(., 
             state = abbr, 
@@ -209,7 +214,9 @@ mumps_demog_geog_annual <- complete_mumps_by_states_annual %.>%
             by = c("State", "Year")) %.>%
   mutate(., Incidence = (Cases/Population)*1e5)
 
+save(mumps_demog_geog_annual, file = "../processed_data/mumps_demog_geog_annual.rds")
 
+if(FALSE) {  
 # trim the weekly data for fitting and anlysis 
 mumps_inc_data_weekly <- complete_mumps_us_weekly %.>% 
   filter(., 
@@ -219,7 +226,7 @@ mumps_inc_data_weekly <- complete_mumps_us_weekly %.>%
          Year = ((as.numeric(difftime(Date, min(Date), units = "weeks"))-1)/52 + 1967)
          )
 
-if(FALSE) {  
+
 # Only to be carried out if trajectory matching is going to be performed   
 # plot and and save incidence in the folder- prcessed data for further analysis
 mumps_inc_data_weekly %.>%   
@@ -235,6 +242,11 @@ mumps_inc_data_weekly %.>%
 
 save(mumps_inc_data_weekly, file = "../processed_data/mumps_inc_data_weekly.Rdata")
 }
+
+
+message("NOTE :: data objects saved in '../processed_data'. To see intermediate objects run scripts individually.")
+
+rm(list = ls())
 
 
 
