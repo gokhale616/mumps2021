@@ -33,25 +33,32 @@ mumps_incidence_rate_l <- (
 
 
 
-# y_max_abs <- max(mumps_case_reports_l$sqrt_total, na.rm = TRUE)
-# 
-# abs_inc_plt <- (
-#   mumps_case_reports_l %.>% 
-#     filter(., age_cohort == "unknown") %.>% 
-#     ggplot(., 
-#            aes(x = year, y = sqrt_total)) +
-#     geom_area(stat = "identity", alpha = 0.9, fill = "#b21f1f") +
-#     labs(y = expression(sqrt(Cases)),
-#          x = "") +
-#     scale_x_continuous(#expand = c(0.000, 0.000), 
-#                        breaks = gen_x_breaks) + 
-#     scale_y_continuous(#expand = c(0.0, 0), 
-#                        breaks = (y_max_abs*c(0, 0.25, 0.5, 0.75, 1)) %.>% floor(.)) +
-#     project_theme +
-#     theme(axis.text.x = element_blank()) +
-#     cap_axes +
-#     theme(plot.margin = unit(rep(mar_val, 4), "cm")) 
-#   )
+y_max_abs <- max(mumps_case_reports_l$sqrt_total, na.rm = TRUE)
+
+abs_inc_plt <- (
+  mumps_case_reports_l %.>%
+    drop_na(.) %.>% 
+    ggplot(.,
+           aes(x = year, y = sqrt_cases)) +
+    geom_line(aes(colour = age_cohort), size = 1) +
+    # geom_area(aes(colour = age_cohort, fill = age_cohort), 
+    #           position = position_dodge(), alpha = 0.3, size = 0.9) +
+    labs(y = expression(paste(sqrt(Cases), phantom(100))),
+         x = "") +
+    scale_x_continuous(#expand = c(0.000, 0.000),
+                       breaks = gen_x_breaks) +
+    scale_y_continuous(#expand = c(0.0, 0),
+                       breaks = (y_max_abs*c(0, 0.25, 0.5, 0.75, 1)) %.>% floor(.)) +
+    scale_colour_manual(values = age_cols) +
+    scale_fill_manual(values = age_cols) +
+    project_theme +
+    theme(axis.text.x = element_blank()) +
+    cap_axes +
+    theme(axis.title = element_text(size = 8.5), 
+          plot.margin = unit(rep(mar_val, 4), "cm"), 
+          legend.position = "none"
+          )
+  )
 
 
 # y_max_inc <- max(mumps_incidence_rate_l$ac_inc_rate, na.rm = TRUE)
@@ -83,9 +90,9 @@ inc_rate_plt <- (
                  colour = "grey30") +
     geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x, y = y+1.55), colour = "grey30", size = 2) +
+              aes(label = label, x = x, y = y+1.65), colour = "grey30", size = 2) +
     geom_text(data = anno_data_2, 
-              aes(label = label, x = x, y = y+1.55), colour = "grey30", size = 2) +
+              aes(label = label, x = x, y = y+1.65), colour = "grey30", size = 2) +
     labs(y = expression(paste(Cases~per~10^5, phantom(1000000))),
          x = "") +
     scale_x_continuous(#expand = c(0.000, 0.000), 
@@ -105,7 +112,7 @@ prop_inc_plt <- (
          aes(x = year, y = cases, fill = age_cohort)) +
   geom_area(stat = "identity", position = "fill") +
   labs(x = "Year", 
-       y = "Percent of total cases", 
+       y = expression(paste(Percent~total, phantom(10000000))),
        fill = "Age\nCohort") +
   scale_fill_manual(values = age_cols) +
   scale_x_continuous(#expand = c(0, 0), 
@@ -114,7 +121,8 @@ prop_inc_plt <- (
                      labels = scales::percent_format(accuracy = 1)) +  
   project_theme +
   cap_axes + 
-  theme(plot.margin = unit(rep(mar_val, 4), "cm")) 
+  theme(axis.title = element_text(size = 8.5), 
+        plot.margin = unit(rep(mar_val, 4), "cm")) 
   )
 
 
@@ -124,9 +132,10 @@ prop_inc_plt <- prop_inc_plt + theme(legend.position = "none")
 
 incidence_plt <- (
   plot_grid(inc_rate_plt,
+            abs_inc_plt, 
             prop_inc_plt,
-            nrow = 2, labels = c("A", "B"),
-            rel_heights = c(0.5, 1), 
+            nrow = 3, labels = c("A", "B", "C"),
+            # rel_heights = c(1, 1), 
             align = "hv", axis = "b")
   ) 
 
@@ -153,21 +162,24 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
     ggplot(., 
            aes(x = X, y = Y, group = Group)) +
     geom_polygon(aes(fill = !!enquo_fill_var)) +
-    geom_path(size = 0.06)+
+    geom_path(size = 0.06, colour = "grey30")+
     labs(x = "", y = "", 
-         fill = expression(Cases~per~10^5))+
-    annotate(geom = "text", x = 0.5e6, y = 0.65e6, 
-             label = paste0("bold(Year:", mumps_geog$Year %.>% unique(.),")"), 
+         fill = expression(Cases~per~10^5)) +
+    annotate(geom = "text", x = 0.4e6, y = 0.65e6, 
+             label = mumps_geog$Year %.>% unique(.), 
              parse = TRUE, size = 3)+
     scale_fill_gradient(low = "#F9D423", high = "#FF4E50", na.value = NA,
-                        breaks = breaks)+
+                        breaks = breaks, 
+                        limits = c(0, 10))+
     project_theme +
     theme(axis.text = element_blank(), 
           axis.ticks = element_blank(), 
           axis.line = element_blank(),
           legend.position = c(0.72, 0.1), 
           legend.title = element_text(size=9),
-          legend.text = element_text(size=8)) +
+          legend.text = element_text(size=8), 
+          panel.grid = element_blank(), 
+          plot.margin = unit(rep(mar_val, 4), "cm")) +
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
                                  title.position = "top", 
@@ -178,18 +190,51 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
 }
 
 
-map_1987_plt <- mumps_demog_geog_annual %.>% 
-  filter(., Year == 1987) %.>% 
-  map_mumps(., breaks = c(6, 12, 18))
+set_map_data <- function(year_range) {
+  
+  # browser()
+  
+  len_v <- length(year_range)
+  
+  mumps_demog_geog_annual %.>% 
+    filter(., Year %in% year_range) %.>% 
+    mutate(., Year = ifelse(len_v == 1, 
+                            year_range[1] %.>% as.character(.), 
+                            paste0(year_range[1], "-", year_range[len_v])
+                            )
+           ) %.>% 
+    group_by(., Year, State) %.>% 
+    mutate(., Incidence = mean(Incidence, na.rm = TRUE)) %.>% 
+    ungroup(.)
+}
 
 
-map_2011_plt <- mumps_demog_geog_annual %.>% 
-  filter(., Year == 2011) %.>% 
-  map_mumps(., breaks = c(0.05, 0.15, 0.25))
+mumps_demog_geog_annual_1985_89 <- (
+  set_map_data(year_range = c(1985:1989))  
+) 
+  
+# mumps_demog_geog_annual_1985_89$Incidence %.>% max(., na.rm = TRUE)
+# mumps_demog_geog_annual_1985_89$Incidence %.>% min(., na.rm = TRUE)
+
+map_1985_89_plt <-  mumps_demog_geog_annual_1985_89 %.>% 
+  map_mumps(., breaks = c(2, 4, 6, 8))
 
 
-map_grid_plt <- plot_grid(map_1987_plt, map_2011_plt, 
-                          labels = c("C", "D"))
+
+mumps_demog_geog_annual_2006_18 <- (
+  set_map_data(year_range = c(2006:2018))  
+) 
+
+# mumps_demog_geog_annual_2006_18$Incidence %.>% max(., na.rm = TRUE)
+# mumps_demog_geog_annual_2006_18$Incidence %.>% min(., na.rm = TRUE)
+
+map_2006_18_plt <-  mumps_demog_geog_annual_2006_18 %.>% 
+  map_mumps(., breaks = c(2, 4, 6, 8))
+
+
+
+map_grid_plt <- plot_grid(map_1985_89_plt, map_2006_18_plt, 
+                          labels = c("D", "E"))
 
 
 

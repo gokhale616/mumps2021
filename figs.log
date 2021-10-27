@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  25 OCT 2021 17:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  26 OCT 2021 16:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -638,20 +638,21 @@ Package rerunfilecheck Info: File `figs.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 11224 strings out of 480539
- 166290 string characters out of 5901387
- 480182 words of memory out of 5000000
- 28650 multiletter control sequences out of 15000+600000
- 417756 words of font info for 53 fonts, out of 8000000 for 9000
+ 11228 strings out of 480539
+ 166324 string characters out of 5901387
+ 481182 words of memory out of 5000000
+ 28651 multiletter control sequences out of 15000+600000
+ 420063 words of font info for 56 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,7n,66p,260b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,7n,66p,445b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}<
-/Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplr8a.
-pfb>
-Output written on figs.pdf (5 pages, 285748 bytes).
+/Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/uplb8a.
+pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/urw/palatino/up
+lr8a.pfb>
+Output written on figs.pdf (5 pages, 394917 bytes).
 PDF statistics:
- 78 PDF objects out of 1000 (max. 8388607)
- 57 compressed objects within 1 object stream
+ 83 PDF objects out of 1000 (max. 8388607)
+ 60 compressed objects within 1 object stream
  10 named destinations out of 1000 (max. 500000)
  21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

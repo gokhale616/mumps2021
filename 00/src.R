@@ -1,3 +1,4 @@
+source("./load_processed_data.R", chdir = TRUE)
 source("./setup.R", chdir = TRUE)
 source("./util_fns.R", chdir = TRUE)
 source("./util_fns_fitting.R", chdir = TRUE)

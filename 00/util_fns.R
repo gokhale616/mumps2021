@@ -22,6 +22,23 @@ un_list_name <- function(x) {
 # operator for easy analysis
 `%nin%` <- Negate(`%in%`)
 
+# this function calculates quntiles for a grouped data frame 
+calculate_quantile <- function(grouped_data, var, p = c(0.025, 0.5, 0.975)) {
+  # browser()
+  enquo_var <- enquo(var)
+  
+  summarise(., 
+            qs = quantile(!!enquo_var, p, na.rm = TRUE), 
+            prob = as.character(p), 
+            .groups = 'drop') %.>%
+    spread(., 
+           key = prob, value = qs) %.>% 
+    ungroup(.)
+  
+}
+
+
+
 # function to calculate the AICc for a given loglikilhood
 calculate_aic <- function(loglik, npar) {
   return(2*npar - 2*loglik)
@@ -38,8 +55,9 @@ as_numeric_factor <- function(x) {as.numeric(levels(x))[x]}
 
 # function: simulates from the observation model specified in pomp
 sim_obs_model <- function(po_obj, params, times, 
-                          nsim, method = "ode45", 
-                          summarise_obs_process = TRUE) {
+                          nsim, method = "ode23", 
+                          summarise_obs_process = TRUE, 
+                          root_transform = TRUE) {
     
     # browser()
     # apply the observation process and generate simulations   
@@ -76,9 +94,26 @@ sim_obs_model <- function(po_obj, params, times,
              value = "cases", -c(year, `.id`), factor_key = TRUE) 
       
     
+    if(root_transform == TRUE) {
+      
+      message("simulations are root-transformed!!")
+      result_df_l_trans <- (
+        result_df_l %.>% 
+          mutate(., cases = sqrt(cases))
+      )
+    
+    } else {
+      
+        message("simulations are in natural scale!!")
+        result_df_l_trans <- result_df_l
+    }
+    
+    
+    
     if(summarise_obs_process == TRUE) {
       
-      fin_result <- result_df_l %.>%
+      fin_result <- (
+        result_df_l_trans %.>%
         select(., -`.id`) %.>% 
         group_by(., year, age_class) %.>%
         summarise(., 
@@ -87,11 +122,12 @@ sim_obs_model <- function(po_obj, params, times,
                   .groups = 'drop') %.>%
         spread(., key = prob, value = qs) %.>% 
         ungroup(.)
+        )
         
       
     } else {
       
-      fin_result <- result_df_l
+        fin_result <- result_df_l
       
     }
       
