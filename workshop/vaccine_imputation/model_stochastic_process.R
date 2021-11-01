@@ -16,7 +16,7 @@ for(i in 2:`T`) {
 
 # Brownian bridge
 
-kappa = 0
+kappa = 0.5
 
 bb_current = rep(NA, times = `T`)
 for(i in 1:`T`) {
@@ -24,9 +24,6 @@ for(i in 1:`T`) {
   bb_current[i] = (w_current[i] + (i/`T`)^kappa) - (i*w_current[`T`])/`T`
   
 }
-
-
-
 
 
 

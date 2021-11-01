@@ -1,5 +1,5 @@
-source("./load_processed_data.R", chdir = TRUE)
 source("./setup.R", chdir = TRUE)
+source("./load_processed_data.R", chdir = TRUE)
 source("./util_fns.R", chdir = TRUE)
 source("./util_fns_fitting.R", chdir = TRUE)
 source("./cov_make_pomp_model.R", chdir = TRUE)

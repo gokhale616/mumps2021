@@ -52,7 +52,7 @@ abs_inc_plt <- (
     scale_colour_manual(values = age_cols) +
     scale_fill_manual(values = age_cols) +
     project_theme +
-    theme(axis.text.x = element_blank()) +
+    # theme(axis.text.x = element_blank()) +
     cap_axes +
     theme(axis.title = element_text(size = 8.5), 
           plot.margin = unit(rep(mar_val, 4), "cm"), 
@@ -99,7 +99,7 @@ inc_rate_plt <- (
       breaks = gen_x_breaks) + 
     scale_y_continuous(breaks = c(0, 3, 6, 9, 12), limits = c(0, 12)) +
     project_theme +
-    theme(axis.text.x = element_blank()) +
+    # theme(axis.text.x = element_blank()) +
     cap_axes +
     theme(axis.title = element_text(size = 8.5),
           plot.margin = unit(rep(mar_val, 4), "cm")) 

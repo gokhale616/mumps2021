@@ -3,16 +3,8 @@
 # Objectives include succefully including covariates and finding a way to incoroporate initial conditions 
  
 ##############################################################################################################
-
 #loading packages####
-sapply(c("tidyverse", "pomp", "reshape2", "plyr", 
-         "ggthemes","grid", "gridExtra", "magrittr"), 
-       require, character.only = TRUE)
-theme_set(theme_bw())
-
-set.seed(594709947L)
-
-source("util_fns.R")
+source("../../00/src.R", chdir = TRUE)
 
 # loading a dataframe of covariates --------------------------------------------------------------------------
 

@@ -12,9 +12,6 @@ seir_stoc_step <- "
   double dN[8];
   
   
-  wp_t = rnorm(0, sigma_w*t); 
-  
-  
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
@@ -132,11 +129,11 @@ rp_vals <- c(gamma = 365.25/17, sigma = 365.25/5, R0 = 10, eta = 1,
 
 # Constructing the pomp simulator
 seir_po <- (
-  data.frame(year = seq(0, 20, by = 1/52), 
+  data.frame(year = seq(0, 500, by = 1/52), 
              Cases = NA) %>% 
   pomp(t0 = -60, 
        times = "year",
-       rprocess = euler(Csnippet(seir_stoc_step), delta.t = (1/365.25)), 
+       rprocess = euler(Csnippet(seir_stoc_step), delta.t = (1/100)), 
        rinit = Csnippet(seir_rinit), 
        dmeasure = Csnippet(seir_dmeasure), 
        rmeasure = Csnippet(seir_rmeasure), 
@@ -151,7 +148,7 @@ seir_po <- (
 
 # Simulating the values 
 seir_sim <- seir_po %>% 
-  simulate(., nsim = 300, format="d", include.data=FALSE) 
+  simulate(., nsim = 1, format="d", include.data=FALSE) 
 
 
 seir_sim %.>% 
