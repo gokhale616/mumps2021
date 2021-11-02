@@ -143,6 +143,7 @@ vseir_rmeasure <- "
   
   cases = rnorm(m, sqrt(m)+tol);
 "
+
 # Evaluating the density from the measurement process
 vseir_dmeasure <- "
   double m = rho*C; 

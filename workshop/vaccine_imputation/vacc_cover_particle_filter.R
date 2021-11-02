@@ -54,10 +54,31 @@ mumps_weekly_case_reports %.>%
 }
 
 # define a pomp object suing incidence data 
-po_vseir <- mumps_weekly_case_reports %.>% make_pomp_vseir(.)
+po_vseir <- (
+  mumps_weekly_case_reports %.>% 
+  select(., -PeriodMidDate) %.>% 
+  make_pomp_vseir(.)
+  )
 
 # check if the data was properly loaded
 # spy(po_vseir)
+
+# generate a particle filter object for the given pomp object
+pfilter_vseir <- (
+  po_vseir %.>% 
+  pfilter(., 
+          Np = 1e3, 
+          params = rp_vals, 
+          dmeasure = Csnippet(vseir_dmeasure),
+          paramnames = rp_names, 
+          statenames = state_names)
+  )
+
+
+logLik(pfilter_vseir)
+
+plot(pfilter_vseir)
+
 
 
 
