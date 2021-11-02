@@ -6,7 +6,7 @@ source("../../00/src.R", chdir = TRUE)
 vseir_stoc_step <- "
   
   // make normal random draws for the Brownian bridge
-  double dw = rnorm(0, dt/sigma_wn_scale);
+  double dw = rnorm(0, dt*sigma_wn_scale);
   
   // define a temporal boundary to make sure that bridge state doen not update before t = 0. 
   // this will avoid eccentric evaluations
@@ -136,6 +136,7 @@ vseir_stoc_step <- "
 vseir_rmeasure <- "
   
   double m = rho*C; 
+  
   double v = m*(1 - rho + m*pow(psi,2)); 
   
   // a bit more book-keeeping 
@@ -204,11 +205,12 @@ zero_names <- c("C")
 
 
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
-rp_vals <- c(gamma = 365.25/5, sigma = 365.25/17, R0 = 10, eta = 1, 
+rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.01, pop0 = 219e6,  
+             nu = 1/80, mu = 1/80, beta1 = 0.11, pop0 = 219e6,  
              rho = 0.04, psi = 0.8,
-             k = 10, sigma_wn_scale = 25, bb_end_t = 20, b = 0.86, hack = 0.50)
+             k = 0.4, sigma_wn_scale = 365/30, 
+             bb_end_t = 16.99522, b = 0.86, hack = 0.50)
 
 
 
@@ -227,51 +229,6 @@ make_pomp_vseir <- function(data) {
          paramnames = rp_names,
          params = rp_vals) 
 }
-
-
-
-
-
-
-
-# run this code to quickly simulate dynamics at default parameter values
-if(FALSE) {
-  
-    # Constructing the pomp simulator
-    vseir_po <- make_pomp_vseir(data = tibble(year = seq(0, 20, by = 1/52), 
-                                            cases = NA))
-    
-    # Simulating the values 
-    vseir_sim <- vseir_po %>% 
-    simulate(., nsim = 50, format="d", include.data=FALSE) %.>% 
-    mutate(., cases = ifelse(year == min(year), NA, cases))
-    
-    # construct plot for visualizing latent state variables
-    vseir_sim %.>% 
-      as_tibble(.) %>% 
-      select(., year, V, S, E, I, R, N, cases, Reff, p) %.>% 
-      gather(., key = "Compartment", value = "Comp_count", -c(year), factor_key = TRUE) %.>% 
-      group_by(., year, Compartment) %.>% 
-      calculate_quantile(., var = Comp_count) %.>% 
-      ggplot(., 
-             aes(x = year)) +
-      geom_line(aes(y = `0.5`), color = "grey30") +
-      geom_ribbon(aes(ymin = `0.025`, ymax = `0.975`), fill = "grey30", alpha = 0.6) +
-      facet_wrap(.~Compartment, scales = "free") +
-      scale_x_continuous(breaks = seq(0, 20, by = 5)) +
-      project_theme +
-      cap_axes
-}
-
-
-
-
-
-
-
-
-
-
 
 
 

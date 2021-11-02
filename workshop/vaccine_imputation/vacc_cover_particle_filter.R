@@ -1,6 +1,7 @@
 # load the pomp pre-utils and additional package for pre-processing
 source("./VSEIR.R")
 library("lubridate")
+library("future.apply")
 
 # load and process data for vaccine imputation
 mumps_weekly_case_reports <- (
@@ -30,17 +31,20 @@ mumps_weekly_case_reports <- (
     mutate(., 
            year_val = year(PeriodMidDate), 
            week_val = week(PeriodMidDate), 
-           year = (year_val-1968)+week_val/52.25) %.>% 
+           year = (year_val-1968)+week_val/52
+           ) %.>%  
     select(., PeriodMidDate, year, cases) %.>% 
     # add a missing row for pomp
     bind_rows(., 
               tibble(PeriodMidDate = NA, 
                      year = 0, 
                      cases = NA)
-    ) %.>% 
-    arrange(., year)
-    
-  )
+    )  %.>% 
+    arrange(., year) %.>% 
+    mutate(., 
+           year = seq(0, 17, length.out = nrow(.)))
+)
+
 
 
 if(FALSE) {
@@ -56,43 +60,53 @@ mumps_weekly_case_reports %.>%
 # define a pomp object suing incidence data 
 po_vseir <- (
   mumps_weekly_case_reports %.>% 
-  select(., -PeriodMidDate) %.>% 
   make_pomp_vseir(.)
   )
 
-# check if the data was properly loaded
-# spy(po_vseir)
+# moving the end of the brownian bridge to suite the time data
+test_sim <- po_vseir %.>% 
+  simulate(., 
+           nsim = 50, 
+           include.data = TRUE, format = "d", seed = 986747881L) %.>% 
+  mutate(., cases = ifelse(year == 0, NA, cases))
+  
 
-# generate a particle filter object for the given pomp object
-pfilter_vseir <- (
-  po_vseir %.>% 
-  pfilter(., 
-          Np = 1e3, 
-          params = rp_vals, 
-          dmeasure = Csnippet(vseir_dmeasure),
-          paramnames = rp_names, 
-          statenames = state_names)
-  )
-
-
-logLik(pfilter_vseir)
-
-plot(pfilter_vseir)
+test_cases <- test_sim %.>%     
+  select(., year, `.id`, cases) %.>% 
+  mutate(., 
+         ds = ifelse(`.id` == "data", "data", "simulation"))
 
 
-
-
-
-
-
+test_cases %.>%  
+  ggplot(., aes(x = year, y = cases, group = `.id`, colour = ds)) +
+  geom_line() +
+  labs(y = "Cases", 
+       x = "Time (Year)", 
+       colour = "") +
+  scale_colour_manual(values = c("grey30", "#A83279")) +
+  project_theme + 
+  cap_axes
 
 
 
-
-
-
-
-
+# other compartments
+test_sim %.>% 
+  filter(., 
+         `.id` != "data") %.>% 
+  select(., year, V, S, E, I, R, N, cases, Reff, p) %.>% 
+  gather(., key = "Compartment", value = "Comp_count", -c(year), factor_key = TRUE) %.>% 
+  group_by(., year, Compartment) %.>% 
+  calculate_quantile(., var = Comp_count) %.>% 
+  ggplot(., 
+         aes(x = year)) +
+  geom_line(aes(y = `0.5`), color = "#A83279") +
+  geom_ribbon(aes(ymin = `0.025`, ymax = `0.975`), fill = "#A83279", alpha = 0.6) +
+  labs(y = "Latent state value", 
+       x = "Time (Year)") +
+  facet_wrap(.~Compartment, scales = "free") +
+  scale_x_continuous(breaks = seq(0, 20, by = 5)) +
+  project_theme +
+  cap_axes
 
 
 
