@@ -3,7 +3,7 @@ source("../../00/src.R", chdir = TRUE)
 # Defing the pomp object -------------------------------------------------------------------------------------
 
 # process model: stochastic implementation 
-vseir_stoc_step <- "
+vsei_stoc_step <- "
   
   // make normal random draws for the Brownian bridge
   double dw = rnorm(0, dt*sigma_wn_scale);
@@ -36,9 +36,6 @@ vseir_stoc_step <- "
   }
   
   
-  // total population size
-  N = S + E + I + R + V; 
-  
   /*===== Prelimnary definitions ======*/
   double r_births[2];
   double dN_births[2];
@@ -55,23 +52,20 @@ vseir_stoc_step <- "
   double r_fromI[2]; 
   double dN_fromI[2]; 
   
-  double r_fromR[1]; 
-  double dN_fromR[1]; 
-  
   
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
   double beta = beta0*(1-beta1*sin(2*M_PI*t));
 
-  double lambda = (beta/N)*(I + eta); 
+  double lambda = (beta/pop)*(I + eta); 
   
   
-  Reff = (S/N)*R0*(1-beta1*sin(2*M_PI*t));
+  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*t));
   
   /*======== Rate matrix =============*/ 
   /* Birth flux rates - vaccinated and unvaccinated births */
-  r_births[0] = nu*N*((1-alpha)*p); r_births[1] = nu*N*(1-(1-alpha)*p); 
+  r_births[0] = nu*pop*((1-alpha)*p); r_births[1] = nu*pop*(1-(1-alpha)*p); 
   
   /* from V compartment */
   r_fromV[0] = mu;
@@ -84,9 +78,6 @@ vseir_stoc_step <- "
   
   /* from I compartment */
   r_fromI[0] = gamma; r_fromI[1] = mu;
-  
-  /* from R compartment */
-  r_fromR[0] = mu;
   
   
   /*======= Drawing Births and importation from a Poisson distribution =====*/ 
@@ -106,9 +97,6 @@ vseir_stoc_step <- "
   /*Draws: Infectious*/
   reulermultinom(2, I, &r_fromI[0], dt, &dN_fromI[0]);
 
-  /*Draws: Recovered*/
-  reulermultinom(1, R, &r_fromR[0], dt, &dN_fromR[0]);
-
   
   /*====== System of Differential equations =====*/
   /*Compartmental shifts: Susceptible*/
@@ -123,9 +111,6 @@ vseir_stoc_step <- "
   /*Compartmental shifts: Infectious*/
   I += dN_fromE[0] - dN_fromI[0] - dN_fromI[1];
   
-  /*Compartmental shifts: Recovered*/
-  R += dN_fromI[0] - dN_fromR[0];
-  
   /*True incidence: dummy variable*/
   C += dN_fromI[0];
   
@@ -133,7 +118,7 @@ vseir_stoc_step <- "
 
 # Measurement model: Poisson 
 # Drawing from the measurement process
-vseir_rmeasure <- "
+vsei_rmeasure <- "
   
   double m = rho*C; 
   
@@ -146,7 +131,7 @@ vseir_rmeasure <- "
 "
 
 # Evaluating the density from the measurement process
-vseir_dmeasure <- "
+vsei_dmeasure <- "
   double m = rho*C; 
   double v = m*(1 - rho + m*pow(psi,2)); 
   
@@ -160,46 +145,36 @@ vseir_dmeasure <- "
   }
 "
 
-vseir_rinit <- "
-  
-  //initializing the system at the endemic equilibrium
-  double beta0 = (R0*gamma*(sigma+mu))/sigma;
-  
-  double See = pop0/R0;
-  double Eee = pop0*((mu*(mu+gamma))/(beta0*sigma))*(R0-1);
-  double Iee = pop0*(mu/sigma)*(R0-1);
-  double Ree = pop0 - See - Eee - Iee;
+vsei_rinit <- "
   
   // latent states
   V = 0; 
-  S = nearbyint(See);
-  E = nearbyint(Eee);
-  I = nearbyint(Iee);
-  R = nearbyint(Ree);
+  S = nearbyint(pop*S_0);
+  E = nearbyint(pop*E_0);
+  I = nearbyint(pop*I_0);
   
   // observable state
   C = 0;
   
-  // population size
-  N = S + E + I + R + V;
   
   // brownian bridge variable
-  B = 0;
+  B = B_0;
   
   // vaccine coverage
-  p = 0; 
+  p = p_0; 
   
   // effective reproductive number
-  Reff =  (S/N)*R0;
+  Reff =  (S/pop)*R0;
 " 
 
 
 # State names:
-state_names <- c("V", "S", "E", "I", "R", "C", "N", "B", "p", "Reff")
+state_names <- c("V", "S", "E", "I", "C", "B", "p", "Reff")
 
 # Parameter names:
 rp_names <- c("sigma", "gamma", "R0", "eta", "nu", "mu", "alpha",
-              "beta1", "pop0", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack")
+              "beta1", "pop", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack", 
+              "S_0", "E_0", "I_0", "B_0", "p_0")
 
 # Variables to set to zero at every integration step or every data step?
 zero_names <- c("C") 
@@ -208,28 +183,35 @@ zero_names <- c("C")
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.11, pop0 = 219e6,  
+             nu = 1/80, mu = 1/80, beta1 = 0.11, pop = 219e6,  
              rho = 0.04, psi = 0.8,
              k = 0.4, sigma_wn_scale = 365/30, 
-             bb_end_t = 16.99522, b = 0.86, hack = 0.50)
+             bb_end_t = 16.99522, b = 0.86, hack = 0.50, 
+             S_0 = 1/10, E_0 = 0.0004003011, I_0 = 0.0001539356, 
+             B_0 = 0, p_0 = 0)
 
 
 
-make_pomp_vseir <- function(data) {
+make_pomp_vsei <- function(data) {
   
   data %.>% 
     pomp(.,
-         t0 = 0, 
+         t0 = -60, 
          times = "year",
-         rprocess = euler(Csnippet(vseir_stoc_step), delta.t = (1/365.25)), 
-         rinit = Csnippet(vseir_rinit), 
-         dmeasure = Csnippet(vseir_dmeasure), 
-         rmeasure = Csnippet(vseir_rmeasure), 
+         rprocess = euler(Csnippet(vsei_stoc_step), delta.t = (1/365.25)), 
+         rinit = Csnippet(vsei_rinit), 
+         dmeasure = Csnippet(vsei_dmeasure), 
+         rmeasure = Csnippet(vsei_rmeasure), 
          accumvars = zero_names, 
          statenames = state_names, 
          paramnames = rp_names,
          params = rp_vals) 
 }
+
+
+
+
+
 
 
 
