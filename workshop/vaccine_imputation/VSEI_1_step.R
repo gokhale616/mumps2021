@@ -14,12 +14,12 @@ vsei_stoc_step <- "
 
   // update the brownian bridge here
   // add the curvature 
-  if (t < 0) {
+  if ((my_t+t) < 0) {
     B += 0; 
      r = 0;
   } else {
-      B += ((-B)/(bb_end_t-t) + dw); 
-      r  = (pow((t/bb_end_t), k) + B);
+      B += ((-B)/(bb_end_t-(my_t+t)) + dw); 
+      r  = (pow(((my_t+t)/bb_end_t), k) + B);
   }
   
 
@@ -27,7 +27,7 @@ vsei_stoc_step <- "
   // add a couple of conditions to make sure that the treated bb stays within the interval [0,b]
   // maybe a logit max function can be used here??!
   
-  if((bb_end_t-t) < hack || r > b) {
+  if((bb_end_t-(my_t+t)) < hack || r > b) {
     p = b;
   } else if (r < 0) {
       p =  0;
@@ -56,12 +56,12 @@ vsei_stoc_step <- "
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
-  double beta = beta0*(1-beta1*sin(2*M_PI*t));
+  double beta = beta0*(1-beta1*sin(2*M_PI*(my_t+t)));
 
   double lambda = (beta/pop)*(I + eta); 
   
   
-  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*t));
+  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*(my_t+t)));
   
   /*======== Rate matrix =============*/ 
   /* Birth flux rates - vaccinated and unvaccinated births */
@@ -149,9 +149,9 @@ vsei_rinit <- "
   
   // latent states
   V = 0; 
-  S = nearbyint(pop*S_0);
-  E = nearbyint(pop*E_0);
-  I = nearbyint(pop*I_0);
+  S = S_0;
+  E = E_0;
+  I = I_0;
   
   // observable state
   C = 0;
@@ -174,21 +174,24 @@ state_names <- c("V", "S", "E", "I", "C", "B", "p", "Reff")
 # Parameter names:
 rp_names <- c("sigma", "gamma", "R0", "eta", "nu", "mu", "alpha",
               "beta1", "pop", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack", 
-              "S_0", "E_0", "I_0", "B_0", "p_0")
+              "S_0", "E_0", "I_0", "B_0", "p_0", "my_t")
 
 # Variables to set to zero at every integration step or every data step?
 zero_names <- c("C") 
 
 
+pop_val <- 219e6
+
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.11, pop = 219e6,  
+             nu = 1/80, mu = 1/80, beta1 = 0.11, pop = pop_val,  
              rho = 0.04, psi = 0.8,
              k = 0.4, sigma_wn_scale = 365/30, 
              bb_end_t = 16.99522, b = 0.86, hack = 0.50, 
-             S_0 = 1/10, E_0 = 0.0004003011, I_0 = 0.0001539356, 
-             B_0 = 0, p_0 = 0)
+             S_0 = round(1/10*pop_val), E_0 = round(0.0004003011*pop_val), 
+             I_0 = round(0.0001539356*pop_val), 
+             B_0 = 0, p_0 = 0, my_t = 0)
 
 
 
@@ -196,7 +199,7 @@ make_pomp_vsei <- function(data) {
   
   data %.>% 
     pomp(.,
-         t0 = -60, 
+         t0 = 0, 
          times = "year",
          rprocess = euler(Csnippet(vsei_stoc_step), delta.t = (1/365.25)), 
          rinit = Csnippet(vsei_rinit), 

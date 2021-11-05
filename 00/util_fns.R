@@ -38,6 +38,13 @@ calculate_quantile <- function(grouped_data, var, p = c(0.025, 0.5, 0.975)) {
 }
 
 
+# this is a convenience function to gather model compartments
+gather_comp_1_sim <- function(sim_data) {
+  sim_data %.>% 
+    select(., -c(`.id`, C)) %.>% 
+    gather(., key = "Comp", value = "value", -year) 
+}
+
 
 # function to calculate the AICc for a given loglikilhood
 calculate_aic <- function(loglik, npar) {

@@ -62,7 +62,7 @@ vseir_stoc_step <- "
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
-  double beta = beta0*(1-beta1*sin(2*M_PI*t));
+  double beta = beta0*(1-beta1*sin(2*M_PI*(t-phi)/1.));
 
   double lambda = (beta/N)*(I + eta); 
   
@@ -199,27 +199,29 @@ state_names <- c("V", "S", "E", "I", "R", "C", "N", "B", "p", "Reff")
 
 # Parameter names:
 rp_names <- c("sigma", "gamma", "R0", "eta", "nu", "mu", "alpha",
-              "beta1", "pop0", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack")
+              "beta1", "phi", "pop0", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack")
 
 # Variables to set to zero at every integration step or every data step?
 zero_names <- c("C") 
 
 
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
+# defaults are visually a good fit to the data! 
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.11, pop0 = 219e6,  
-             rho = 0.04, psi = 0.8,
-             k = 0.4, sigma_wn_scale = 365/30, 
-             bb_end_t = 16.99522, b = 0.86, hack = 0.50)
+             nu = 1/80, mu = 1/80, beta1 = 0.13, pop0 = 219e6,  
+             rho = 0.06, psi = 0.8, phi = 0.25, 
+             k = 0.5, sigma_wn_scale = 365/25, 
+             bb_end_t = 17, b = 0.86, hack = 0.50)
 
-
+# c("beta1", "phi", "R0", "sigma", "k", "rho", "psi", "sigma_wn_scale")
+# c(0.13, 0.25, 10, 365.25/13, 0.5, 0.06, 0.8, 365.25/25)
 
 make_pomp_vseir <- function(data) {
   
   data %.>% 
     pomp(.,
-         t0 = 0, 
+         t0 = -60, 
          times = "year",
          rprocess = euler(Csnippet(vseir_stoc_step), delta.t = (1/365.25)), 
          rinit = Csnippet(vseir_rinit), 
