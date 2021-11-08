@@ -129,6 +129,9 @@ vseir_stoc_step <- "
   /*True incidence: dummy variable*/
   C += dN_fromI[0];
   
+  //Rprintf(\"V = %lg, mu_V = %lg, p = %lg, v_births = %lg, uv_births = %lg\\n\", 
+           t, V, dN_fromV[0], p, dN_births[0], dN_births[1]);
+  
 "
 
 # Measurement model: Poisson 
@@ -221,7 +224,7 @@ make_pomp_vseir <- function(data) {
   
   data %.>% 
     pomp(.,
-         t0 = -60, 
+         t0 = 0, 
          times = "year",
          rprocess = euler(Csnippet(vseir_stoc_step), delta.t = (1/365.25)), 
          rinit = Csnippet(vseir_rinit), 
@@ -233,8 +236,10 @@ make_pomp_vseir <- function(data) {
          params = rp_vals) 
 }
 
+if(FALSE){
 
-
-
-
-
+tibble(cases = NA, 
+       year = seq(0, 52/52, 1/52)) %.>% 
+  make_pomp_vseir(.) %.>% 
+  simulate(., nsim = 1, include.data = FALSE, format = "d", seed = 986747881L) 
+}

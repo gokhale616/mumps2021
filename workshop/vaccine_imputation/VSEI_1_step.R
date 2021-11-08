@@ -4,6 +4,8 @@ source("../../00/src.R", chdir = TRUE)
 
 # process model: stochastic implementation 
 vsei_stoc_step <- "
+  // redefine time by using the user defined variable
+  double usr_t = (t+obs_t); 
   
   // make normal random draws for the Brownian bridge
   double dw = rnorm(0, dt*sigma_wn_scale);
@@ -11,15 +13,15 @@ vsei_stoc_step <- "
   // define a temporal boundary to make sure that bridge state doen not update before t = 0. 
   // this will avoid eccentric evaluations
   double r;
-
+  
   // update the brownian bridge here
   // add the curvature 
-  if ((my_t+t) < 0) {
+  if (usr_t < 0 || (bb_end_t - usr_t) < hack) {
     B += 0; 
      r = 0;
   } else {
-      B += ((-B)/(bb_end_t-(my_t+t)) + dw); 
-      r  = (pow(((my_t+t)/bb_end_t), k) + B);
+      B += ((-B)/(bb_end_t - usr_t) + dw); 
+      r  = (pow((usr_t/bb_end_t), k) + B);
   }
   
 
@@ -27,7 +29,7 @@ vsei_stoc_step <- "
   // add a couple of conditions to make sure that the treated bb stays within the interval [0,b]
   // maybe a logit max function can be used here??!
   
-  if((bb_end_t-(my_t+t)) < hack || r > b) {
+  if((bb_end_t - usr_t) < hack || r > b) {
     p = b;
   } else if (r < 0) {
       p =  0;
@@ -56,12 +58,12 @@ vsei_stoc_step <- "
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
-  double beta = beta0*(1-beta1*sin(2*M_PI*(my_t+t)));
+  double beta = beta0*(1-beta1*sin(2*M_PI*usr_t));
 
   double lambda = (beta/pop)*(I + eta); 
   
   
-  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*(my_t+t)));
+  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*usr_t));
   
   /*======== Rate matrix =============*/ 
   /* Birth flux rates - vaccinated and unvaccinated births */
@@ -114,6 +116,9 @@ vsei_stoc_step <- "
   /*True incidence: dummy variable*/
   C += dN_fromI[0];
   
+  //Rprintf(\"usr_t = %lg, S = %lg, V = %lg, mu_V = %lg, p = %lg, v_births = %lg, uv_births = %lg\\n\", 
+  //          usr_t, S, V, dN_fromV[0], p, dN_births[0], dN_births[1]);
+  
 "
 
 # Measurement model: Poisson 
@@ -148,7 +153,7 @@ vsei_dmeasure <- "
 vsei_rinit <- "
   
   // latent states
-  V = 0; 
+  V = V_0; 
   S = S_0;
   E = E_0;
   I = I_0;
@@ -174,7 +179,7 @@ state_names <- c("V", "S", "E", "I", "C", "B", "p", "Reff")
 # Parameter names:
 rp_names <- c("sigma", "gamma", "R0", "eta", "nu", "mu", "alpha",
               "beta1", "pop", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack", 
-              "S_0", "E_0", "I_0", "B_0", "p_0", "my_t")
+              "V_0", "S_0", "E_0", "I_0", "B_0", "p_0", "obs_t")
 
 # Variables to set to zero at every integration step or every data step?
 zero_names <- c("C") 
@@ -185,13 +190,16 @@ pop_val <- 219e6
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.11, pop = pop_val,  
+             nu = 1/80, mu = 1/80, beta1 = 0.15, pop = pop_val,  
              rho = 0.04, psi = 0.8,
              k = 0.4, sigma_wn_scale = 365/30, 
              bb_end_t = 16.99522, b = 0.86, hack = 0.50, 
-             S_0 = round(1/10*pop_val), E_0 = round(0.0004003011*pop_val), 
+             V_0 = 0,
+             S_0 = round(1/10*pop_val), 
+             E_0 = round(0.0004003011*pop_val), 
              I_0 = round(0.0001539356*pop_val), 
-             B_0 = 0, p_0 = 0, my_t = 0)
+             B_0 = 0, p_0 = 0, 
+             obs_t = 0)
 
 
 
