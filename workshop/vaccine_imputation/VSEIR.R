@@ -1,5 +1,4 @@
-#loading packages####
-source("../../00/src.R", chdir = TRUE)
+
 # Defing the pomp object -------------------------------------------------------------------------------------
 
 # process model: stochastic implementation 
@@ -130,7 +129,7 @@ vseir_stoc_step <- "
   C += dN_fromI[0];
   
   //Rprintf(\"V = %lg, mu_V = %lg, p = %lg, v_births = %lg, uv_births = %lg\\n\", 
-           t, V, dN_fromV[0], p, dN_births[0], dN_births[1]);
+  //          t, V, dN_fromV[0], p, dN_births[0], dN_births[1]);
   
 "
 
@@ -224,7 +223,7 @@ make_pomp_vseir <- function(data) {
   
   data %.>% 
     pomp(.,
-         t0 = 0, 
+         t0 = -60, 
          times = "year",
          rprocess = euler(Csnippet(vseir_stoc_step), delta.t = (1/365.25)), 
          rinit = Csnippet(vseir_rinit), 

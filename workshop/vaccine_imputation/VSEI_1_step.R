@@ -1,5 +1,3 @@
-#loading packages####
-source("../../00/src.R", chdir = TRUE)
 # Defing the pomp object -------------------------------------------------------------------------------------
 
 # process model: stochastic implementation 

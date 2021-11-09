@@ -1,6 +1,6 @@
+source("./process_tycho_data.R")
 source("./VSEI_1_step.R", chdir = TRUE)
-library("lubridate")
-library("future.apply")
+
 # load and process data for vaccine imputation - 
 # this was done here because we want to use the time variable will be 
 # used in few of the function definitions below
@@ -48,7 +48,6 @@ mumps_weekly_case_reports <- (
 
 
 # this is a pomp object that simulates 1 step in the future and it also preserves the preceding time-step
-
 define_time_po_1_step <- function(from = 0, to = 1/52) {
 
   tibble(year = c(from, to), 
@@ -63,9 +62,8 @@ po_1_step <- define_time_po_1_step()
 
 # this function converts updated states into parameter vectors and appends it with the randomly generated the 
 # curvature parameter
- 
 gen_param_state_vals <- function(updated_states = fugazi_state0, 
-                                  n_particles = 10) {
+                                 n_particles = 10) {
   
   param_replicate_matrix(param_v = updated_states, n = n_particles) %.>% 
     t(.) %.>% 
@@ -76,14 +74,14 @@ gen_param_state_vals <- function(updated_states = fugazi_state0,
 
 
 # this is function simulates particles one step forward 
-sim_particles_one_step <- function(state_param_array, 
+sim_particles_one_step <- function(state_param_matrix, 
                                    default_p_vals = rp_vals) {
   
-  map_dfr(1:nrow(state_param_array), function(c) {
+  map_dfr(1:nrow(state_param_matrix), function(c) {
     
     # pulls and sets the the param vectory to simulate from 
     particle_configuration <- (
-      state_param_array %.>% 
+      state_param_matrix %.>% 
         slice(., c) %.>% 
         unlist(.) %.>% 
         sim_p_vals(., default_p_vals = default_p_vals)
@@ -106,8 +104,74 @@ sim_particles_one_step <- function(state_param_array,
   
 }
 
+# this function normalizes the weights
+normalize_particle_weights <- function(weights) {
+  weights/sum(weights)
+}
 
-simultate_n_one_step <- function(n_particles) {
+
+
+
+
+# this function re-samples from the particles using the filtering distribution
+resample_particle_indices <- function(j_norm_weights) {
+  
+  # number of particles
+  j_particles <- length(j_norm_weights)
+  
+  
+  # cumulative sum over normalized weights (wn)
+  j_cumsum_wn <- cumsum(j_norm_weights)
+  
+  # re-assignment of the index
+  # initial draw from a uniform distribution
+  u <- c(runif(1, max = 1/j_particles), rep(NA, times = (j_particles-1)))
+  
+  # generate evenly spaced sampling points 
+  u <- map_dbl(1:j_particles, function(c) {ifelse(c == 1, u[1], u[1]+(c-1)*1/j_particles)})
+  
+  # produce a vector of resampling indices to populate
+  k_j <- rep(NA, j_particles)
+  # initialize the set of raw indices at one 
+  p = 1  
+  
+  for(j in 1:j_particles) {
+    
+    while(u[j] > j_cumsum_wn[p]) {
+      p <- p + 1
+    }
+    # assign the re-sampling index
+    k_j[j] <- p
+  }
+  
+  # return indices used to sample from the particle population
+  k_j
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# This is still in progress
+#simultate_n_one_step <- function(n_particles) {
   
   # use this to generate the time variable to provide to the one step simulator
   year_val <- mumps_weekly_case_reports$year
@@ -176,11 +240,19 @@ simultate_n_one_step <- function(n_particles) {
   colnames(current_states) <- c("year", final_statenames, "obs_t")
   
   current_states
-}
+#}
 
 
 
 
+##############################################################################################################
+####################################### test codes ###########################################################
+##############################################################################################################
+
+
+
+
+# fugazi weigths
 
 
 
@@ -208,6 +280,10 @@ tic()
 
 toc()
 }
+
+
+
+
 
 
 
