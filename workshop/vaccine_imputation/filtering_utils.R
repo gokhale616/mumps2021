@@ -1,52 +1,6 @@
 source("./process_tycho_data.R")
 source("./VSEI_1_step.R", chdir = TRUE)
 
-# load and process data for vaccine imputation - 
-# this was done here because we want to use the time variable will be 
-# used in few of the function definitions below
-mumps_weekly_case_reports <- (
-  read_csv("../../raw_data/tycho_20201118-150400.csv") %.>%
-    # select relevant variables for forming the time series
-    select(.,
-           PeriodStartDate, 
-           PeriodEndDate,
-           CountValue) %.>% 
-    # find week midpoints for plotting convenience
-    mutate(.,  
-           PeriodMidDate = PeriodStartDate + (PeriodEndDate-PeriodStartDate)/2
-    ) %.>% 
-    select(., 
-           -c(PeriodStartDate, PeriodEndDate)) %.>% 
-    # summarize case report volume over all states
-    group_by(., 
-             PeriodMidDate) %.>% 
-    summarise(., cases = sum(CountValue, na.rm = TRUE)) %.>% 
-    ungroup(.) %.>% 
-    arrange(., 
-            PeriodMidDate) %.>% 
-    # define a period to run the analysis
-    filter(., 
-           PeriodMidDate > as.Date("1967-12-01") & PeriodMidDate < as.Date("1985-01-01")) %.>% 
-    # define a year variable for pomp
-    mutate(., 
-           year_val = year(PeriodMidDate), 
-           week_val = week(PeriodMidDate), 
-           year = (year_val-1968)+week_val/52
-    ) %.>%  
-    select(., PeriodMidDate, year, cases) %.>% 
-    # add a missing row for pomp
-    bind_rows(., 
-              tibble(PeriodMidDate = NA, 
-                     year = 0, 
-                     cases = NA)
-    )  %.>% 
-    arrange(., year) %.>% 
-    mutate(., 
-           year = seq(0, 17, length.out = nrow(.)))
-)
-
-
-
 # this is a pomp object that simulates 1 step in the future and it also preserves the preceding time-step
 define_time_po_1_step <- function(from = 0, to = 1/52) {
 
@@ -63,12 +17,12 @@ po_1_step <- define_time_po_1_step()
 # this function converts updated states into parameter vectors and appends it with the randomly generated the 
 # curvature parameter
 gen_param_state_vals <- function(updated_states = fugazi_state0, 
-                                 n_particles = 10) {
+                                 particles = 10) {
   
-  param_replicate_matrix(param_v = updated_states, n = n_particles) %.>% 
-    t(.) %.>% 
-    as_tibble(.) %.>% 
-    mutate(., k = rtrunc(n(), spec = "norm", a = 0, b = 15, mean = 4, sd = 1)) 
+  updated_states %.>% 
+    mutate(., 
+           k = rtrunc(n(), spec = "norm", a = 0, b = 15, mean = 4, sd = 1)
+           ) 
   
 }
 
@@ -78,15 +32,15 @@ sim_particles_one_step <- function(state_param_matrix,
                                    default_p_vals = rp_vals) {
   
   map_dfr(1:nrow(state_param_matrix), function(c) {
-    
-    # pulls and sets the the param vectory to simulate from 
+    # browser()
+    # pulls and sets the the param vector to simulate from 
     particle_configuration <- (
       state_param_matrix %.>% 
         slice(., c) %.>% 
         unlist(.) %.>% 
         sim_p_vals(., default_p_vals = default_p_vals)
     )
-    
+    # browser()
     # simulates an updated state
     particle_configuration %.>% 
       simulate(object = po_1_step, 
@@ -94,9 +48,9 @@ sim_particles_one_step <- function(state_param_matrix,
                format = "d") %.>% 
       slice(., n()) %.>% 
       mutate(., 
-             particle_id = c, 
-             k = particle_configuration['k'])
-      
+             `.id` = c,
+             obs_t = NA) %.>% 
+      select(., -c(Reff, cases)) 
      
     
     
@@ -104,12 +58,26 @@ sim_particles_one_step <- function(state_param_matrix,
   
 }
 
+
+# filtering distribution
+over_dispersed_normal <- function(obs_cases, sim_true_cases, rho = 0.06, psi = 0.8) {
+  
+   # define mean and variance of the   standard normal distribution
+   m <- sim_true_cases*rho 
+   v <- m*(1 - rho + m*psi^2) 
+  
+  # a bit more book-keeping 
+  tol <- 1.0e-18 
+  
+  
+  dnorm(obs_cases, m, sqrt(v)+tol, log = TRUE)
+  }
+
+
 # this function normalizes the weights
 normalize_particle_weights <- function(weights) {
   weights/sum(weights)
 }
-
-
 
 
 
@@ -151,6 +119,108 @@ resample_particle_indices <- function(j_norm_weights) {
 }
 
 
+# load initial conditions
+load("./init_for_vsei.rds")
+
+pfilter_once <- function(case_data = mumps_weekly_case_reports %.>% 
+                           select(., year, cases), 
+                         j_particles = 2, 
+                         init_states = init_for_vsei %<>% 
+                           unlist(.)
+                         ) {
+  
+  
+  # Generate a data frame of current states.
+  # the first row of this data frame is always going to be initial conditions
+  # we always start with 1 - for all particles
+  current_states <- (
+    tibble(year  = rep(case_data$year[1], times = j_particles),
+           `.id` = 1:j_particles, 
+           V_0   = init_states["V"],
+           S_0   = init_states["S"],
+           E_0   = init_states["E"], 
+           I_0   = init_states["I"], 
+           C_0   = 0, 
+           B_0   = 0, 
+           p_0   = 0, 
+           obs_t = case_data$year[1])
+  )
+  
+  
+  for(n in 2:nrow(case_data)) {
+      
+    # add the parameters to simulate from 
+    param_state <- (
+      current_states  %.>%  
+        filter(., year == case_data$year[(n-1)]) %.>% 
+        gen_param_state_vals(., particles = j_particles)
+    )
+    
+    
+    # using these param-state values, simulate one step forward
+    updated_states <- (
+      param_state %.>% 
+      sim_particles_one_step(.) %.>%  
+      mutate(., 
+             year = case_data$year[n], 
+             obs_t = case_data$year[n]
+      )
+      )
+    
+    # add data and and generate weights
+    weights <- (
+      updated_states %.>%
+      right_join(.,
+                 case_data %.>% 
+                   filter(., year == case_data$year[n]), 
+                 by = "year"
+                 ) %.>% 
+      mutate(., 
+             weights = over_dispersed_normal(cases, C)) %.>% 
+      select(., weights) %.>% 
+      unlist(.) %.>%   
+      unname(.) 
+      ) 
+
+    # normalize weights
+    norm_weigths <- normalize_particle_weights(weights) 
+    
+    # identify new indices
+    filtered_indices <- resample_particle_indices(norm_weigths)
+    
+    # sampled using filtered indices
+    resampled_updated_states <- (
+      updated_states %.>% 
+        slice(., 
+              filtered_indices)
+    ) 
+    
+    # change the colnames to match the colnames of 
+    colnames(resampled_updated_states) <- colnames(current_states)
+    
+    # update current state 
+    current_states <- (
+      current_states %.>% 
+        bind_rows(., 
+                  resampled_updated_states)
+    )
+  }
+  
+  # reset col-names
+  colnames(current_states) <- c("year", ".id", "V", "S", "E", "I", "C", "B", "p", "obs_t")
+  
+  
+}
+
+
+
+##############################################################################################################
+####################################### test codes ###########################################################
+##############################################################################################################
+
+tic()
+test_n_j <- pfilter_once(j_particles = 30)
+toc()
 
 
 
@@ -169,9 +239,26 @@ resample_particle_indices <- function(j_norm_weights) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+if(FALSE) {
+##############################################################################################################
+########################################### junk #############################################################
+##############################################################################################################
 
 # This is still in progress
-#simultate_n_one_step <- function(n_particles) {
+simultate_n_one_step <- function() {
   
   # use this to generate the time variable to provide to the one step simulator
   year_val <- mumps_weekly_case_reports$year
@@ -182,40 +269,40 @@ resample_particle_indices <- function(j_norm_weights) {
   # it is required to have a row of initial conditions 
   current_states <- (
     tibble(year = year_val,
-           V_0 = c(0,                         na_string),
-           S_0 = c(round(1/10*219e6),         na_string),
-           E_0 = c(round(0.0004003011*219e6), na_string), 
-           I_0 = c(round(0.0001539356*219e6), na_string), 
-           B_0 = c(0,                         na_string), 
-           p_0 = c(0,                         na_string), 
-           obs_t = year_val, 
-           `.id` = 0)
+           V_0 = c(init_for_vsei["V"], na_string),
+           S_0 = c(init_for_vsei["S"], na_string),
+           E_0 = c(init_for_vsei["E"], na_string), 
+           I_0 = c(init_for_vsei["I"], na_string), 
+           B_0 = c(0,                  na_string), 
+           p_0 = c(0,                  na_string), 
+           C_0 = c(0,                  na_string), 
+           obs_t = year_val)
   )
   
   # names used for the outcome data-frame
   final_statenames <- (
     colnames(current_states)[2:(ncol(current_states)-1)] %.>% 
       str_remove(., pattern = "_0")
-    )
-
+  )
+  
+  # browser()
+  
   # across the time, check the integrate the following steps 
   for(i in 2:(length(na_string)+1)) {
     
-    browser()
+     # browser()
     
     # extract previousl states 
     states_vector <- (
       current_states %.>% 
         slice(., (i-1)) %.>% 
         unlist(.)
-      )
+    )
     
-    # generate the state-param array given a state vector 
-    param_states <- gen_param_state_vals(updated_states = states_vector, 
-                                         n_particles = n_particles)
-    
-    
-    
+    # # generate the state-param array given a state vector 
+    # param_states <- gen_param_state_vals(updated_states = states_vector, 
+    #                                      n_particles = n_particles)
+    # 
     
     simulated_step <- (
       current_states %.>% 
@@ -235,53 +322,66 @@ resample_particle_indices <- function(j_norm_weights) {
     
     
   } 
-  
+  # browser()
   # reset colnames
   colnames(current_states) <- c("year", final_statenames, "obs_t")
   
   current_states
-#}
+}
 
 
-
-
-##############################################################################################################
-####################################### test codes ###########################################################
-##############################################################################################################
-
-
-
-
-# fugazi weigths
 
 
 
 
 test_one_step_sim <- (
   simultate_n_one_step() %.>% 
+  select(., -obs_t)  %.>% 
   gather(., key = "comp", value = "value", -year) 
 )  
   
-
-
-if(FALSE) {
 tic()
-  test_one_step_sim %.>% 
+
+n_particles = 10
+
+test_one_step_sim_n <- mclapply(1:n_particles, function(c){
+  
+  simultate_n_one_step() %.>% 
+    select(., -obs_t)  %.>% 
+    gather(., key = "comp", value = "value", -year) %.>% 
     mutate(., 
-          value =  ifelse(.$comp %in% c("V", "S", "E", "I"), value/rp_vals["pop"], value)
-          ) %.>% 
+           `.id` = c)
+  
+}, mc.cores = 5) %.>% 
+  do.call(bind_rows, lapply(1:n_particles, function(x) {.[[x]]}))
+toc()
+
+
+
+tic()
+  test_one_step_sim_n %.>% 
+    filter(., comp != "B") %.>% 
+    select(., -`.id`) %.>% 
+    group_by(., year, comp) %.>% 
+    calculate_quantile(., var = value) %.>% 
+    mutate_at(.,
+              .vars = c("0.025", "0.5", "0.975"), 
+              .funs = function(x){
+                ifelse(.$comp %in% c("V", "S", "E", "I"), x/rp_vals["pop"], x)}
+              ) %.>% 
     ggplot(., 
-           aes(x = year, y = value)) +
-    geom_line() +
+           aes(x = year)) +
+    geom_line(aes(y = `0.5`)) +
+    geom_ribbon(aes(ymin = `0.025`, ymax = `0.975`), alpha = 0.6) +
     facet_wrap(.~comp, scales = "free") +
     scale_x_continuous(breaks = c(0 ,6, 12, 18), limits = c(0, 18)) +
     project_theme +
     cap_axes
 
 toc()
+
+
 }
-
-
 
 
 

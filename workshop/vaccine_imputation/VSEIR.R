@@ -66,7 +66,7 @@ vseir_stoc_step <- "
   double lambda = (beta/N)*(I + eta); 
   
   
-  Reff = (S/N)*R0*(1-beta1*sin(2*M_PI*t));
+  Reff = (S/N)*R0*(1-beta1*sin(2*M_PI*(t-phi)/1.));
   
   /*======== Rate matrix =============*/ 
   /* Birth flux rates - vaccinated and unvaccinated births */

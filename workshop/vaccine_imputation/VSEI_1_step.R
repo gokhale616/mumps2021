@@ -56,12 +56,12 @@ vsei_stoc_step <- "
   /*====== Auxilliary variables =======*/
   double beta0 = (R0*gamma*(sigma+mu))/sigma;
   
-  double beta = beta0*(1-beta1*sin(2*M_PI*usr_t));
+  double beta = beta0*(1-beta1*sin(2*M_PI*(usr_t-phi)/1.));
 
   double lambda = (beta/pop)*(I + eta); 
   
   
-  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*usr_t));
+  Reff = (S/pop)*R0*(1-beta1*sin(2*M_PI*(usr_t-phi)/.1));
   
   /*======== Rate matrix =============*/ 
   /* Birth flux rates - vaccinated and unvaccinated births */
@@ -176,7 +176,7 @@ state_names <- c("V", "S", "E", "I", "C", "B", "p", "Reff")
 
 # Parameter names:
 rp_names <- c("sigma", "gamma", "R0", "eta", "nu", "mu", "alpha",
-              "beta1", "pop", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack", 
+              "beta1", "phi", "pop", "rho", "psi", "k", "sigma_wn_scale", "bb_end_t", "b", "hack", 
               "V_0", "S_0", "E_0", "I_0", "B_0", "p_0", "obs_t")
 
 # Variables to set to zero at every integration step or every data step?
@@ -188,10 +188,10 @@ pop_val <- 219e6
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.15, pop = pop_val,  
-             rho = 0.04, psi = 0.8,
-             k = 0.4, sigma_wn_scale = 365/30, 
-             bb_end_t = 16.99522, b = 0.86, hack = 0.50, 
+             nu = 1/80, mu = 1/80, beta1 = 0.05, phi = 0.25, pop = pop_val,  
+             rho = 0.06, psi = 0.8,
+             k = 0.5, sigma_wn_scale = 365.25/25, 
+             bb_end_t = 17, b = 0.86, hack = 0.50, 
              V_0 = 0,
              S_0 = round(1/10*pop_val), 
              E_0 = round(0.0004003011*pop_val), 
