@@ -1,6 +1,6 @@
 source("./process_tycho_data.R")
 source("./VSEI_1_step.R", chdir = TRUE)
-
+set.seed(986747881L)
 # this is a pomp object that simulates 1 step in the future and it also preserves the preceding time-step
 define_time_po_1_step <- function(from = 0, to = 1/52) {
 
@@ -18,12 +18,16 @@ po_1_step <- define_time_po_1_step()
 # curvature parameter
 gen_param_state_vals <- function(updated_states = fugazi_state0, 
                                  particles = 10) {
-  
+
   updated_states %.>% 
-    mutate(., 
-           k = rtrunc(n(), spec = "norm", a = 0, b = 15, mean = 4, sd = 1)
-           ) 
-  
+    # mutate(., 
+    #        k              = rtrunc(n(), spec = "norm", a = 0, b = 15, mean = 4, sd = 1), 
+    #        sigma_wn_scale = rtrunc(n(), spec = "norm", a = 1, b = 30, mean = 17, sd = 1)
+    #        ) 
+    mutate(.,
+           k              = runif(n(), min = 0, max = 5),
+           sigma_wn_scale = runif(n(), min = 1, max = 50)
+           )
 }
 
 
@@ -31,7 +35,10 @@ gen_param_state_vals <- function(updated_states = fugazi_state0,
 sim_particles_one_step <- function(state_param_matrix, 
                                    default_p_vals = rp_vals) {
   
-  map_dfr(1:nrow(state_param_matrix), function(c) {
+  
+  
+  map_dfr(1:nrow(state_param_matrix),
+          function(c) {
     # browser()
     # pulls and sets the the param vector to simulate from 
     particle_configuration <- (
@@ -54,13 +61,13 @@ sim_particles_one_step <- function(state_param_matrix,
      
     
     
-  })
+  }) 
   
 }
 
 
 # filtering distribution
-over_dispersed_normal <- function(obs_cases, sim_true_cases, rho = 0.06, psi = 0.8) {
+over_dispersed_normal <- function(obs_cases, sim_true_cases, rho = 0.06, psi = 1.2) {
   
    # define mean and variance of the   standard normal distribution
    m <- sim_true_cases*rho 
@@ -126,8 +133,7 @@ pfilter_once <- function(case_data = mumps_weekly_case_reports %.>%
                            select(., year, cases), 
                          j_particles = 2, 
                          init_states = init_for_vsei %<>% 
-                           unlist(.)
-                         ) {
+                           unlist(.)) {
   
   
   # Generate a data frame of current states.
@@ -209,6 +215,7 @@ pfilter_once <- function(case_data = mumps_weekly_case_reports %.>%
   # reset col-names
   colnames(current_states) <- c("year", ".id", "V", "S", "E", "I", "C", "B", "p", "obs_t")
   
+  current_states
   
 }
 
@@ -219,30 +226,66 @@ pfilter_once <- function(case_data = mumps_weekly_case_reports %.>%
 ##############################################################################################################
 
 tic()
-test_n_j <- pfilter_once(j_particles = 30)
+filtered_traj_n_j <- pfilter_once(j_particles = 5000)
 toc()
 
+save(filtered_traj_n_j, file = "filtered_traj_n_j.rds")
+
+load(file = "filtered_traj_n_j.rds")
+
+imputed_vacc_coverage <- (
+  filtered_traj_n_j %.>% 
+  right_join(., 
+             by = "year",
+             mumps_weekly_case_reports %.>% 
+               select(., -cases))  %.>% 
+  select(., PeriodMidDate, p) %.>% 
+  group_by(., PeriodMidDate)  %.>% 
+  summarize(., 
+            median = median(p), 
+            mean = mean(p)) %.>% 
+  ungroup(.)  %.>% 
+  gather(., "statistic", "trace", -PeriodMidDate)  
+  )
+
+
+# defining an annual time of vaccine coverage
+imputed_vacc_coverage_fin <- (
+  imputed_vacc_coverage %.>%
+  mutate(.,
+         year = year(PeriodMidDate)) %.>%
+  group_by(., year, statistic) %.>%
+  mutate(.,
+         Weekly = trace,
+         Annual = mean(trace)) %.>%
+  ungroup(.) %.>% 
+  select(., -c(trace, year)) %.>%
+  gather(.,
+         key = "imputation_res", value = "trace", -c(PeriodMidDate, statistic))
+  )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+imputed_vacc_coverage_plt <- (
+  imputed_vacc_coverage_fin %.>%
+    ggplot(., aes(x = PeriodMidDate, y = trace)) +
+    geom_line(aes(colour = statistic), size = 0.8) +
+    labs(x = "Year",
+         y = "Imputed vaccine coverage",
+         colour = "Filtered\nstatistic")  +
+    facet_grid(rows = vars(imputation_res)) +  
+    project_theme +
+    scale_x_date(breaks = as.Date(c("1968-01-03", "1974-01-01", "1980-01-01", "1985-01-01")), 
+                 labels = date_format("%Y")) +
+    scale_y_continuous(limits = c(0, 0.86),
+                       breaks = c(0, 0.29, 0.57, 0.86)) +
+    # scale_colour_brewer(palette = "Dark2")+
+    scale_colour_manual(values = c("seagreen4", "firebrick3"))+
+    cap_axes +
+    theme(legend.position = c(0.1, 0.9)) +
+    guides(colour = guide_legend(direction = "horizontal", 
+                                 nrow = 2))
+  ) 
 
 
 

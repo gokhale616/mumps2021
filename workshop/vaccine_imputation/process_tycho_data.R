@@ -1,7 +1,7 @@
 #loading packages####
 source("../../00/src.R", chdir = TRUE)
 library("lubridate")
-library("future.apply")
+library("furrr")
 
 # load and process data for vaccine imputation
 mumps_weekly_case_reports <- (

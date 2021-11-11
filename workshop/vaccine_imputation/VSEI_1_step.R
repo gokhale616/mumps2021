@@ -188,7 +188,7 @@ pop_val <- 219e6
 # Using arbitrary values for the parameters (scale of integrator is expressed in years)
 rp_vals <- c(gamma = 365.25/5, sigma = 365.25/13, R0 = 10, eta = 1, 
              alpha = 0.0, 
-             nu = 1/80, mu = 1/80, beta1 = 0.05, phi = 0.25, pop = pop_val,  
+             nu = 1/80, mu = 1/80, beta1 = 0.13, phi = 0.25, pop = pop_val,  
              rho = 0.06, psi = 0.8,
              k = 0.5, sigma_wn_scale = 365.25/25, 
              bb_end_t = 17, b = 0.86, hack = 0.50, 
