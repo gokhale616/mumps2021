@@ -1,7 +1,7 @@
 # Load packages ----------------------------------------------------------------------------------------------
 
 lib_dep <- c("tidyverse", 
-             "pomp", "magrittr", "wrapr",
+             "pomp", "magrittr", "wrapr", "stringr",
              "readxl", "tictoc", "parallel", "subplex", 
              "LaplacesDemon", "cowplot", 
              "rootSolve", "GGally", "RColorBrewer", 
@@ -10,7 +10,12 @@ lib_dep <- c("tidyverse",
              "readxl", "socialmixr", "ggthemes", 
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
              "parallel", "nloptr", 
-             "lemon", "wesanderson")
+             "lemon", "wesanderson", 
+             "lubridate")
+
+
+
+
 
 # Assumes the use of processed data and no plots
 lib_dep_cl <- c("tidyverse", 

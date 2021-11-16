@@ -77,7 +77,8 @@ options(formatR.arrow=TRUE,width=90,
 source("00/src.R", chdir = TRUE)
 
 # all these are where the plot data are synthesized
-script_var <- c("data_cov_plot.R")
+script_var <- c("data_cov_plot.R", 
+                "imputed_vacc_plot.R")
 
 
 # plot load
@@ -94,9 +95,9 @@ plot(incidence_age_geog)
 
 @
 
-<<inc_data_line_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capIncLine', out.width = outwidth[3]>>=
+<<imputed_vacc_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capImpCoverage', out.width = outwidth[1]>>=
 
-plot(incidence_line_plt)
+plot(imputed_vacc_coverage)
 
 @
 

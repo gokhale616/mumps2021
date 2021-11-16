@@ -204,17 +204,6 @@ clean_demog_by_states_annually <- demog_by_states_annually %.>%
 
 time_to_filter <- min(demog_by_states_annually$Year)
 
-# merge demography and case data 
-
-mumps_demog_geog_annual <- complete_mumps_by_states_annual %.>%
-  filter(., 
-         Year > time_to_filter-1) %.>%
-  left_join(.,
-            clean_demog_by_states_annually, 
-            by = c("State", "Year")) %.>%
-  mutate(., Incidence = (Cases/Population)*1e5)
-
-save(mumps_demog_geog_annual, file = "../processed_data/mumps_demog_geog_annual.rds")
 
 if(FALSE) {  
 # trim the weekly data for fitting and anlysis 
@@ -244,9 +233,6 @@ save(mumps_inc_data_weekly, file = "../processed_data/mumps_inc_data_weekly.Rdat
 }
 
 
-message("NOTE :: data objects saved in '../processed_data'. To see intermediate objects run scripts individually.")
-
-rm(list = ls())
 
 
 

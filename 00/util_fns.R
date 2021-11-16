@@ -417,10 +417,10 @@ plot_covars <- function(covar_data, filter_from = 1950) {
   
   
   anno_data2 <- data.frame(Covariate = cov_levels_ai, 
-                           ycord = c(3.2e6, 0.65, 0.1, 0.1), 
+                           ycord = c(0.2, 0.50, 0.2, 0.2), 
                            lab = c("","bold(Case~Data)","",""), 
-                           y = c(3250000, 0.38, 0.08, 0.08), 
-                           x = 2016, 
+                           y = c(0.15, 0.15, 0.15, 0.15), 
+                           x = 2015, 
                            labs = c("bold(a)", "bold(b)", "bold(c)", "bold(d)")) 
   
   
@@ -448,6 +448,7 @@ plot_covars <- function(covar_data, filter_from = 1950) {
     scale_x_continuous(expand = c(0,0.005)) +
     scale_y_continuous(expand = c(0,0.005), labels = scientific) +
     project_theme + 
+    cap_axes +
     theme(strip.text.x = element_blank()) +
     guides(linetype = "none", 
            fill=guide_legend(nrow=2)) -> age_stratified_cov_plt
@@ -457,9 +458,11 @@ plot_covars <- function(covar_data, filter_from = 1950) {
   age_stratified_cov_plt <- age_stratified_cov_plt +
     theme(legend.position = "none")
   
+  # browser()
   # plot age independent covariates
   covar_data %>% 
-    select(Year, Births, p1, p2, eta_a) %>% 
+    select(Year, Births, p1, p2, eta_a) %>%
+    mutate(Births = Births/max(Births)) %>% 
     gather(key = "Covariate", value = "Value", -Year) %>% 
     mutate(Covariate = factor(case_when(Covariate == "Births" ~ cov_levels_ai[1],
                                         Covariate == "eta_a" ~ cov_levels_ai[2],
@@ -487,10 +490,14 @@ plot_covars <- function(covar_data, filter_from = 1950) {
          x = "") +
     facet_wrap(.~Covariate, nrow = 2, scales = "free") +
     scale_colour_manual(name = "Vaccine\nCoverage", labels = c("Observed","Interpolated"), 
-                        values = c("grey30", "#FFD92F")) +
-    scale_x_continuous(expand = c(0,0.005)) +
-    scale_y_continuous(expand = c(0,0.005)) +
+                        values = c("grey30", "#FF4B2B")) +
+    scale_x_continuous() +
+    scale_y_continuous(limits = c(0, 1), 
+                       breaks = c(0, 0.25, 0.5, 0.75, 1), 
+                       labels = scales::percent
+                       ) +
     project_theme +
+    cap_axes +
     theme(legend.spacing.y = unit(0., "cm"),
           panel.spacing.y = unit(1.75, "lines"), 
           strip.text.x = element_blank()) -> age_independent_cov_plt
@@ -507,7 +514,7 @@ plot_covars <- function(covar_data, filter_from = 1950) {
   plot(cov_plt_with_legend)
 }
 
-# plot_covars()
+# plot_covars(covar = mumps_covariates)
 
 plot_sweep_dynamics <- function(data, 
                                 filter_from = 1976,

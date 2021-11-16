@@ -226,7 +226,7 @@ pfilter_once <- function(case_data = mumps_weekly_case_reports %.>%
 ##############################################################################################################
 
 tic()
-filtered_traj_n_j <- pfilter_once(j_particles = 5000)
+filtered_traj_n_j <- pfilter_once(j_particles = 1000)
 toc()
 
 save(filtered_traj_n_j, file = "filtered_traj_n_j.rds")
@@ -289,7 +289,7 @@ imputed_vacc_coverage_plt <- (
 
 
 
-
+imputed_vacc_coverage_plt
 
 
 

@@ -40,7 +40,7 @@ abs_inc_plt <- (
     drop_na(.) %.>% 
     ggplot(.,
            aes(x = year, y = sqrt_cases)) +
-    geom_line(aes(colour = age_cohort), size = 1) +
+    geom_line(aes(colour = age_cohort), size = 0.8, alpha = 0.95) +
     # geom_area(aes(colour = age_cohort, fill = age_cohort), 
     #           position = position_dodge(), alpha = 0.3, size = 0.9) +
     labs(y = expression(paste(sqrt(Cases), phantom(100))),
@@ -209,31 +209,31 @@ set_map_data <- function(year_range) {
 }
 
 
-mumps_demog_geog_annual_1985_89 <- (
+mumps_demog_geog_annual_1985_91 <- (
   set_map_data(year_range = c(1985:1989))  
 ) 
   
 # mumps_demog_geog_annual_1985_89$Incidence %.>% max(., na.rm = TRUE)
 # mumps_demog_geog_annual_1985_89$Incidence %.>% min(., na.rm = TRUE)
 
-map_1985_89_plt <-  mumps_demog_geog_annual_1985_89 %.>% 
+map_1985_91_plt <-  mumps_demog_geog_annual_1985_91 %.>% 
   map_mumps(., breaks = c(2, 4, 6, 8))
 
 
 
-mumps_demog_geog_annual_2006_18 <- (
-  set_map_data(year_range = c(2006:2018))  
+mumps_demog_geog_annual_2006_12 <- (
+  set_map_data(year_range = c(2006:2012))  
 ) 
 
 # mumps_demog_geog_annual_2006_18$Incidence %.>% max(., na.rm = TRUE)
 # mumps_demog_geog_annual_2006_18$Incidence %.>% min(., na.rm = TRUE)
 
-map_2006_18_plt <-  mumps_demog_geog_annual_2006_18 %.>% 
+map_2006_12_plt <-  mumps_demog_geog_annual_2006_12 %.>% 
   map_mumps(., breaks = c(2, 4, 6, 8))
 
 
 
-map_grid_plt <- plot_grid(map_1985_89_plt, map_2006_18_plt, 
+map_grid_plt <- plot_grid(map_1985_91_plt, map_2006_12_plt, 
                           labels = c("D", "E"))
 
 
