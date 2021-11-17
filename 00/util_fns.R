@@ -469,10 +469,10 @@ plot_covars <- function(covar_data, filter_from = 1950) {
                                         Covariate == "p1" ~ cov_levels_ai[3],
                                         Covariate == "p2" ~ cov_levels_ai[4]), 
                               levels = cov_levels_ai), 
-           cond_colour_p = case_when(Covariate == cov_levels_ai[3] & Year > 1967 & Year < 1980 ~ TRUE,  
+           cond_colour_p = case_when(Covariate == cov_levels_ai[3] & Year > 1967 & Year < 1985 ~ TRUE,  
                                      Covariate == cov_levels_ai[4] & Year > 1988 & Year < 2000 ~ TRUE, 
                                      TRUE ~ FALSE), 
-           cond_colour_l = case_when(Covariate == cov_levels_ai[3] & Year > 1966 & Year < 1980 ~ TRUE,  
+           cond_colour_l = case_when(Covariate == cov_levels_ai[3] & Year > 1966 & Year < 1985 ~ TRUE,  
                                      Covariate == cov_levels_ai[4] & Year > 1987 & Year < 2000 ~ TRUE, 
                                      TRUE ~ FALSE)) %>%
     filter(Year > filter_from) %>%

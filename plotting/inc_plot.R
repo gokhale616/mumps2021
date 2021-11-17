@@ -90,14 +90,14 @@ inc_rate_plt <- (
                  colour = "grey30") +
     geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x, y = y+1.65), colour = "grey30", size = 2) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
     geom_text(data = anno_data_2, 
-              aes(label = label, x = x, y = y+1.65), colour = "grey30", size = 2) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
     labs(y = expression(paste(Cases~per~10^5, phantom(1000000))),
          x = "") +
     scale_x_continuous(#expand = c(0.000, 0.000), 
       breaks = gen_x_breaks) + 
-    scale_y_continuous(breaks = c(0, 3, 6, 9, 12), limits = c(0, 12)) +
+    scale_y_continuous(breaks = c(0, 3, 6, 9, 12), limits = c(0, 15)) +
     project_theme +
     # theme(axis.text.x = element_blank()) +
     cap_axes +
@@ -168,7 +168,7 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
     annotate(geom = "text", x = 0.4e6, y = 0.65e6, 
              label = mumps_geog$Year %.>% unique(.), 
              parse = TRUE, size = 3)+
-    scale_fill_gradient(low = "#F9D423", high = "#FF4E50", na.value = NA,
+    scale_fill_gradient(low = "#3a7bd5", high = "#FF4E50", na.value = NA,
                         breaks = breaks, 
                         limits = c(0, 10))+
     project_theme +
@@ -189,6 +189,7 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
   
 }
 
+#"#F9D423"
 
 set_map_data <- function(year_range) {
   
@@ -256,19 +257,6 @@ incidence_line_plt <- mumps_case_reports_l %.>%
 
 
 
-# contact matrix
-contact_plt <- (
-  contact_matrix %.>% 
-  plot_contact_matrix(contact_matrix = .) +
-  scale_x_discrete(expand = c(0, 0.005)) +
-  scale_y_discrete(expand = c(0, 0.005)) +
-  project_theme +
-  theme(legend.position = "bottom")
-  ) 
-  
-
-# co-variate data panel
-mumps_covariates_plt_data <- plot_covars(mumps_covariates)
 
 
 
