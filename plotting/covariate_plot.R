@@ -200,7 +200,10 @@ pop_plt <- (
     ggplot(., aes(x = year, y = pop, fill = age_cohort)) +
     geom_area() +
     labs(x = "Year", y = "Population Size") +
-    anno_case_layer +
+    annotate(geom = "rect", 
+             xmin = 1977, xmax = 2020, 
+             ymin = 0, ymax = 4e8, 
+             fill = "#b91d73", alpha = 0.2) +
     scale_x_continuous(limits = x_lims, breaks = x_breaks) +
     scale_y_continuous(limits = c(0, 4e8), breaks = seq(0, 4e8, by = 1e8), 
                        labels = scales::scientific) +

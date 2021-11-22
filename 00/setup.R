@@ -17,13 +17,6 @@ lib_dep <- c("tidyverse",
 
 
 
-# Assumes the use of processed data and no plots
-lib_dep_cl <- c("tidyverse", 
-                "pomp", "magrittr", "wrapr",
-                "tictoc", "parallel", "subplex", 
-                "LaplacesDemon",
-                "DEoptim", "doParallel", "doRNG",
-                "nloptr")
 
 sapply(lib_dep, require, character.only = TRUE)
 
@@ -114,7 +107,7 @@ percentile_vals <- c(0.025, 0.5, 0.975)
 
 # set up controls for deoptim
 ### controls list for DEoptim - for MLE estimation
-np_val = 500
+np_val = 1000
 my_controls <- list(itermax = 1e5,
                     F = 0.6, CR = 0.9, 
                     strategy = 1,

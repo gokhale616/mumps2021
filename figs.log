@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  17 NOV 2021 17:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  18 NOV 2021 10:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -594,49 +594,62 @@ Overfull \hbox (34.4279pt too wide) in paragraph at lines 120--121
 
 Package xcolor Warning: Incompatible color definition on input line 130.
 
-<figure/plot-imputed_vacc_plot-1.pdf, id=5, 505.89pt x 505.89pt>
+<figure/plot-fit_plot-1.pdf, id=5, 505.89pt x 505.89pt>
+File: figure/plot-fit_plot-1.pdf Graphic file (type pdf)
+<use figure/plot-fit_plot-1.pdf>
+Package pdftex.def Info: figure/plot-fit_plot-1.pdf  used on input line 132.
+(pdftex.def)             Requested size: 506.45914pt x 506.46768pt.
+
+Overfull \hbox (34.4279pt too wide) in paragraph at lines 132--133
+ [][] 
+ []
+
+
+Package xcolor Warning: Incompatible color definition on input line 142.
+
+<figure/plot-imputed_vacc_plot-1.pdf, id=6, 505.89pt x 505.89pt>
 File: figure/plot-imputed_vacc_plot-1.pdf Graphic file (type pdf)
 <use figure/plot-imputed_vacc_plot-1.pdf>
 Package pdftex.def Info: figure/plot-imputed_vacc_plot-1.pdf  used on input lin
-e 132.
-(pdftex.def)             Requested size: 247.53888pt x 247.5409pt.
-
-Package xcolor Warning: Incompatible color definition on input line 143.
-
-<figure/plot-contact_matrix_plot-1.pdf, id=6, 505.89pt x 505.89pt>
-File: figure/plot-contact_matrix_plot-1.pdf Graphic file (type pdf)
-<use figure/plot-contact_matrix_plot-1.pdf>
-Package pdftex.def Info: figure/plot-contact_matrix_plot-1.pdf  used on input l
-ine 145.
+e 144.
 (pdftex.def)             Requested size: 247.53888pt x 247.5409pt.
 
 Package xcolor Warning: Incompatible color definition on input line 155.
 
-<figure/plot-cov_data_plot-1.pdf, id=7, 505.89pt x 505.89pt>
+<figure/plot-contact_matrix_plot-1.pdf, id=7, 505.89pt x 505.89pt>
+File: figure/plot-contact_matrix_plot-1.pdf Graphic file (type pdf)
+<use figure/plot-contact_matrix_plot-1.pdf>
+Package pdftex.def Info: figure/plot-contact_matrix_plot-1.pdf  used on input l
+ine 157.
+(pdftex.def)             Requested size: 247.53888pt x 247.5409pt.
+
+Package xcolor Warning: Incompatible color definition on input line 167.
+
+<figure/plot-cov_data_plot-1.pdf, id=8, 505.89pt x 505.89pt>
 File: figure/plot-cov_data_plot-1.pdf Graphic file (type pdf)
 <use figure/plot-cov_data_plot-1.pdf>
-Package pdftex.def Info: figure/plot-cov_data_plot-1.pdf  used on input line 15
-7.
+Package pdftex.def Info: figure/plot-cov_data_plot-1.pdf  used on input line 16
+9.
 (pdftex.def)             Requested size: 506.45914pt x 506.46768pt.
 
-Overfull \hbox (34.4279pt too wide) in paragraph at lines 157--158
+Overfull \hbox (34.4279pt too wide) in paragraph at lines 169--170
  [][] 
  []
 
 [1
 
 {/Users/devengokhale/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.m
-ap}] [2 <./figure/plot-inc_data_plot-1.pdf>] [3 <./figure/plot-imputed_vacc_plo
-t-1.pdf> <./figure/plot-contact_matrix_plot-1.pdf>] [4 <./figure/plot-cov_data_
-plot-1.pdf>] (./figs.aux)
+ap}] [2 <./figure/plot-inc_data_plot-1.pdf>] [3 <./figure/plot-fit_plot-1.pdf>]
+[4 <./figure/plot-imputed_vacc_plot-1.pdf> <./figure/plot-contact_matrix_plot-1
+.pdf>] [5 <./figure/plot-cov_data_plot-1.pdf>] (./figs.aux)
 Package rerunfilecheck Info: File `figs.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 11246 strings out of 480539
- 166569 string characters out of 5901387
- 481182 words of memory out of 5000000
- 28666 multiletter control sequences out of 15000+600000
+ 11259 strings out of 480539
+ 166893 string characters out of 5901387
+ 481205 words of memory out of 5000000
+ 28676 multiletter control sequences out of 15000+600000
  427678 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  60i,7n,66p,488b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -646,10 +659,10 @@ mr10.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/public/mat
 hpazo/fplmri.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/ur
 w/palatino/uplb8a.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/typ
 e1/urw/palatino/uplr8a.pfb>
-Output written on figs.pdf (4 pages, 414314 bytes).
+Output written on figs.pdf (5 pages, 424989 bytes).
 PDF statistics:
- 89 PDF objects out of 1000 (max. 8388607)
- 63 compressed objects within 1 object stream
- 9 named destinations out of 1000 (max. 500000)
- 21 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 103 PDF objects out of 1000 (max. 8388607)
+ 74 compressed objects within 1 object stream
+ 11 named destinations out of 1000 (max. 500000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 

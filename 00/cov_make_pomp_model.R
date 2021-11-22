@@ -519,7 +519,7 @@ vseir_skel_est <- Csnippet("
           if (t < t_intro) {
             lambda2 = 0;
           } else {
-              lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+              lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
           }
         }
             
@@ -536,7 +536,7 @@ vseir_skel_est <- Csnippet("
         DE1(i) = lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i);   
         DI1(i) = sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
         DE2(i) = lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-        DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+        DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         DV(i)  = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
       } else if (i == 1) {
@@ -549,7 +549,7 @@ vseir_skel_est <- Csnippet("
             if (t < t_intro) {
               lambda2 = 0;
             } else {
-                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
             }
           }
             
@@ -564,7 +564,7 @@ vseir_skel_est <- Csnippet("
           DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
       } else {
@@ -575,7 +575,7 @@ vseir_skel_est <- Csnippet("
             if (t < t_intro) {
               lambda2 = 0;
             } else {
-                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
             }
           }
           
@@ -587,7 +587,7 @@ vseir_skel_est <- Csnippet("
           DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = LV(i-1)*V(i-1)  - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
           
       }

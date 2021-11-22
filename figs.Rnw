@@ -78,6 +78,7 @@ source("00/src.R", chdir = TRUE)
 
 # all these are where the plot data are synthesized
 script_var <- c("inc_plot.R", 
+                "fit_plot.R",
                 "covariate_plot.R",
                 "imputed_vacc_plot.R")
 
@@ -93,6 +94,12 @@ lapply(script_var, function(x) {
 <<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[3]>>=
 
 plot(incidence_age_geog)
+
+@
+
+<<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
+
+plot(fit_plot)
 
 @
 

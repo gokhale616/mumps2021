@@ -3,6 +3,10 @@
 # NOTE:: Make sure that DEoptim convergence parameters are calibrated for a quick run
 library(wrapr)
 list.files(".", 
-           pattern = "slow") %.>% 
+           pattern = "waning") %.>% 
+  lapply(., source)
+
+list.files(".", 
+           pattern = "leaky2") %.>% 
   lapply(., source)
 

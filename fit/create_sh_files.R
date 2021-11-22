@@ -30,14 +30,20 @@ write_sh <- function(pattern = "hypo" , path) {
 
 # name all the hypotheses - heterogenous mixing hypothesis
 
-n_hypotheses <- c("waning_slow", "waning_slow_sigmoid", 
-                  "waning_slow_rapid", "waning_slow_constant")
+n_hypotheses <- c("waning_slow", "waning_sigmoid", 
+                  "waning_rapid", "waning_constant", 
+                  "leaky2_2_slow", "leaky2_2_sigmoid", 
+                  "leaky2_2_rapid", "leaky2_2_constant",
+                  "leaky2_3_slow", "leaky2_3_sigmoid", 
+                  "leaky2_3_rapid", "leaky2_3_constant", 
+                  "leaky2_4_slow", "leaky2_4_sigmoid", 
+                  "leaky2_4_rapid", "leaky2_4_constant")
 
 lapply(n_hypotheses, function(x){write_sh(pattern = x, path = "./")})
 
 
 
-
+rm(list = ls())
 
 
 

@@ -113,4 +113,19 @@ DE_traj_match <- function(param_constraints,
   
 }
 
+# this convenience function allows to change one or more values of a named vector  
+# useful for leaky2 'p_intro' parameter 
+
+set_param <- function(default_param = param_vals_est, 
+                      param_to_change = "p_intro", new_val) {
+  
+  new_param_v <- default_param
+  new_param_v[param_to_change] <- new_val
+  
+  new_param_v
+  
+}
+
+
+
 

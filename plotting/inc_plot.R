@@ -78,12 +78,12 @@ anno_data_2 <- tibble(label = "Sustained\ntransmission",
                       yend = 6)
 
 
-
+#"#EF629F"
 inc_rate_plt <- (
   mumps_incidence_rate_l %.>% 
     ggplot(., 
            aes(x = year, y = ac_inc_rate)) +
-    geom_area(stat = "identity", alpha = 0.9, fill = "#EF629F", colour = "grey30") +
+    geom_area(stat = "identity", alpha = 0.9, fill = "#FF4E50", colour = "grey30") +
     geom_segment(data = anno_data, 
                  aes(x = x, xend = x, y = y, yend = yend), 
                  arrow = arrow(length = unit(0.09, "npc")),

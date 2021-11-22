@@ -88,7 +88,8 @@ obs_data <- mumps_case_reports %.>%
   mutate(., 
          `0.5` = sqrt(`0.5`))
   
-obs_sim %.>%   
+fit_plot <- (
+  obs_sim %.>%   
   ggplot(., aes(x = year)) +
   geom_line(aes(y = `0.5`, colour = hypothesis), size = 0.8) +
   geom_line(data = obs_data, 
@@ -105,6 +106,7 @@ obs_sim %.>%
   scale_x_continuous(breaks = gen_x_breaks, expand = c(0, 0)) +
   project_theme +
   cap_axes
+  )
   
 
 
