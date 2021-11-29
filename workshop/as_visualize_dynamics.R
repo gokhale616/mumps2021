@@ -14,7 +14,7 @@ rp_vals_mod <- param_vals_est
 
 mod_these_params <- c("q", "sigma", "beta1", "dwan", "epsilon1", "t_intro", "p_intro", "iota", "epsilon2")
 
-rp_vals_mod[mod_these_params] <- c(0.22, 365.25/13, 0.11, Inf, 0, 2000, 2, 1, 0.5)
+rp_vals_mod[mod_these_params] <- c(0.22, 365.25/13, 0.11, Inf, 0, 2002, 3, 1, 1)
 
 sample_traj <- trajectory(po_to_vis, param = rp_vals_mod, method = "ode23", format = "d")
 

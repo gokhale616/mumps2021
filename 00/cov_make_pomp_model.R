@@ -1187,8 +1187,8 @@ param_vals_est <- c(S_0 = 1e-1, I1_0 = 1e-4, I2_0 = 0,
                     psi = 1, 
                     psi_1 = 1, psi_2 = 1, psi_3 = 1, psi_4 = 1, psi_5 = 1, psi_u = 1,
                     agegroups = 5, Cv = C, alpha = 0.054, beta1 = 0.11,
-                    lcv = c(1/5, 1/10, 1/10, 1/15, 1/40), iota = 0, 
-                    t_intro = 500, p_intro = 6)
+                    lcv = c(1/5, 1/10, 1/10, 1/15, 1/40), iota = 1, 
+                    t_intro = 3000, p_intro = 6)
 
 param_vals_sim <- c(R_0 = 0, param_vals_est) 
 
