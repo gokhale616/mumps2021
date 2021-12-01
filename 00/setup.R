@@ -2,6 +2,7 @@
 
 lib_dep <- c("tidyverse", 
              "pomp", "magrittr", "wrapr", "stringr",
+             "rioja",
              "readxl", "tictoc", "parallel", "subplex", 
              "LaplacesDemon", "cowplot", 
              "rootSolve", "GGally", "RColorBrewer", 

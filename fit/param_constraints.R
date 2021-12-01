@@ -27,7 +27,7 @@ param_range_waning <- (
   )
 
 
-# parameter constraints for hypothesis on leaky vaccine with imported infectious indiviuduals
+# parameter constraints for hypothesis on leaky vaccine with imported infectious individuals
 param_range_leaky2 <- (
   list(
     lower = c(hypo_ind_params$lower, t_intro = 2000, epsilon2 = 0),
@@ -36,6 +36,26 @@ param_range_leaky2 <- (
   )
   
 )
+
+
+# parameter constraints for hypothesis on leaky and waning vaccine with imported infectious individuals 
+
+param_range_leak2_waning <- (
+  list(
+   lower = c(hypo_ind_params$lower, dwan = 1, t_intro = 2000, epsilon2 = 0), 
+   
+   upper = c(hypo_ind_params$lower, dwan = 500, t_intro = 2005, epsilon2 = 1) 
+  )
+)
+
+
+
+
+
+
+
+
+
 
 
 

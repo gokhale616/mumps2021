@@ -744,7 +744,7 @@ vseir_skel_sim <- Csnippet("
           if (t < t_intro) {
             lambda2 = 0;
           } else {
-              lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+              lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
           }
         }
             
@@ -761,7 +761,7 @@ vseir_skel_sim <- Csnippet("
         DE1(i) = lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i);   
         DI1(i) = sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
         DE2(i) = lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-        DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+        DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         DR(i)  = gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i);
         DV(i)  = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
@@ -775,7 +775,7 @@ vseir_skel_sim <- Csnippet("
             if (t < t_intro) {
               lambda2 = 0;
             } else {
-                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
             }
           }
             
@@ -790,7 +790,7 @@ vseir_skel_sim <- Csnippet("
           DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DR(i)  = LV(i-1)*R(i-1)  + gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i); 
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
@@ -802,7 +802,7 @@ vseir_skel_sim <- Csnippet("
             if (t < t_intro) {
               lambda2 = 0;
             } else {
-                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j) + iota_v[i])/N_AGE(j);
+                lambda2 += q*QAGE(i)*augCM[i][j]*(I2(j))/N_AGE(j);
             }
           }
           
@@ -814,7 +814,7 @@ vseir_skel_sim <- Csnippet("
           DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
-          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i);
+          DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DR(i)  = LV(i-1)*R(i-1)  + gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i);
           DV(i)  = LV(i-1)*V(i-1)  - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
           
@@ -1229,18 +1229,17 @@ make_pomp <- function(...,
       arrange(., year) %.>% 
       pomp(., 
            times = "year", t0 = start_t, 
-           rprocess = euler(vseir_step, delta.t=dt),
-           skeleton = vectorfield(vseir_skel_sim),
-           rinit = vseir_init_sim,
+           skeleton = vectorfield(vseir_skel_est),
+           rinit = vseir_init_est,
            rmeasure = vseir_rmeas,
            dmeasure = vseir_dmeas,
-           accumvars = c(sprintf("C_%d", 1:5), sprintf("A_%d", 1:5), sprintf("G_%d", 1:5)),
+           accumvars = c(sprintf("C_%d", 1:5)),
            covar = covariate_table(covar, times = "Year", order = "constant"),
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 
                           sprintf("p%d", 1:2), "Births", "eta_a"),
-           statenames = state_names_sim,
-           paramnames = param_names_sim, ...)
+           statenames = state_names_est,
+           paramnames = param_names_est, ...)
       ) 
   
   } else {

@@ -1,8 +1,6 @@
-source("../00/src.R", chdir = TRUE)
+# source("../00/src.R", chdir = TRUE)
 
-
-
-#test_R0_p_vals <- c(param_vals_est, N = 100e6, nu = 1/80, p = 0.86, ad = age_class_duration)
+# test_R0_p_vals <- c(param_vals_est, N = 100e6, nu = 1/80, p = 0.86, ad = age_class_duration)
 
 # test_R0_p_vals["epsilon2"] <- c(0.5)
 
@@ -168,6 +166,287 @@ calculate_R0_mq <- function(p_vals) {
 }
 
 
-#R0_deets <- calculate_R0_mq(p_vals = test_R0_p_vals)$reprodutive_number
+# this function calculates the effective R0 for this system
+calculate_Reff_mq <- function(p_vals, 
+                              S_1, S_2, S_3, S_4, S_5, 
+                              V_1, V_2, V_3, V_4, V_5, 
+                              N_1, N_2, N_3, N_4, N_5, 
+                              t) {
+  
+  with(as.list(c(p_vals, 
+                 S_1, S_2, S_3, S_4, S_5, 
+                 V_1, V_2, V_3, V_4, V_5, 
+                 N_1, N_2, N_3, N_4, N_5, 
+                 t)), {
+    
+    # browser()
+    # generate the pre-reqs for further analysis 
+    R0_prereq <- gather_R0_prereqs(p_vals = p_vals)
+    
+    # equilibrium states 
+    N  <- c(N_1, N_2, N_3, N_4, N_5)
+    S  <- c(S_1, S_2, S_3, S_4, S_5)
+    V  <- c(V_1, V_2, V_3, V_4, V_5)
+    
+    # aging rates
+    omega <- R0_prereq$omega_vec
+    # poi 
+    q <- R0_prereq$q_vec
+    # waning rate
+    delta <- R0_prereq$delta
+    
+    #contact matrix
+    Cmat <- R0_prereq$C_mat
+    
+    # Define emplty matrices of F and V to calculate the the NextGen Matrix  
+    NA_mat <- matrix(NA, nrow = nrow(Cmat), ncol = ncol(Cmat)) 
+    zero_mat <- matrix(0, nrow = nrow(Cmat), ncol = ncol(Cmat))
+    
+    
+    # Intialize 
+    F_mat_nz <- NA_mat
+    
+    # effective leakiness when dealing with two pathogen hypothesis
+    if(t < t_intro) {
+      epsilon2_eff = 0
+    } else {
+      epsilon2_eff = epsilon2
+    }
+    
+    #browser()
+    # populate the F_mat  - make sure to add the seasonality
+    for(i in seq_along(q)) {
+      for(j in seq_along(q)) {
+        if(i == 1 & j == 1) {
+          F_mat_nz[i,j] <- q[i]*Cmat[i,j]*(1-beta1*sin(2*pi*t))*(S[i] + (epsilon1 + epsilon2_eff)*V[i])/N[j]
+        } else {
+          F_mat_nz[i,j] <- q[i]*Cmat[i,j]*(S[i] + epsilon2*V[i])/N[j]
+        }
+      }
+    }
+    #browser()
+    # Calculate the non-zero block of the F_mat matrix
+    # Define the F matrix
+    F_mat = rbind(cbind(zero_mat, F_mat_nz), cbind(zero_mat, zero_mat))
+    
+    # Initialize the block matrices of the V matrix, (explain what hey are later) 
+    V1 <- NA_mat 
+    V2 <- zero_mat
+    V3 <- NA_mat
+    V4 <- NA_mat
+    
+    for(i in seq_along(q)) {
+      for(j in seq_along(q)) {
+        if(i == 1) {
+          V1[i,j] <-  (omega[i] + sigma)*dirac_delta(i,j)
+          V3[i,j] <- -sigma*dirac_delta(i,j)
+          V4[i,j] <-  (omega[i] + gamma)*dirac_delta(i,j)  
+        } else {
+          V1[i,j] <-  (omega[i] - omega[i-1] + sigma)*dirac_delta(i,j)
+          V3[i,j] <- -sigma*dirac_delta(i,j)
+          V4[i,j] <-  (omega[i] - omega[i-1] + gamma)*dirac_delta(i,j)  
+        }
+      }
+    }
+    
+    V_mat = rbind(cbind(V1, V2), cbind(V3, V4))
+    
+    # browser()
+    # calculate the next generation matrix
+    K_mat <- F_mat%*%solve(V_mat)
+    # return spectral radius aka R
+    max(eigen(K_mat)$values) %.>% 
+      ifelse(is.nan(.) == TRUE, NA, .)
+    })
+  
+}
+
+# this function calculates average transmission rate 
+calculate_average_beta <- function(p_vals, 
+                                   S_1, S_2, S_3, S_4, S_5, 
+                                   V_1, V_2, V_3, V_4, V_5, 
+                                   I_1, I_2, I_3, I_4, I_5,
+                                   N_1, N_2, N_3, N_4, N_5,
+                                   t) {
+  
+  
+  with(as.list(c(p_vals, 
+                 S_1, S_2, S_3, S_4, S_5, 
+                 V_1, V_2, V_3, V_4, V_5, 
+                 I_1, I_2, I_3, I_4, I_5,
+                 N_1, N_2, N_3, N_4, N_5,
+                 t)), {
+                   
+
+     # generate the pre-reqs for further analysis 
+     R0_prereq <- gather_R0_prereqs(p_vals = p_vals)
+     
+     # equilibrium states 
+     N <- c(N_1, N_2, N_3, N_4, N_5)
+     S <- c(S_1, S_2, S_3, S_4, S_5)
+     V <- c(V_1, V_2, V_3, V_4, V_5)
+     I <- c(I_1, I_2, I_3, I_4, I_5)
+     
+     # aging rates
+     omega <- R0_prereq$omega_vec
+     # poi 
+     q <- R0_prereq$q_vec
+     # waning rate
+     delta <- R0_prereq$delta
+     
+     #contact matrix
+     Cmat <- R0_prereq$C_mat                 
+     
+     # effective leakiness when dealing with the two pathogen hypothesis
+     if(t < t_intro) {
+       epsilon2_eff = 0
+     } else {
+       epsilon2_eff = epsilon2
+     }
+     
+     # Calculate the average transmission rate
+     # Initialize an NA matrix for your own good! 
+     NA_matrix <- matrix(NA, nrow = nrow(Cmat), ncol = ncol(Cmat)) 
+     
+     beta <-  NA_matrix
+     contact_scale_factor <- NA_matrix
+     lambda <- NA_matrix
+     
+     for(i in seq_along(q)) {
+       for(j in seq_along(q)) {
+         if(i == 1 & j == 1) {
+           beta[i,j] <- q[i]*Cmat[i,j]*(1-beta1*sin(2*pi*t))*(S[i] + (epsilon1 + epsilon2_eff)*V[i])*I[j]/N[j]
+           contact_scale_factor[i,j] <- (S[i] + (epsilon1 + epsilon2_eff)*V[i])*I[j]/N[j]
+           lambda[i,j] <- q[i]*Cmat[i,j]*(1-beta1*sin(2*pi*t))*I[j]/N[j]
+          } else {
+           beta[i,j] <- q[i]*Cmat[i,j]*(S[i] + epsilon2*V[i])*I[j]/N[j]
+           contact_scale_factor[i,j] <- (S[i] + (epsilon1 + epsilon2_eff)*V[i])*I[j]/N[j]
+           lambda[i,j] <- q[i]*Cmat[i,j]*(1-beta1*sin(2*pi*t))*I[j]/N[j]
+         }
+       }
+     }  
+     
+     # calculate the average transmission rate
+     average_beta <- sum(beta)/sum(contact_scale_factor)
+     
+     
+     # calculate the mean age at which individuals from i^{th} age cohort get infected
+     Ai <- 1/colSums(lambda)
+     
+     # calculate the overall  mean age of infection 
+     mean_age_at_infection <- sum(Ai*I/sum(I))
+     
+     
+     list(B = average_beta, A = mean_age_at_infection)
+
+})
+  
+}
+
+# this function produces summary measure of simulated epidemics
+summarize_epidemiology <- function(traj_cov_data, p_vals) {
+  # life expectancy is assumed to be 80 years
+  L = 80*365.25
+  G = 5
+  
+  traj_cov_data %.>% 
+    map_dfr(1:nrow(.), function(c, x = .) {
+      #browser()
+      
+      int_x <- (
+        x %.>% 
+          slice(., c) %.>% 
+          mutate_all(., .funs = function(x){ifelse(x < 0, 0, x)})
+        )
+      
+      int_x %.>% 
+        transmute(., 
+                  `.id` = `.id`,
+                  year = year,
+                  # scale population sizes to represent system compartments per 100000
+                  Ns_1 = 1e5/N_1, Ns_2 = 1e5/N_2, Ns_3 = 1e5/N_3,
+                  Ns_4 = 1e5/N_4, Ns_5 = 1e5/N_5,
+                  # scale the susceptible compartments
+                  Ss_1  = S_1*Ns_1, Ss_2  = S_2*Ns_2, Ss_3  = S_3*Ns_3,
+                  Ss_4  = S_4*Ns_4, Ss_5  = S_5*Ns_5,
+                  # scale the vaccinated compartments
+                  Vs_1  = V_1*Ns_1, Vs_2  = V_2*Ns_2, Vs_3  = V_3*Ns_3,
+                  Vs_4  = V_4*Ns_4, Vs_5  = V_5*Ns_5,
+                  # define and scale the recovered compartments
+                  Rs_1  = (N_1 - (S_1 + V_1 + I1_1 + I2_1 + E1_1 + E2_1))*Ns_1,
+                  Rs_2  = (N_2 - (S_2 + V_2 + I1_2 + I2_2 + E1_2 + E2_2))*Ns_2, 
+                  Rs_3  = (N_3 - (S_3 + V_3 + I1_3 + I2_3 + E1_3 + E2_3))*Ns_3,
+                  Rs_4  = (N_4 - (S_4 + V_4 + I1_4 + I2_4 + E1_4 + E2_4))*Ns_4,
+                  Rs_5  = (N_5 - (S_5 + V_5 + I1_5 + I2_5 + E1_5 + E2_5))*Ns_5,
+                  # scale the true new cases compartments
+                  Cs_1 = (C_1)*Ns_1, Cs_2 = (C_2)*Ns_2, Cs_3 = (C_3)*Ns_3, 
+                  Cs_4 = (C_4)*Ns_4, Cs_5 = (C_5)*Ns_5, 
+                  # define the total infectious compartments
+                  I_1 = (I1_1+I2_1), I_2 = (I1_2+I2_2), I_3 = (I1_3+I2_3),
+                  I_4 = (I1_4+I2_4), I_5 = (I1_5+I2_5),
+                  # calculate effective R0 for the system
+                  Reff = calculate_Reff_mq(p_vals = p_vals, 
+                                           N_1 = N_1, N_2 = N_2, N_3 = N_3, 
+                                           N_4 = N_4, N_5 = N_5, 
+                                           S_1 = S_1, S_2 = S_2, S_3 = S_3, 
+                                           S_4 = S_4, S_5 = S_5,
+                                           V_1 = V_1, V_2 = V_2, V_3 = V_3, 
+                                           V_4 = V_4, V_5 = V_5,
+                                           t = year), 
+                  # calculate effective R0 for the system
+                  average_beta = calculate_average_beta(p_vals = p_vals,
+                                                        N_1 = N_1, N_2 = N_2, N_3 = N_3,
+                                                        N_4 = N_4, N_5 = N_5,
+                                                        S_1 = S_1, S_2 = S_2, S_3 = S_3,
+                                                        S_4 = S_4, S_5 = S_5,
+                                                        V_1 = V_1, V_2 = V_2, V_3 = V_3,
+                                                        V_4 = V_4, V_5 = V_5,
+                                                        I_1 = I_1, I_2 = I_2, I_3 = I_3,
+                                                        I_4 = I_4, I_5 = I_5,
+                                                        t = year)$B,
+                  # calculate the mean age at infection as a function of the effective R0
+                  mean_age_at_infection = calculate_average_beta(p_vals = p_vals,
+                                                                 N_1 = N_1, N_2 = N_2, N_3 = N_3,
+                                                                 N_4 = N_4, N_5 = N_5,
+                                                                 S_1 = S_1, S_2 = S_2, S_3 = S_3,
+                                                                 S_4 = S_4, S_5 = S_5,
+                                                                 V_1 = V_1, V_2 = V_2, V_3 = V_3,
+                                                                 V_4 = V_4, V_5 = V_5,
+                                                                 I_1 = I_1, I_2 = I_2, I_3 = I_3,
+                                                                 I_4 = I_4, I_5 = I_5,
+                                                                 t = year)$A
+        )  
+      
+      
+    })
+  
+  
+}
+
+
+# this is a convenience function for to prepare data for plotting
+prep_as_plot_trajectory <- function(traj_data, init_year) {
+  
+  traj_data %.>% 
+    filter(., year > init_year) %.>% 
+    select(., -`.id`) %.>% 
+    gather(., key = "comp", value = "count", -year) %.>% 
+    mutate(., 
+           comp_exp = str_split_fixed(comp, pattern = "_", n = 2)[,1], 
+           age_number = str_split_fixed(comp, pattern = "_", n = 2)[,2], 
+    ) %.>% 
+    mutate(., 
+           age_cohort = case_when(age_number == 1 ~ age_names[1], 
+                                  age_number == 2 ~ age_names[2], 
+                                  age_number == 3 ~ age_names[3], 
+                                  age_number == 4 ~ age_names[4], 
+                                  age_number == 5 ~ age_names[5], 
+                                  TRUE            ~ age_number) %.>% as_factor(.)
+    ) %.>% 
+    select(., year, comp_exp, age_cohort, count)
+  
+}
+
+
 
 

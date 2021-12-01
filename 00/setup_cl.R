@@ -51,9 +51,9 @@ percentile_vals <- c(0.025, 0.5, 0.975)
 
 # set up controls for deoptim
 ### controls list for DEoptim - for MLE estimation
-np_val = 1000
+np_val = 500
 my_controls <- list(itermax = 1e5,
                     F = 0.6, CR = 0.9, 
                     strategy = 1,
-                    steptol = 750, reltol = 1e-8)
+                    steptol = 750, reltol = 1e-4)
 
