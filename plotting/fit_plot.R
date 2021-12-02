@@ -10,31 +10,53 @@ list.files(path = mle_result_path,
 # form a single list of all of the result objects to loop over later
 result_list <- (
   list(
-    mle_waning_slow, mle_waning_slow_sigmoid, mle_waning_slow_rapid, mle_waning_slow_constant
+    mle_waning_slow, mle_waning_sigmoid, mle_waning_rapid, mle_waning_constant,
+    mle_leaky2_2_slow, mle_leaky2_2_sigmoid, mle_leaky2_2_rapid, mle_leaky2_2_constant,
+    mle_leaky2_3_slow, mle_leaky2_3_sigmoid, mle_leaky2_3_rapid, mle_leaky2_3_constant,
+    mle_leaky2_4_slow, mle_leaky2_4_sigmoid, mle_leaky2_4_rapid, mle_leaky2_4_constant
   )
 )
 
 
 mk_result_df <- function(c = 1, res = result_list) {
   
-  hypo_covar <- res[[c]]$Hypothesis %.>% str_split(., pattern = "_") %.>% unlist(.)
+  # collect qualitative covariates
+  extra_params <- res[[c]]$Hypothesis %.>% str_split(., pattern = "_") %.>% unlist(.)
   
-  # add an empty space if the lengths are a mismatch
-  if(length(hypo_covar) == 2) {
-    hypo_covar <- c(hypo_covar[1:2], "")
-  } 
+  if(length(extra_params) == 3) {
+    hypo_covar <- extra_params[1]
+    p_intro    <- extra_params[2] %.>% as.numeric(.)
+    vacc       <- extra_params[3]
+  } else {
+    hypo_covar <- extra_params[1]
+    p_intro    <- NA
+    vacc       <- extra_params[2]
+  }
   
-
+  # calculate the reproductive numbers 
+  params_for_R0 <- c(N = 100e6, nu = 1/80, p = 0, ad = age_class_duration)
+  params_for_Rp <- c(N = 100e6, nu = 1/80, p = 0.5, ad = age_class_duration)
+  
+  R0 <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_R0) %.>% 
+    calculate_R0_mq(.)$reprodutive_number 
+  
+  Rp <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_Rp) %.>% 
+    calculate_R0_mq(.)$reprodutive_number 
+  
   # collate results in a dataframe
   res[[c]]$DEobj$optim$bestmem %.>% 
     as.list(.) %.>% 
     as_tibble(.) %>% 
     mutate(., 
+           R0 = R0,
+           Rp = Rp,
+           impact = 1-Rp/R0,
            loglik = -res[[c]]$DEobj$optim$bestval, 
            npar = res[[c]]$DEobj$optim$bestmem %.>% length(.), 
            AIC = calculate_aic(loglik, npar), 
-           hypothesis = paste0(hypo_covar[1]), 
-           vacc_covariate = paste0(hypo_covar[2], hypo_covar[3])) %.>% 
+           hypothesis = hypo_covar, 
+           p_intro    = p_intro,
+           vacc_covariate = vacc) %.>% 
     select(., -c(loglik, npar))
 
 }
@@ -45,18 +67,37 @@ all_result_df <- (
     mutate(., 
            d_AIC = AIC - min(AIC)) %.>% 
     group_by(., hypothesis) %.>% 
-    mutate(., best_fit_covar = ifelse(AIC == min(AIC), 1, 0)) %.>% 
+    mutate(., 
+           best_fit_covar = ifelse(AIC == min(AIC), 1, 0)) %.>% 
     ungroup(.) %.>% 
     select(., -AIC)
 )
 
 
-# table of estimates 
+
+
+
+
+# table of estimates - process model 
+#table_hypo_compare <- ()
+
 all_result_df %.>% 
-  select(., -best_fit_covar) %.>% 
+  select(., -c(best_fit_covar, starts_with("q_age"), 
+               starts_with("rho_age"), starts_with("psi"), 
+               p_intro)) %.>% 
+  arrange(., d_AIC)
+  group_by(., hypothesis) %.>% 
+  filter(., d_AIC == min(d_AIC)) %.>% 
+  ungroup(.) %.>%
+  mutate_if(., is.numeric, function(x){round(x, digits = 3) %.>% format(., nsmall = 3)})  
+  mutate(., 
+         vacc_covariate = str_to_title(vacc_covariate),
+         hypothesis = str_to_title(hypothesis)) %.>% 
   gather(., 
-         key = "Parameter", value = "Estimate", -c(hypothesis, vacc_covariate, d_AIC)) %.>% 
-  arrange(.)
+         key = "Parameter", value = "Estimate", 
+         -c(hypothesis)) %.>% 
+  spread(., key = hypothesis, value = Estimate) 
+  
 
 
 sim_from_these <- (
@@ -74,7 +115,7 @@ source("../workshop/treat_vacc_covar.R", chdir = TRUE)
 
 # generate a po_object
 
-po_est_test <- make_pomp(covar = mod_mumps_covariates_slow_sigmoid)
+po_est_test <- make_pomp(covar = mod_mumps_covariates_sigmoidal)
 
 
 obs_sim <- sim_from_these %.>%   
