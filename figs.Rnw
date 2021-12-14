@@ -99,7 +99,7 @@ plot(incidence_age_geog)
 
 <<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
 
-plot(fit_plot)
+plot(fit_plot_grid)
 
 @
 

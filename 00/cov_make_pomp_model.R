@@ -1202,11 +1202,12 @@ make_pomp <- function(...,
                       start_t = 1800, 
                       extrapolate_simulation = FALSE, dt = 1/365.25,  
                       extra_start_t = 1900, extra_end_t = 2100, temp_scale = 1, 
-                      covar) {
+                      covar, 
+                      incidence_data = mumps_case_reports) {
   
   # changing the column names and subsetting to read into pomp
   mumps_inc_data <- (
-    mumps_case_reports %.>%  
+    incidence_data %.>%  
       select(., -total) 
   )
   

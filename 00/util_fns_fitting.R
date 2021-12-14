@@ -43,11 +43,11 @@ DE_traj_match <- function(param_constraints,
                           ...) {
   
   message(cat(c("Est: ", names(param_constraints$lower))))
-  
+  # browser()
   # generate a pomp objective function - this step also includes defining the pomp object
   # NOTE: names of the parameters estimated are taken from the lower constraint vector   
   pomp_objfun <- (
-    make_pomp(., ...) %.>%
+    make_pomp(...) %.>%
     # define the objective function 
     traj_objfun(., 
                 est = names(param_constraints$lower), 
@@ -65,7 +65,7 @@ DE_traj_match <- function(param_constraints,
     
     init_guess_grid <- sobol_design(lower = param_constraints$lower, 
                                     upper = param_constraints$upper, 
-                                    nseq = ninit) 
+                                    nseq = ninit) %.>% 
       bind_rows(., best_past_est) %.>% 
       replace(., is.na(.), 0) 
     

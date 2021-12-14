@@ -64,15 +64,15 @@ abs_inc_plt <- (
 # y_max_inc <- max(mumps_incidence_rate_l$ac_inc_rate, na.rm = TRUE)
 
 
-anno_data <- tibble(label = c("Initial\ndecline", "First\nresurgence", "Second\nresurgence", "", ""),
-                    label_2 = "Sustained\ntransmission",
+anno_data <- tibble(label = c("Initial\nDecline", "First\nResurgence", "Second\nResurgence", "", ""),
+                    label_2 = "Sustained\nTransmission",
                     x_2 = 2013,
                     x = c(1981, 1987, 2006, 2009, 2016), 
                     y = 8.5, 
                     yend = 6)
 
 
-anno_data_2 <- tibble(label = "Sustained\ntransmission",
+anno_data_2 <- tibble(label = "Sustained\nTransmission",
                       x = 2012, 
                       y = 8.5, 
                       yend = 6)
@@ -93,7 +93,7 @@ inc_rate_plt <- (
               aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
     geom_text(data = anno_data_2, 
               aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
-    labs(y = expression(paste(Cases~per~10^5, phantom(1000000))),
+    labs(y = expression(paste(Cases~Per~10^5, phantom(1000000))),
          x = "") +
     scale_x_continuous(#expand = c(0.000, 0.000), 
       breaks = gen_x_breaks) + 
@@ -112,7 +112,7 @@ prop_inc_plt <- (
          aes(x = year, y = cases, fill = age_cohort)) +
   geom_area(stat = "identity", position = "fill") +
   labs(x = "Year", 
-       y = expression(paste(Percent~total, phantom(10000000))),
+       y = expression(paste(Percent~Total, phantom(10000000))),
        fill = "Age\nCohort") +
   scale_fill_manual(values = age_cols) +
   scale_x_continuous(#expand = c(0, 0), 
@@ -164,7 +164,7 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
     geom_polygon(aes(fill = !!enquo_fill_var)) +
     geom_path(size = 0.06, colour = "grey30")+
     labs(x = "", y = "", 
-         fill = expression(Cases~per~10^5)) +
+         fill = expression(Cases~Per~10^5)) +
     annotate(geom = "text", x = 0.4e6, y = 0.65e6, 
              label = mumps_geog$Year %.>% unique(.), 
              parse = TRUE, size = 3)+
@@ -239,13 +239,13 @@ map_grid_plt <- plot_grid(map_1985_91_plt, map_2006_12_plt,
 
 
 
- # put all of the figure 1
+# put all of the figure 1
 incidence_age_geog <- plot_grid(incidence_w_legend_plt, map_grid_plt, 
                                 nrow = 2, rel_heights = c(1, 0.5))
 
 
 
-
+if(FALSE) {
 incidence_line_plt <- mumps_case_reports_l %.>% 
   ggplot(., aes(x = year, y = sqrt_cases)) +
   geom_line(size = 0.8) +
@@ -253,7 +253,7 @@ incidence_line_plt <- mumps_case_reports_l %.>%
        x = "Year") +
   facet_grid(rows = vars(age_cohort), scales = "free_y") +
   project_theme
-  
+}
 
 
 

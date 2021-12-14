@@ -64,7 +64,9 @@ as_numeric_factor <- function(x) {as.numeric(levels(x))[x]}
 sim_obs_model <- function(po_obj, params, times, 
                           nsim, method = "ode23", 
                           summarise_obs_process = TRUE, 
-                          root_transform = TRUE) {
+                          root_transform = TRUE, 
+                          quantile_prob = c(0.025, 0.5, 0.975), 
+                          quantile_prob_names = c("0.025", "0.5", "0.975")) {
     
     # browser()
     # apply the observation process and generate simulations   
@@ -124,8 +126,8 @@ sim_obs_model <- function(po_obj, params, times,
         select(., -`.id`) %.>% 
         group_by(., year, age_class) %.>%
         summarise(., 
-                  qs = quantile(cases, c(0.025, 0.5, 0.975), na.rm = TRUE), 
-                  prob = c("0.025", "0.5", "0.975"), 
+                  qs = quantile(cases, quantile_prob, na.rm = TRUE), 
+                  prob = quantile_prob_names, 
                   .groups = 'drop') %.>%
         spread(., key = prob, value = qs) %.>% 
         ungroup(.)
@@ -174,7 +176,7 @@ plot_contact_matrix <- function(contact_matrix = contact_sym_Lm10,
     scale_fill_continuous(low = col_min, high = col_max, limits = c(0, 8),
                           breaks =  seq(0, 8, by = 2)) +
     coord_flip() + labs(title = plt_title, subtitle = plt_subtitle,  
-                        x = "Contact age", y = "Reporter age", fill = "Mean Annual\nContacts") + 
+                        x = "Contact Age", y = "Reporter Age", fill = "Mean Annual\nContacts") + 
     theme(aspect.ratio = 1, 
           legend.position="bottom",
           axis.text.x = element_text(angle = 90)) -> contact_matrix_plt  

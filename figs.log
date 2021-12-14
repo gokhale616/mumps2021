@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  23 NOV 2021 15:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2022/dev) (preloaded format=pdflatex 2021.10.20)  13 DEC 2021 16:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -659,10 +659,10 @@ mr10.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/public/mat
 hpazo/fplmri.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/type1/ur
 w/palatino/uplb8a.pfb></Users/devengokhale/Library/TinyTeX/texmf-dist/fonts/typ
 e1/urw/palatino/uplr8a.pfb>
-Output written on figs.pdf (5 pages, 422707 bytes).
+Output written on figs.pdf (5 pages, 450845 bytes).
 PDF statistics:
- 102 PDF objects out of 1000 (max. 8388607)
- 73 compressed objects within 1 object stream
+ 106 PDF objects out of 1000 (max. 8388607)
+ 76 compressed objects within 1 object stream
  11 named destinations out of 1000 (max. 500000)
  26 words of extra memory for PDF output out of 10000 (max. 10000000)
 

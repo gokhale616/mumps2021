@@ -30,7 +30,9 @@ write_sh <- function(pattern = "hypo" , path) {
 
 # name all the hypotheses - heterogenous mixing hypothesis
 
-n_hypotheses <- c("waning_slow", "waning_sigmoid", 
+n_hypotheses <- c("slow", "sigmoid",
+                  "rapid", "constant",
+                  "waning_slow", "waning_sigmoid", 
                   "waning_rapid", "waning_constant", 
                   "leaky2_2_slow", "leaky2_2_sigmoid", 
                   "leaky2_2_rapid", "leaky2_2_constant",

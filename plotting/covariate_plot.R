@@ -43,7 +43,7 @@ prob_report_plt <- (
     ggplot(., aes(x = year, y = eta_a)) +
     geom_line(size = 0.8, colour = default_colour) +
     geom_point(pch = 21, fill = "white", size = 2, colour = default_colour) +
-    labs(x = "", y = "Age-stratified\n case records  ") + #P(Age reported) Case reports\n  age recorded
+    labs(x = "", y = "Age-stratified\n Case Records  ") + #P(Age reported) Case reports\n  age recorded
     annotate(geom = "text", label = "Case Data", 
              angle = 90, x = 1974, y = 0.5) +
     anno_case_layer +
@@ -65,7 +65,7 @@ norm_births_plt <- (
     ggplot(., aes(x = year, y = normalized_Births)) +
     geom_line(size = 0.8, colour = default_colour) +
     geom_point(pch = 21, fill = "white", size = 2, colour = default_colour) +
-    labs(x = "", y = "Normalized births    ") +
+    labs(x = "", y = "Normalized Births    ") +
     anno_case_layer +
     scale_x_continuous(limits = x_lims, breaks = x_breaks) +
     scale_y_continuous(limits = y_lims, breaks = y_breaks, 
@@ -84,7 +84,7 @@ p1_cover_plt <- (
   ggplot(., aes(x = year, y = p1, colour = vacc_cover)) +
   geom_line(aes(group = 1),  size = 0.8) +
   geom_point(pch = 21, fill = "white", size = 2)  +
-  labs(x = "", y = "Neonatal dose", colour = "Vaccine\ncoverage") +
+  labs(x = "", y = "Neonatal Dose", colour = "Vaccine\nCoverage") +
   anno_case_layer +
   scale_x_continuous(limits = x_lims, breaks = x_breaks) +
   scale_y_continuous(limits = y_lims, breaks = y_breaks, 
@@ -124,7 +124,7 @@ p2_cover_plt <- (
     geom_segment(aes(xend = if_else(lead(shape) == shape, lead(year), NA_integer_), 
                      yend = lead(p2)), size = 0.8) +
     geom_point(shape = 21, size = 2, fill = "white") +
-    labs(x = "", y = "Booster dose", color = "Vaccine\ncoverage") +
+    labs(x = "", y = "Booster Dose", color = "Vaccine\nCoverage") +
     anno_case_layer +
     scale_x_continuous(limits = x_lims, breaks = x_breaks) +
     scale_y_continuous(limits = y_lims, breaks = y_breaks, 

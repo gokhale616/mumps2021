@@ -70,9 +70,7 @@ mumps_1996_2018_proc <- (
          `>40`     = `[40,65)` + `>65`, 
          Total     = total) %.>% 
   select(., 
-         Year, total, `[0,5)`, `[5,15)`, `[15,25)`, `[25,40)`, `>40`, unknown) %.>% 
-  filter(., 
-         Year != 2015)
+         Year, total, `[0,5)`, `[5,15)`, `[15,25)`, `[25,40)`, `>40`, unknown) 
   ) 
 
 # combine both time series ###################################################################################
@@ -86,10 +84,10 @@ mumps_1977_2018_proc <- (
 
 # define missing data point for further analysis
 missing_years <- (
-  tibble(Year = c(1976, 1995, 2015), 
-         total = rep(NA, 3), `[0,5)` = rep(NA, 3), `[5,15)` = rep(NA, 3),
-         `[15,25)` = rep(NA, 3), `[25,40)` = rep(NA, 3), `>40` = rep(NA, 3), 
-          unknown = rep(NA, 3)
+  tibble(Year = c(1976, 1995), 
+         total = NA, `[0,5)` = NA, `[5,15)` = NA,
+         `[15,25)` = NA, `[25,40)` = NA, `>40` = NA, 
+          unknown = NA
          )
   )
 
