@@ -138,8 +138,8 @@ obs_data <- mumps_case_reports %.>%
          `0.5` = sqrt(`0.5`)) %.>% 
   drop_na(.) 
 
-#F27121
-model_col <- c("#11998e", "#E94057")
+
+model_col <- c("#11998e", "#fe8c00")
 
 fit_plot <- (
   obs_sim %.>%   

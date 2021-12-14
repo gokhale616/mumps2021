@@ -176,7 +176,7 @@ plot_contact_matrix <- function(contact_matrix = contact_sym_Lm10,
     scale_fill_continuous(low = col_min, high = col_max, limits = c(0, 8),
                           breaks =  seq(0, 8, by = 2)) +
     coord_flip() + labs(title = plt_title, subtitle = plt_subtitle,  
-                        x = "Contact Age", y = "Reporter Age", fill = "Mean Annual\nContacts") + 
+                        x = "Contact Age", y = "Reporter Age", fill = "Mean Daily\nContacts") + 
     theme(aspect.ratio = 1, 
           legend.position="bottom",
           axis.text.x = element_text(angle = 90)) -> contact_matrix_plt  

@@ -1,6 +1,6 @@
 # # contact matrix
 contact_plt <- (
-  contact_matrix %.>%
+  (contact_matrix) %.>%
     plot_contact_matrix(contact_matrix = .) +
     project_theme +
     theme(legend.position = "bottom", 
@@ -31,7 +31,7 @@ y_lims <- c(0, 1)
 y_breaks <- seq(0, 1, by = 0.25)
 
 
-interpolate_colour <- "#FF8C00"
+interpolate_colour <- "deepskyblue1"
 
 default_colour <- "grey30"
 

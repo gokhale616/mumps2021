@@ -17,7 +17,7 @@
 \usepackage{threeparttablex} 
 \usepackage[normalem]{ulem} 
 \usepackage{makecell}
-\usepackage{xcolor}
+%\usepackage{xcolor}
 
 \usepackage[sc]{mathpazo}
 \usepackage{amsmath}
@@ -103,11 +103,23 @@ plot(fit_plot_grid)
 
 @
 
+\setcounter{equation}{0}
+\setcounter{section}{0}
+\setcounter{page}{1}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\renewcommand{\thetable}{ S.\arabic{table}}
+\renewcommand{\thefigure}{S.\arabic{figure}}
+\renewcommand{\thepage}{S.\arabic{page}}
+\renewcommand{\theequation}{S.\arabic{equation}}
+\renewcommand{\thesection}{S.\arabic{section}}
+
 <<imputed_vacc_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capImpCoverage', out.width = outwidth[1]>>=
 
 plot(imputed_vacc_coverage)
 
 @
+
 
 
 <<contact_matrix_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capContact', out.width = outwidth[1]>>=

@@ -67,7 +67,7 @@
 \usepackage{threeparttablex} 
 \usepackage[normalem]{ulem} 
 \usepackage{makecell}
-\usepackage{xcolor}
+%\usepackage{xcolor}
 
 \usepackage[sc]{mathpazo}
 \usepackage{amsmath}
@@ -138,6 +138,17 @@
 
 \end{knitrout}
 
+\setcounter{equation}{0}
+\setcounter{section}{0}
+\setcounter{page}{1}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\renewcommand{\thetable}{ S.\arabic{table}}
+\renewcommand{\thefigure}{S.\arabic{figure}}
+\renewcommand{\thepage}{S.\arabic{page}}
+\renewcommand{\theequation}{S.\arabic{equation}}
+\renewcommand{\thesection}{S.\arabic{section}}
+
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
@@ -149,6 +160,7 @@
 \end{figure}
 
 \end{knitrout}
+
 
 
 \begin{knitrout}

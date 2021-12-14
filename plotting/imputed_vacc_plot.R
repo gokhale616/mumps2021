@@ -35,10 +35,10 @@ imputed_vacc_coverage_fin <- (
 imputed_vacc_coverage <- (
   imputed_vacc_coverage_fin %.>%
     ggplot(., aes(x = PeriodMidDate, y = trace)) +
-    geom_line(aes(colour = statistic), size = 0.8) +
+    geom_line(aes(linetype = statistic), size = 1.2) +
     labs(x = "Year",
          y = "Vaccine Coverage",
-         colour = "Filtered\nStatistic")  +
+         linetype = "Filtered\nStatistic")  +
     facet_grid(rows = vars(imputation_res)) +  
     project_theme +
     scale_x_date(breaks = as.Date(c("1968-01-03", "1974-01-01", "1980-01-01", "1985-01-01")), 
@@ -46,10 +46,10 @@ imputed_vacc_coverage <- (
     scale_y_continuous(limits = c(0, 0.86),
                        breaks = c(0, 0.29, 0.57, 0.86), 
                        labels = scales::percent) +
-    scale_colour_manual(values = c("seagreen4", "firebrick3"), 
-                        labels = c("Mean", "Median"))+
+    scale_linetype_manual(values = c(4, 1), 
+                          labels = c("Mean", "Median"))+
     cap_axes +
-    theme(legend.position = c(0.25, 0.9), 
+    theme(legend.position = c(0.25, 0.8), 
           text = element_text(size = 20)) +
     guides(colour = guide_legend(direction = "horizontal", 
                                  nrow = 2))
