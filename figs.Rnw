@@ -105,12 +105,10 @@ plot(fit_plot_grid)
 
 \setcounter{equation}{0}
 \setcounter{section}{0}
-\setcounter{page}{1}
 \setcounter{figure}{0}
 \setcounter{table}{0}
 \renewcommand{\thetable}{ S.\arabic{table}}
 \renewcommand{\thefigure}{S.\arabic{figure}}
-\renewcommand{\thepage}{S.\arabic{page}}
 \renewcommand{\theequation}{S.\arabic{equation}}
 \renewcommand{\thesection}{S.\arabic{section}}
 

@@ -44,7 +44,7 @@ abs_inc_plt <- (
     # geom_area(aes(colour = age_cohort, fill = age_cohort), 
     #           position = position_dodge(), alpha = 0.3, size = 0.9) +
     labs(y = expression(paste(sqrt(Cases), phantom(100))),
-         x = "") +
+         x = "", colour = "Age\nCohort") +
     scale_x_continuous(#expand = c(0.000, 0.000),
                        breaks = gen_x_breaks) +
     scale_y_continuous(#expand = c(0.0, 0),
@@ -56,8 +56,11 @@ abs_inc_plt <- (
     cap_axes +
     theme(axis.title = element_text(size = 8.5), 
           plot.margin = unit(rep(mar_val, 4), "cm"), 
-          legend.position = "none"
-          )
+          legend.position = c(0.65, 0.7),
+          legend.key.height = unit(10, "pt")
+          ) +
+    guides(colour = guide_legend(title.position = "left", 
+                                 ncol = 3))
   )
 
 
@@ -237,10 +240,10 @@ map_2006_12_plt <-  mumps_demog_geog_annual_2006_12 %.>%
 map_grid_plt <- plot_grid(map_1985_91_plt, map_2006_12_plt, 
                           labels = c("D", "E"))
 
-
+#incidence_w_legend_plt
 
 # put all of the figure 1
-incidence_age_geog <- plot_grid(incidence_w_legend_plt, map_grid_plt, 
+incidence_age_geog <- plot_grid(incidence_plt, map_grid_plt, 
                                 nrow = 2, rel_heights = c(1, 0.5))
 
 
