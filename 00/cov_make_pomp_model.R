@@ -1205,6 +1205,9 @@ make_pomp <- function(...,
                       covar, 
                       incidence_data = mumps_case_reports) {
   
+  
+  message("Assuming exponential distributed waning rate.")
+  
   # changing the column names and subsetting to read into pomp
   mumps_inc_data <- (
     incidence_data %.>%  

@@ -32,6 +32,8 @@ write_sh <- function(pattern = "hypo" , path) {
 
 n_hypotheses <- c("slow", "sigmoid",
                   "rapid", "constant",
+                  "gamma_waning_slow", "gamma_waning_sigmoid", 
+                  "gamma_waning_rapid", "gamma_waning_constant", 
                   "waning_slow", "waning_sigmoid", 
                   "waning_rapid", "waning_constant", 
                   "leaky2_2_slow", "leaky2_2_sigmoid", 

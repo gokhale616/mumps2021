@@ -9,6 +9,13 @@ list.files(".",
            pattern = "waning") %.>% 
   lapply(., test_source)
 
+
+list.files(".", 
+           pattern = "gamma_waning") %.>% 
+  lapply(., test_source)
+
+
+
 list.files(".", 
            pattern = "leaky2") %.>% 
   lapply(., test_source)

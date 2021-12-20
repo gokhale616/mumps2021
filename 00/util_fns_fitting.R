@@ -35,6 +35,7 @@ DE_traj_objfun <- function(x, objfun, est,
 
 #  this is a wrapper function that carries out parameter estimation using DEoptim()
 DE_traj_match <- function(param_constraints,
+                          waning_distribution = "exp",
                           params = p_vals,
                           ninit = np_val, ode_control = NULL, 
                           hypo_name, best_past_est = NULL,
@@ -45,15 +46,32 @@ DE_traj_match <- function(param_constraints,
   message(cat(c("Est: ", names(param_constraints$lower))))
   # browser()
   # generate a pomp objective function - this step also includes defining the pomp object
+  # NOTE: depending upon the argument, "waning_distribution" -- exponential or gamma distributed waning rate 
+  # will be chosen.
   # NOTE: names of the parameters estimated are taken from the lower constraint vector   
-  pomp_objfun <- (
-    make_pomp(...) %.>%
-    # define the objective function 
-    traj_objfun(., 
-                est = names(param_constraints$lower), 
-                params = params, fail.value = 1e20, 
-                ode_control = ode_control)
-    )
+  
+  if(waning_distribution == "exp") {
+    pomp_objfun <- (
+      make_pomp(...) %.>%
+        # define the objective function 
+        traj_objfun(., 
+                    est = names(param_constraints$lower), 
+                    params = params, fail.value = 1e20, 
+                    ode_control = ode_control)
+    ) 
+  } else if(waning_distribution == "gamma") {
+    pomp_objfun <- (
+      make_gamma_pomp(...) %.>%
+        # define the objective function 
+        traj_objfun(., 
+                    est = names(param_constraints$lower), 
+                    params = params, fail.value = 1e20, 
+                    ode_control = ode_control)
+    )  
+  } else {
+      stop("Invalid waning rate distribution: use 'exp' or 'gamma'")
+    }
+  
   # browser()
   # generate a grid of initial guesses
   if(is.null(best_past_est)) {
