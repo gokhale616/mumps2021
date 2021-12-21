@@ -2,7 +2,7 @@
 mle_result_path <- "../result_data/mle"
 
 list.files(path = mle_result_path, 
-           full.names = TRUE)[-21] %.>% 
+           full.names = TRUE)[-25] %.>% 
   lapply(., load,  envir = .GlobalEnv)
 
 

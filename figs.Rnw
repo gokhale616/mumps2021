@@ -80,6 +80,7 @@ source("00/src.R", chdir = TRUE)
 script_var <- c("inc_plot.R", 
                 "prep_estm_tables.R", 
                 "fit_plot.R",
+                "summarize_dynamics.R",
                 "rel_fit_plot.R",
                 "covariate_plot.R",
                 "imputed_vacc_plot.R")
@@ -102,6 +103,12 @@ plot(incidence_age_geog)
 <<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
 
 plot(fit_plot_grid)
+
+@
+
+<<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
+
+plot(summary_plot_grid)
 
 @
 

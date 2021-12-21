@@ -57,52 +57,34 @@ comp_traj_w_cov <- (
 # only compartments that are not infection related
 comp_traj_F <- (
   comp_traj_w_cov %.>% 
-  mutate(., 
-         S_1 = S_1/N_1, S_2 = S_2/N_2, S_3 = S_3/N_3, S_4 = S_4/N_4, S_5 = S_5/N_5, 
-         V_1 = V_1/N_1, V_2 = V_2/N_2, V_3 = V_3/N_3, V_4 = V_4/N_4, V_5 = V_5/N_5, 
-         R_1 = R_1/N_1, R_2 = R_2/N_2, R_3 = R_3/N_3, R_4 = R_4/N_4, R_5 = R_5/N_5, 
-         `.id` = 1) %.>% 
-  select(., year, `.id`, starts_with("S_"), starts_with("V_"), starts_with("R_")) %.>% 
-  prep_as_plot_trajectory(., init_year = 1950-1/52) %.>%  
-  mutate(., 
-         comp_exp = case_when(comp_exp == "S" ~ "Susceptible", 
-                              comp_exp == "V" ~ "Vaccinated", 
-                              comp_exp == "R" ~ "Recovered", 
-                              TRUE ~ comp_exp) %.>% factor(., 
-                                                           level = c("Susceptible", "Recovered", 
-                                                                      "Vaccinated")))  
-    
+    mutate(., year = floor(year)) %.>%  
+    group_by(., year) %.>%   
+    summarize_all(., mean) %.>%   
+    ungroup(.) %.>% 
+    mutate(., 
+           S_1 = S_1/N_1, S_2 = S_2/N_2, S_3 = S_3/N_3, S_4 = S_4/N_4, S_5 = S_5/N_5, 
+           V_1 = V_1/N_1, V_2 = V_2/N_2, V_3 = V_3/N_3, V_4 = V_4/N_4, V_5 = V_5/N_5, 
+           R_1 = R_1/N_1, R_2 = R_2/N_2, R_3 = R_3/N_3, R_4 = R_4/N_4, R_5 = R_5/N_5, 
+           `.id` = 1) %.>% 
+    select(., year, `.id`, starts_with("S_"), starts_with("V_"), starts_with("R_")) %.>% 
+    prep_as_plot_trajectory(., init_year = 1950-1/52) %.>%  
+    mutate(., 
+           comp_exp = case_when(comp_exp == "S" ~ "Susceptible", 
+                                comp_exp == "V" ~ "Vaccinated", 
+                                comp_exp == "R" ~ "Recovered", 
+                                TRUE ~ comp_exp) %.>% factor(., 
+                                                             level = c("Susceptible", "Recovered", 
+                                                                        "Vaccinated")))  
+      
 )
-
-
-year_break_x <- seq(1965, 2065, 20)
-
-comp_traj_F_plot <- (
-  comp_traj_F %.>%
-  mutate(., count = case_when(count > 1 ~ 1,
-                              count < 0 ~ 0,
-                              TRUE ~ count)
-         ) %.>%
-  ggplot(., aes(x = year, y = count, colour = age_cohort)) +
-  geom_line(size = 1.2) +
-  facet_wrap(vars(comp_exp), scales = "fixed") +
-  project_theme +
-  labs(y = "Percent of Total", 
-       x = "", 
-       colour = "Age\nCohort") +
-  scale_color_brewer(palette = "Oranges", direction = -1) +
-  scale_y_continuous(labels = scales::percent) +
-  scale_x_continuous(breaks = year_break_x) +  
-  cap_axes +
-  theme(legend.position = c(0.2, 0.7)) +
-  guides(colour = guide_legend(nrow = 3))
-  )
-
-
 
 # only compartment that are infectious 
 comp_traj_V <- (
   comp_traj_w_cov %.>% 
+    mutate(., year = floor(year)) %.>%  
+    group_by(., year) %.>%   
+    summarize_all(., mean) %.>%   
+    ungroup(.) %.>% 
     mutate(.,
            Ns_1 = 1e5/N_1, Ns_2 = 1e5/N_2, Ns_3 = 1e5/N_3, Ns_4 = 1e5/N_4, Ns_5 = 1e5/N_5, 
            E_1 = (E1_1 + E2_1)*Ns_1, E_2 = (E1_2 + E2_2)*Ns_2, E_3 = (E1_3 + E2_3)*Ns_3, 
@@ -121,30 +103,187 @@ comp_traj_V <- (
                                                              level = c("Exposed", "Infectious", 
                                                                        "True Cases")))  
   
-    
-    )
   
-         
+)
+
+year_break_x <- seq(1970, 2065, 30)
+
+plot_comp_summary <- function(traj_data, y_label, legend_position = c(0.2, 0.7), ...) {
   
-comp_traj_V_plot <- (
-  comp_traj_V %.>%
+  traj_data %.>% 
     ggplot(., aes(x = year, y = count, colour = age_cohort)) +
-    geom_line(size = 1.2) +
-    facet_wrap(vars(comp_exp), scales = "fixed") +
+    geom_line(size = 1) +
     project_theme +
-    labs(y = expression(log[10](Count~Per~100000)), 
-         x = "Year", 
+    labs(y = y_label, 
+         x = "", 
          colour = "Age\nCohort") +
-    scale_color_brewer(palette = "Oranges", direction = -1) +
-    scale_y_continuous(trans =  "log10", breaks = c(1e-2, 1e-1, 1e0, 1e1, 1, 1e2, 1e3)) +
-    scale_x_continuous(breaks = year_break_x) +
+    scale_color_brewer(palette = "PuBuGn", direction = -1) +
+    scale_y_continuous(...) +
+    scale_x_continuous(breaks = year_break_x) +  
     cap_axes +
-    theme(legend.position = "none") +
+    theme(legend.position = legend_position) +
     guides(colour = guide_legend(nrow = 3))
+    
+  
+}
+
+
+pSusc_plot <-(
+  comp_traj_F %.>% 
+    mutate(., count = case_when(count > 1 ~ 1,
+                                count < 0 ~ 0,
+                                TRUE ~ count)
+    ) %.>% 
+    filter(., comp_exp == "Susceptible") %.>%  
+    plot_comp_summary(., 
+                      y_label = "Percent Susceptible", 
+                      legend_position = c(0.5, 0.7), 
+                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
+  )
+
+pRecv_plot <-(
+  comp_traj_F %.>% 
+    mutate(., count = case_when(count > 1 ~ 1,
+                                count < 0 ~ 0,
+                                TRUE ~ count)
+    ) %.>%
+    filter(., comp_exp == "Recovered") %.>%  
+    plot_comp_summary(., y_label = "Percent Recovered", legend_position = "none", 
+                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
 )
 
 
-plot_grid(comp_traj_F_plot, comp_traj_V_plot, nrow = 2, align = "v", labels = c("A", "B"))
+pVacc_plot <-(
+  comp_traj_F %.>% 
+    filter(., comp_exp == "Vaccinated") %.>%  
+    plot_comp_summary(., y_label = "Percent Vaccinated", legend_position = "none", 
+                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
+)
+
+
+nExpo_plot <- (
+  comp_traj_V %.>% 
+    filter(., comp_exp == "Exposed") %.>% 
+    plot_comp_summary(., 
+                      y_label = expression(log[10](Exposed~Per~100000)), legend_position = "none", 
+                      trans =  "log10",  breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
+                      limits = c(1e-3, 1e3))
+)
+
+nInfc_plot <- (
+  comp_traj_V %.>% 
+    filter(., comp_exp == "Infectious") %.>% 
+    plot_comp_summary(., 
+                      y_label = expression(log[10](Infectious~Per~100000)), legend_position = "none", 
+                      trans =  "log10", breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
+                      limits = c(1e-3, 1e3))
+)
+
+  
+nTrCs_plot <- (
+  comp_traj_V %.>% 
+    filter(., comp_exp == "True Cases") %.>% 
+    plot_comp_summary(., 
+                      y_label = expression(log[10](True~Cases~Per~100000)), legend_position = "none", 
+                      trans =  "log10", breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
+                      limits = c(1e-3, 1e3))
+)
+
+         
+
+
+
+
+# estimate the average transmission rate and the corresponding mean age at infection! - Fingers crossed!!!
+# append_rp_with_these <- c(N = 1e8, p = 1, nu = 1/80, ad = age_class_duration)
+
+# summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov %.>% mutate(., `.id` = 1), 
+#                                           p_vals = c(sim_from_these, 
+#                                                      append_rp_with_these))
+
+
+load("./summarized_traj.rds")
+
+# find annual averages
+treated_summarized_traj <- (
+  summarized_traj %.>% 
+    mutate(., year_val = floor(year)) %.>% 
+    select(., year_val, Reff, average_beta, mean_age_at_infection) %.>% 
+    group_by(., year_val) %.>% 
+    summarise_all(., mean) %.>% 
+    ungroup(.) %.>% 
+    mutate(., mean_age_at_infection = ifelse(mean_age_at_infection > 80, 80, mean_age_at_infection)) %.>%
+    gather(., "summary", "value", -year_val)
+  ) 
+
+
+
+average_beta_plot <- (
+  treated_summarized_traj %.>% 
+    filter(., summary == "average_beta") %.>% 
+    ggplot(., aes(x = year_val, y = value)) +
+    labs(x = "Year", 
+         y = "Average Transmission Rate") +
+    geom_line(size = 1, color = "grey30") +
+    scale_x_continuous(breaks = year_break_x) +
+    scale_y_continuous(breaks = c(80, 120, 160, 200, 240), limits = c(80, 240)) + 
+    project_theme +
+    cap_axes
+    )
+
+mean_age_inf_plot <- (
+  treated_summarized_traj %.>% 
+    filter(., summary == "mean_age_at_infection") %.>% 
+    ggplot(., aes(x = year_val, y = value)) +
+    labs(x = "Year", 
+         y = "Mean Age At Infection") +
+    geom_line(size = 1, color = "grey30") +
+    scale_x_continuous(breaks = year_break_x) +
+    scale_y_continuous(breaks = c(0, 20, 40, 60, 80), limits = c(0, 80)) +
+    project_theme +
+    cap_axes
+)
+
+
+Reff_plot <- (
+  treated_summarized_traj %.>% 
+  filter(., summary == "Reff") %.>% 
+  ggplot(., aes(x = year_val, y = value)) +
+  labs(x = "Year", 
+       y = "Effective Reproductive Number") +
+  geom_line(size = 1, color = "grey30") +
+  geom_hline(yintercept = 1, size = 0.8, linetype = "dotdash", colour = "red")  +
+  scale_x_continuous(breaks = year_break_x) +
+  scale_y_continuous(breaks = c(0.92, 0.96, 1, 1.04, 1.08), limits = c(0.92, 1.08)) +
+  project_theme +
+  cap_axes
+  )
+
+
+
+F_plot_grid <- (
+  plot_grid(pSusc_plot, pRecv_plot, pVacc_plot, nrow = 1,
+            labels = c("A", "B", "C"), align = "hv")
+)
+
+V_plot_grid <- (
+  plot_grid(nExpo_plot, nInfc_plot, nTrCs_plot, nrow = 1,
+            labels = c("C", "D", "E"), align = "hv")
+)
+
+
+stat_plot_grid <- (
+  plot_grid(average_beta_plot, mean_age_inf_plot, Reff_plot, nrow = 1,
+          labels = c("F", "G", "H"), align = "hv")
+  )
+
+
+
+summary_plot_grid <- (
+  plot_grid(F_plot_grid, V_plot_grid, 
+            stat_plot_grid,   
+            nrow = 3, align = "h", axis = "lr")
+  )
 
 
 
