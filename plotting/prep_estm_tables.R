@@ -101,7 +101,7 @@ table_hypo_compare <- (
 )
 
 
-xtable(table_hypo_compare)
+# xtable(table_hypo_compare)
 
 
 # at the end load the treated covars so that this can they can be referenced while making plots 

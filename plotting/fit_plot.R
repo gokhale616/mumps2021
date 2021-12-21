@@ -18,7 +18,6 @@ sim_from_these <- (
 
 
 # generate a po_object
-
 po_est_best_mod <- make_pomp(covar = mod_mumps_covariates_sigmoidal)
 
 
