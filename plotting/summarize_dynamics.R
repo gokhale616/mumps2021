@@ -1,11 +1,13 @@
 # this script is dependent on ./fit_plot.R
 # it requires the object ./sim_from_these which contain mle of the best fitting model
 
+fin_year <- 2020
+
 # define a pomp obect to suumarize the epidemiology
 po_to_sum <- make_pomp(., 
                        covar = mod_mumps_covariates_sigmoidal, 
                        extrapolate_simulation = TRUE, 
-                       extra_start_t = 1965-1/52, extra_end_t = 2065, 
+                       extra_start_t = 1965-1/52, extra_end_t = fin_year, 
                        temp_scale = 1/52)
 
 # Generate trajectories from all the compartments 
@@ -17,7 +19,7 @@ comp_traj <- trajectory(po_to_sum,
 
 # generate an interpolated dataframe with the population sizes
 
-interp_range <- c(1965, 2065)
+interp_range <- c(1965, fin_year)
 
 xnew <- seq(interp_range[1], interp_range[2], by = 1/52)
 
@@ -106,7 +108,29 @@ comp_traj_V <- (
   
 )
 
-year_break_x <- seq(1970, 2065, 30)
+# ### .. calculate the mean age at infection
+# mean_age_inf_data <- (
+#   comp_traj_w_cov %.>% 
+#     filter(., year > 1965 & year < 2020) %.>% 
+#     mutate(., `.id` = 1) %.>% 
+#     select(., year, `.id`, starts_with("I1_")) %.>% 
+#     prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
+#     group_by(., year) %.>% 
+#     mutate(., wt = count/sum(count)) %.>% 
+#     ungroup(.) %.>% 
+#     mutate(., mean_cohort_age = case_when(age_cohort == age_names[1] ~ (4+0)/2, 
+#                                           age_cohort == age_names[2] ~ (14+5)/2, 
+#                                           age_cohort == age_names[3] ~ (24+15)/2, 
+#                                           age_cohort == age_names[4] ~ (39+25)/2, 
+#                                           age_cohort == age_names[5] ~ (40+80)/2)) %.>% 
+#     select(., year, mean_cohort_age, wt) %.>% 
+#     group_by(., year) %.>% 
+#     mutate(., mean_age_at_inf  = sum(mean_cohort_age*wt)) %.>% 
+#     select(., year, mean_age_at_inf) %.>% 
+#     ungroup()
+# )
+
+year_break_x <- seq(1970, fin_year, 15)
 
 plot_comp_summary <- function(traj_data, y_label, legend_position = c(0.2, 0.7), ...) {
   
@@ -195,14 +219,16 @@ nTrCs_plot <- (
 
 
 # estimate the average transmission rate and the corresponding mean age at infection! - Fingers crossed!!!
-# append_rp_with_these <- c(N = 1e8, p = 1, nu = 1/80, ad = age_class_duration)
+append_rp_with_these <- c(N = 1e8, p = 1, nu = 1/80, ad = age_class_duration)
 
-# summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov %.>% mutate(., `.id` = 1), 
-#                                           p_vals = c(sim_from_these, 
-#                                                      append_rp_with_these))
+tic()
+summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov %.>% mutate(., `.id` = 1),
+                                          p_vals = c(sim_from_these,
+                                                append_rp_with_these))
+toc()
 
 
-load("./summarized_traj.rds")
+#load("./summarized_traj.rds")
 
 # find annual averages
 treated_summarized_traj <- (
@@ -233,7 +259,7 @@ average_beta_plot <- (
 
 mean_age_inf_plot <- (
   treated_summarized_traj %.>% 
-    filter(., summary == "mean_age_at_infection") %.>% 
+    filter(., summary == "mean_age_at_infection") %.>%
     ggplot(., aes(x = year_val, y = value)) +
     labs(x = "Year", 
          y = "Mean Age At Infection") +
@@ -284,6 +310,14 @@ summary_plot_grid <- (
             stat_plot_grid,   
             nrow = 3, align = "h", axis = "lr")
   )
+
+
+
+
+
+
+  
+
 
 
 

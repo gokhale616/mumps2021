@@ -84,6 +84,24 @@ summarized_traj %.>%
   geom_line(size = 0.8) +
   facet_grid(rows = vars(summary), scales = "free_y") +
   project_theme
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
 
 
