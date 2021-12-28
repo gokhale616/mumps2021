@@ -23,6 +23,11 @@ result_list <- (
   )
 )
 
+# hard coding some parameter values for use downstream within estimation of R0s and Rps
+# calculate the reproductive numbers 
+params_for_R0 <- c(N = 100e6, nu = 1/80, p = 0, ad = age_class_duration)
+params_for_Rp <- c(N = 100e6, nu = 1/80, p = 1, ad = age_class_duration)
+
 
 mk_result_df <- function(c = 1, res = result_list) {
   # to look into the function at a specific iteration
@@ -40,10 +45,6 @@ mk_result_df <- function(c = 1, res = result_list) {
     p_intro    <- NA
     vacc       <- extra_params[2]
   }
-  
-  # calculate the reproductive numbers 
-  params_for_R0 <- c(N = 100e6, nu = 1/80, p = 0, ad = age_class_duration)
-  params_for_Rp <- c(N = 100e6, nu = 1/80, p = 1, ad = age_class_duration)
   
   if(hypo_covar == "gwaning") {
     R0 <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_R0) %.>% 
@@ -100,6 +101,7 @@ table_hypo_compare <- (
     filter(., d_AIC == min(d_AIC)) %.>% 
     ungroup(.) %.>%
     mutate(., 
+           p_intro = ifelse(p_intro == 3, "[15, 25)", p_intro),
            sigma = 365.25/sigma, 
            hypothesis = case_when(hypothesis == "waning" ~  "Waning (Exponential)", 
                                   hypothesis == "gwaning" ~  "Waning (Erlang, n = 3)", 
@@ -117,12 +119,12 @@ table_hypo_compare <- (
             Quantity = case_when(Quantity == "d_AIC"~"$\\Delta AIC$",
                                  Quantity == "R0"~"$R_0$",
                                  Quantity == "Rp"~"$R_p$",
-                                 Quantity == "impact"~"Vaccine impact ($\\psi$)",
+                                 Quantity == "impact"~"$\\psi$",
                                  Quantity == "beta1"~"$\\beta_1$", 
-                                 Quantity == "sigma"~"$\\sigma^{-1}$ (days)", 
-                                 Quantity == "dwan"~ "$\\delta^{-1}$ (years)",  
+                                 Quantity == "sigma"~"$\\sigma^{-1}$ (Days)", 
+                                 Quantity == "dwan"~ "$\\delta^{-1}$ (Years)",  
                                  Quantity == "epsilon2"~ "$\\epsilon$", 
-                                 Quantity == "p_intro"~ "$p_{intro}$", 
+                                 Quantity == "p_intro"~ "$p_{intro}$ (Age cohort)", 
                                  Quantity == "t_intro"~ "$t_{intro}$", 
                                  Quantity == "vacc_covariate"~ "Booster shape"
                                  )) %.>% 

@@ -53,7 +53,7 @@ neonatal_dose_plot <- (
     select(., year, p1) %.>% 
     ggplot(., aes(x = year, y = p1)) +
     geom_line(colour = "grey30", size = 1) +
-    geom_point(colour = "grey30", shape = 21, size = 3, fill = "white") +  
+    geom_point(colour = "grey30", shape = 21, size = 2, fill = "white") +  
     annotate(geom = "rect", xmin = 1968, xmax = 1985, ymin = 0, ymax = 1, 
              fill = "deepskyblue1", alpha = 0.4) +
     labs(x = "Year", y = "Neonatal Vaccine Coverage           ")+

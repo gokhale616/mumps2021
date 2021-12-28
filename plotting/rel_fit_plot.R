@@ -127,9 +127,10 @@ in_sample_obs_data <- (
 # relative fits to the data 
 rel_fit_plt <- (
   sim_all_models %.>% 
-    mutate(., hypothesis = as_factor(hypothesis)) %.>% 
+    mutate(., 
+           hypothesis = as_factor(hypothesis)) %.>% 
     ggplot(.) +
-    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Data"), 
+    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed"), 
               size = 1) +
     geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
     geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
@@ -137,7 +138,7 @@ rel_fit_plt <- (
                                                                        round(d_AIC, 2) %.>% 
                                                                          as.character(.))), 
               parse = TRUE) +
-    facet_grid(rows = vars(age_class), cols = vars(hypothesis), scales = "fixed") +
+    facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
     labs(x = "Year", 
          y = expression(sqrt(Cases)), 
          colour = "Case\nTrajectory", 
@@ -145,13 +146,13 @@ rel_fit_plt <- (
     scale_colour_manual(values = c("Observed" = "grey30", 
                                    "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
                                    "Waning (Erlang, N = 3)" = "#003973", 
-                                   "Leaky" = "#FF416C")) +
+                                   "Leaky" = "#FF416C"), 
+                        breaks = c("Observed", .$hypothesis %.>% levels(.))) +
     scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
                                  "Waning (Erlang, N = 3)" = "#003973", 
                                  "Leaky" = "#FF416C")) +
     project_theme +
     cap_axes +
-    # theme(legend.box = "vertical") +
     guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
            colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
   )

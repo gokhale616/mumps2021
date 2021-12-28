@@ -606,7 +606,7 @@ vseir_skel_sim <- Csnippet("
   
     // define  the 
     double delta = 1/dwan; 
-  
+
     int i,j,k,l;
     int n = agegroups; 
     
@@ -622,22 +622,18 @@ vseir_skel_sim <- Csnippet("
     const double *I1local = E1local+n;
     const double *E2local = I1local+n;
     const double *I2local = E2local+n;
-    const double *Rlocal  = I2local+n;
-    const double *Vlocal  = Rlocal+n;
+    const double *Vlocal  = I2local+n;;
     const double *Clocal  = Vlocal+n;
-    const double *Alocal  = Clocal+n;
-    const double *Glocal  = Alocal+n;
+    const souble *Vslocal = Vslocal+n; 
     
     double *DSlocal  = &DS_1;
     double *DE1local = DSlocal+n;
     double *DI1local = DE1local+n;
     double *DE2local = DI1local+n;
     double *DI2local = DE2local+n;
-    double *DRlocal  = DI2local+n;
-    double *DVlocal  = DRlocal+n;
+    double *DVlocal  = DI2local+n;;
     double *DClocal  = DVlocal+n;
-    double *DAlocal  = DClocal+n;
-    double *DGlocal  = DAlocal+n;
+    double *DVslocal = DClocal+n;
     
     #define CM(J,K) Cvlocal[(J)+n*(K)]
     #define LV(K) lvlocal[(K)]
@@ -653,23 +649,20 @@ vseir_skel_sim <- Csnippet("
     #define I1(K) I1local[(K)]
     #define E2(K) E2local[(K)]
     #define I2(K) I2local[(K)]
-    #define R(K) Rlocal[(K)]
     #define V(K) Vlocal[(K)]
     #define C(K) Clocal[(K)]
-    #define A(K) Alocal[(K)]
-    #define G(K) Glocal[(K)]
+    #define Vs(K) Vslocal[(K)]
     
     #define DS(K) DSlocal[(K)]
     #define DE1(K) DE1local[(K)]
     #define DI1(K) DI1local[(K)]
     #define DE2(K) DE2local[(K)]
     #define DI2(K) DI2local[(K)]
-    #define DR(K) DRlocal[(K)]
     #define DV(K) DVlocal[(K)]
     #define DC(K) DClocal[(K)]
-    #define DA(K) DAlocal[(K)]
-    #define DG(K) DGlocal[(K)]
+    #define DVs(K) DVslocal[(K)]
     
+
     double r_S1[4];
     
     double r_S[3];
@@ -677,7 +670,6 @@ vseir_skel_sim <- Csnippet("
     double r_I1[2];
     double r_E2[2];
     double r_I2[2];
-    double r_R[1];
     double r_V[4];
     
     double dN_S1[4];
@@ -687,7 +679,6 @@ vseir_skel_sim <- Csnippet("
     double dN_I1[2];
     double dN_E2[2];
     double dN_I2[2];
-    double dN_R[1];
     double dN_V[4];
     
     
@@ -762,7 +753,6 @@ vseir_skel_sim <- Csnippet("
         DI1(i) = sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
         DE2(i) = lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
         DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
-        DR(i)  = gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i);
         DV(i)  = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
       } else if (i == 1) {
@@ -791,7 +781,6 @@ vseir_skel_sim <- Csnippet("
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
-          DR(i)  = LV(i-1)*R(i-1)  + gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i); 
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
       } else {
@@ -815,7 +804,6 @@ vseir_skel_sim <- Csnippet("
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
-          DR(i)  = LV(i-1)*R(i-1)  + gamma*(I1(i) + I2(i)) - (LV(i) - MU_AGE(i))*R(i);
           DV(i)  = LV(i-1)*V(i-1)  - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
           
       }
@@ -823,10 +811,8 @@ vseir_skel_sim <- Csnippet("
       /* ========================= */
       /* Keep account of new cases */
       /* ========================= */
-      DA(i) = gamma*I1(i);
-      DG(i) = gamma*I2(i);
-      
       DC(i) = gamma*(I1(i)+I2(i)); 
+      DVs(i) = delta*V(i)
     }
 ")
 
@@ -865,11 +851,9 @@ vseir_init_sim <- Csnippet("
   double *I1 = &I1_1;
   double *E2 = &E2_1;
   double *I2 = &I2_1;
-  double *R = &R_1;
   double *V = &V_1;
   double *C = &C_1;
-  double *A = &A_1;
-  double *G = &G_1;
+  double *Vs = &Vs_1
   
   int n = agegroups;
   
@@ -880,16 +864,11 @@ vseir_init_sim <- Csnippet("
     E1[i] = 0;
     I1[i] = nearbyint(I1_0*N_AGE(i));
     E2[i] = 0;
-    I2[i] = nearbyint(I2_0*N_AGE(i));;
-    R[i]  = nearbyint(R_0*N_AGE(i));
+    I2[i] = nearbyint(I2_0*N_AGE(i));
     V[i]  = 0;
     C[i]  = 0;
-    A[i]  = 0;
-    G[i]  = 0;
+    Vs[i] = 0;
   }
-
-                       
-                       
 ")
 
 ##### measurement model #####
@@ -1150,8 +1129,7 @@ state_names_est <- c(sprintf("S_%d",1:5),
 
 
 state_names_sim <- c(state_names_est,
-                     sprintf("R_%d",1:5),
-                     sprintf("A_%d", 1:5), sprintf("G_%d", 1:5))
+                     sprintf("Vs_%d",1:5))
 
 
 param_names_est <- c("S_0", "I1_0", "I2_0",  
@@ -1166,11 +1144,6 @@ param_names_est <- c("S_0", "I1_0", "I2_0",
                      "alpha", "dwan", "t_intro", "p_intro",
                      "epsilon1", "epsilon2",  
                      "agegroups")
-
-
-param_names_sim <- c("R_0", 
-                     param_names_est)
-
 
 
 
@@ -1189,8 +1162,6 @@ param_vals_est <- c(S_0 = 1e-1, I1_0 = 1e-4, I2_0 = 0,
                     agegroups = 5, Cv = C, alpha = 0.054, beta1 = 0.11,
                     lcv = c(1/5, 1/10, 1/10, 1/15, 1/40), iota = 1, 
                     t_intro = 3000, p_intro = 6)
-
-param_vals_sim <- c(R_0 = 0, param_vals_est) 
 
 
 ##### build the pomp object #####
@@ -1233,8 +1204,8 @@ make_pomp <- function(...,
       arrange(., year) %.>% 
       pomp(., 
            times = "year", t0 = start_t, 
-           skeleton = vectorfield(vseir_skel_est),
-           rinit = vseir_init_est,
+           skeleton = vectorfield(vseir_skel_sim),
+           rinit = vseir_init_sim,
            rmeasure = vseir_rmeas,
            dmeasure = vseir_dmeas,
            accumvars = c(sprintf("C_%d", 1:5)),
@@ -1242,7 +1213,7 @@ make_pomp <- function(...,
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 
                           sprintf("p%d", 1:2), "Births", "eta_a"),
-           statenames = state_names_est,
+           statenames = state_names_sim,
            paramnames = param_names_est, ...)
       ) 
   

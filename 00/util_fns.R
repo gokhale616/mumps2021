@@ -167,16 +167,17 @@ calculate_R0 <- function(q) {
 # plot the contact matrix
 plot_contact_matrix <- function(contact_matrix = contact_sym_Lm10, 
                                 plt_title = NULL, plt_subtitle = NULL, 
-                                col_min = "#ffd89b", col_max = "#480048") {
+                                col_min = "#ffd89b", col_max = "#480048", limits = c(0, 8), 
+                                breaks = seq(0, 8, by = 2), fill_lab = "Mean Daily\nContacts") {
   
   sapply(c("reshape2", "ggthemes"), library, character.only = TRUE)
   
   ggplot(data = melt(contact_matrix), mapping = aes(x = Var1, y = Var2, fill = value)) +
     geom_tile() +
-    scale_fill_continuous(low = col_min, high = col_max, limits = c(0, 8),
-                          breaks =  seq(0, 8, by = 2)) +
+    scale_fill_continuous(low = col_min, high = col_max, limits = limits,
+                          breaks =  breaks) +
     coord_flip() + labs(title = plt_title, subtitle = plt_subtitle,  
-                        x = "Contact Age", y = "Reporter Age", fill = "Mean Daily\nContacts") + 
+                        x = "Contact Age", y = "Reporter Age", fill = fill_lab) + 
     theme(aspect.ratio = 1, 
           legend.position="bottom",
           axis.text.x = element_text(angle = 90)) -> contact_matrix_plt  
