@@ -17,7 +17,7 @@
 \usepackage{threeparttablex} 
 \usepackage[normalem]{ulem} 
 \usepackage{makecell}
-%\usepackage{xcolor}
+\usepackage{xcolor}
 
 \usepackage[sc]{mathpazo}
 \usepackage{amsmath}
@@ -80,7 +80,7 @@ source("00/src.R", chdir = TRUE)
 script_var <- c("inc_plot.R", 
                 "prep_estm_tables.R", 
                 "fit_plot.R",
-                "summarize_dynamics.R",
+                # "summarize_dynamics.R",
                 "rel_fit_plot.R",
                 "covariate_plot.R",
                 "imputed_vacc_plot.R")
@@ -100,6 +100,13 @@ plot(incidence_age_geog)
 
 @
 
+<<fit_table,  results = "asis", warning = FALSE, echo=FALSE, out.width = outwidth[1], out.extra = ''>>=
+
+est_mle_kbl
+
+@
+
+
 <<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
 
 plot(fit_plot_grid)
@@ -108,7 +115,7 @@ plot(fit_plot_grid)
 
 <<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
 
-plot(summary_plot_grid)
+# plot(summary_plot_grid)
 
 @
 
@@ -121,9 +128,9 @@ plot(summary_plot_grid)
 \renewcommand{\theequation}{S.\arabic{equation}}
 \renewcommand{\thesection}{S.\arabic{section}}
 
-<<imputed_vacc_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capImpCoverage', out.width = outwidth[1]>>=
+<<imputed_vacc_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capImpCoverage', out.width = outwidth[3]>>=
 
-plot(imputed_vacc_coverage)
+plot(imputed_vacc_coverage_grid_plt)
 
 @
 
@@ -142,9 +149,10 @@ plot(all_cov_plt)
 @
 
 
+
 <<rel_fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[3]>>=
 
-plot(rel_fit_plots)
+plot(rel_fit_plt)
 
 @
 

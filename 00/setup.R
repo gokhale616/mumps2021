@@ -1,3 +1,6 @@
+# table options 
+options(knitr.kable.NA = '-')
+
 # Load packages ----------------------------------------------------------------------------------------------
 
 lib_dep <- c("tidyverse", 
@@ -12,7 +15,8 @@ lib_dep <- c("tidyverse",
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
              "parallel", "nloptr", 
              "lemon", "wesanderson", 
-             "lubridate")
+             "lubridate",
+             "kableExtra")
 
 
 

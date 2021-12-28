@@ -67,7 +67,7 @@
 \usepackage{threeparttablex} 
 \usepackage[normalem]{ulem} 
 \usepackage{makecell}
-%\usepackage{xcolor}
+\usepackage{xcolor}
 
 \usepackage[sc]{mathpazo}
 \usepackage{amsmath}
@@ -111,12 +111,7 @@
 \input{captions}
 
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in readChar(con, 5L, useBytes = TRUE): cannot open the connection}}\end{kframe}
-\end{knitrout}
 
 
 \begin{knitrout}
@@ -131,6 +126,34 @@
 
 \end{knitrout}
 
+\begin{table}[H]
+
+\caption{\label{tab:loading_chunk}Model specific parameter estimates and derived quantitities were obtained by maximizing the likelihood function}
+\resizebox{\linewidth}{!}{
+\begin{tabular}[t]{ccccc}
+\toprule
+\multicolumn{1}{c}{\textbf{ }} & \multicolumn{4}{c}{\textbf{Model}} \\
+\cmidrule(l{3pt}r{3pt}){2-5}
+Parameter/Quantity & No Loss & Waning (Exponential) & Waning (Erlang, N = 3) & Leaky\\
+\midrule
+\cellcolor{gray!6}{$\Delta AIC$} & \cellcolor{gray!6}{207.288} & \cellcolor{gray!6}{0} & \cellcolor{gray!6}{26.853} & \cellcolor{gray!6}{10.87}\\
+$R_0$ & 42.414 & 13.992 & 31.371 & 22.199\\
+\cellcolor{gray!6}{$R_p$} & \cellcolor{gray!6}{2.29} & \cellcolor{gray!6}{6.45} & \cellcolor{gray!6}{20.211} & \cellcolor{gray!6}{1.789}\\
+Vaccine impact ($\psi$) & 0.946 & 0.539 & 0.356 & 0.919\\
+\cellcolor{gray!6}{$\beta_1$} & \cellcolor{gray!6}{0.185} & \cellcolor{gray!6}{0.036} & \cellcolor{gray!6}{0.341} & \cellcolor{gray!6}{0.735}\\
+$\sigma^{-1}$ (days) & 12.022 & 24.998 & 16.894 & 24.999\\
+\cellcolor{gray!6}{$\delta^{-1}$ (years)} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{111.456} & \cellcolor{gray!6}{56.457} & \cellcolor{gray!6}{-}\\
+$\epsilon$ & - & - & - & 0.028\\
+\cellcolor{gray!6}{$p_{intro}$} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{3}\\
+$t_{intro}$ & - & - & - & 2000\\
+\cellcolor{gray!6}{Booster shape} & \cellcolor{gray!6}{Constant} & \cellcolor{gray!6}{Sigmoid} & \cellcolor{gray!6}{Sigmoid} & \cellcolor{gray!6}{Constant}\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+
+
+
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
@@ -143,17 +166,7 @@
 
 \end{knitrout}
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=17.8cm]{figure/plot-summary_plot-1} 
-
-}
-
-\caption[\capSumplot]{\capSumplot}\label{fig:summary_plot}
-\end{figure}
-
-\end{knitrout}
 
 \setcounter{equation}{0}
 \setcounter{section}{0}
@@ -167,7 +180,7 @@
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=8.7cm]{figure/plot-imputed_vacc_plot-1} 
+{\centering \includegraphics[width=17.8cm]{figure/plot-imputed_vacc_plot-1} 
 
 }
 
@@ -201,6 +214,7 @@
 \end{figure}
 
 \end{knitrout}
+
 
 
 \begin{knitrout}

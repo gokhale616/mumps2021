@@ -58,13 +58,13 @@ fit_plot <- (
                       labels = c("Within\nsample", "Out of\nsample"), 
                       name = "Prediction\nIntervals") +
     scale_colour_manual(values = c("grey30", model_col), 
-                        labels = c("Observed", "Simulated-in", "Simulated-out"), 
-                        name = "Cases") +
+                        labels = c("Observed", "Fitted", "Predicted"), 
+                        name = "Case\nTrajectory") +
     scale_x_continuous(breaks = gen_x_breaks, expand = c(0, 0)) +
     project_theme +
     cap_axes +
-    guides(colour = guide_legend(title.position = "top", ncol = 1), 
-           fill = guide_legend(title.position = "top", ncol = 1))  
+    guides(colour = guide_legend(title.position = "top", ncol = 1, order = 1), 
+           fill = guide_legend(title.position = "top", ncol = 1, order = 2))  
   )
   
 

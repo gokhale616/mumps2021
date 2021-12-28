@@ -1,7 +1,3 @@
-# contact matrix - set the scale to annual mean contacts
-C <- contact_matrix*365.25
-
-
 # defining the model snippets for pomp -----------------------------------------------------------------------
 
 ##### deterministic skeleton - for estimation #####

@@ -2,7 +2,7 @@
 
 # decide on model colors 
 # best fitting model will always be - "#11998e"
-# scales::show_col(c("#11998e", "#003973", "#FF416C", "#654ea3"))
+#scales::show_col(c("#11998e", "#003973", "#FF416C", "#654ea3"))
 
 
 # generate a tibble of parameter vectors
@@ -15,9 +15,7 @@ sim_from_these_tibble <- (
            t_intro  = ifelse(is.na(p_intro) == TRUE, 3000, p_intro), 
            dwan     = ifelse(is.na(dwan) == TRUE, Inf, dwan),  
            epsilon2 = ifelse(is.na(epsilon2) == TRUE, 0, epsilon2), 
-           hypothesis = case_when(hypothesis == "waning"~ "Waning", 
-                                  hypothesis == "leaky2"~ "Leaky", 
-                                  hypothesis == "noloss"~ "No Loss")) %.>% 
+           ) %.>% 
     ungroup(.)
   
 )
@@ -38,17 +36,37 @@ sim_all_models <- map_dfr(1:nrow(sim_from_these_tibble),
                             
                             # generate the appropriate pomp  object 
                             if(covar_name == "constant") {
-                              mod_po <- make_pomp(covar = mod_mumps_covariates_constant, 
-                                                  incidence_data = in_sample_mumps_case_reports)
+                              if (hypo_name == "gwaning") {
+                                mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_constant, 
+                                                          incidence_data = in_sample_mumps_case_reports)
+                              } else {
+                                  mod_po <- make_pomp(covar = mod_mumps_covariates_constant, 
+                                                      incidence_data = in_sample_mumps_case_reports)
+                              }
                             } else if(covar_name == "rapid") {
-                                mod_po <- make_pomp(covar = mod_mumps_covariates_rapid, 
-                                                    incidence_data = in_sample_mumps_case_reports)
+                              if (hypo_name == "gwaning") {
+                                mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_rapid, 
+                                                          incidence_data = in_sample_mumps_case_reports)
+                              } else {
+                                  mod_po <- make_pomp(covar = mod_mumps_covariates_rapid, 
+                                                      incidence_data = in_sample_mumps_case_reports)
+                              }
                             } else if(covar_name == "sigmoid") {
-                                mod_po <- make_pomp(covar = mod_mumps_covariates_sigmoidal, 
-                                                    incidence_data = in_sample_mumps_case_reports)
+                              if (hypo_name == "gwaning") {
+                                mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_sigmoidal, 
+                                                          incidence_data = in_sample_mumps_case_reports)
+                              } else {
+                                  mod_po <- make_pomp(covar = mod_mumps_covariates_sigmoidal, 
+                                                      incidence_data = in_sample_mumps_case_reports)
+                              }
                             } else if(covar_name == "slow") {
-                                mod_po <- make_pomp(covar = mod_mumps_covariates_slow, 
-                                                    incidence_data = in_sample_mumps_case_reports)
+                              if (hypo_name == "gwaning") {
+                                mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_slow, 
+                                                          incidence_data = in_sample_mumps_case_reports)
+                              } else {
+                                  mod_po <- make_pomp(covar = mod_mumps_covariates_slow, 
+                                                      incidence_data = in_sample_mumps_case_reports)
+                              }
                             }
                             
                             
@@ -70,13 +88,29 @@ sim_all_models <- map_dfr(1:nrow(sim_from_these_tibble),
                             
                           })
 
+hypo_factor_order <- c("No Loss", "Waning (Exponential)", "Waning (Erlang, N = 3)", "Leaky")
+
+
+sim_all_models %<>% 
+  mutate(., hypothesis = case_when(hypothesis == "waning"~ "Waning (Exponential)", 
+                                   hypothesis == "gwaning" ~ "Waning (Erlang, N = 3)",
+                                   hypothesis == "leaky2" ~ "Leaky", 
+                                   hypothesis == "noloss" ~ "No Loss") %.>% 
+           factor(., levels = hypo_factor_order)
+         )
 
 
 # anno_data for delta AIC
 anno_d_AIC <- (
   sim_from_these_tibble %.>% 
     select(., hypothesis, d_AIC) %.>% 
-    mutate(., age_class = "[0,5)")
+    mutate(., 
+           hypothesis = case_when(hypothesis == "waning"~ "Waning (Exponential)", 
+                                  hypothesis == "gwaning" ~ "Waning (Erlang, N = 3)",
+                                  hypothesis == "leaky2" ~ "Leaky", 
+                                  hypothesis == "noloss" ~ "No Loss") %.>% 
+             factor(., levels = hypo_factor_order),
+           age_class = "[0,5)")
   )
 
 
@@ -91,7 +125,7 @@ in_sample_obs_data <- (
   )
 
 # relative fits to the data 
-rel_fit_plots <- (
+rel_fit_plt <- (
   sim_all_models %.>% 
     mutate(., hypothesis = as_factor(hypothesis)) %.>% 
     ggplot(.) +
@@ -99,20 +133,27 @@ rel_fit_plots <- (
               size = 1) +
     geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
     geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
-    geom_text(data = anno_d_AIC, aes(x = 1985, y = 150, label = paste0("Delta~AIC == ", 
+    geom_text(data = anno_d_AIC, aes(x = 1995, y = 150, label = paste0("Delta~AIC == ", 
                                                                        round(d_AIC, 2) %.>% 
                                                                          as.character(.))), 
               parse = TRUE) +
     facet_grid(rows = vars(age_class), cols = vars(hypothesis), scales = "fixed") +
     labs(x = "Year", 
          y = expression(sqrt(Cases)), 
-         colour = "Cases", 
-         fill = "Cases") +
-    scale_colour_manual(values = c("Data" = "grey30", "Waning" = "#11998e", 
-                                   "Leaky" = "#FF416C", "No Loss" = "#654ea3")) +
-    scale_fill_manual(values = c("Leaky" = "#FF416C","Waning" = "#11998e", "No Loss" = "#654ea3")) +
+         colour = "Case\nTrajectory", 
+         fill = "Prediction\nIntervals") +
+    scale_colour_manual(values = c("Observed" = "grey30", 
+                                   "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
+                                   "Waning (Erlang, N = 3)" = "#003973", 
+                                   "Leaky" = "#FF416C")) +
+    scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
+                                 "Waning (Erlang, N = 3)" = "#003973", 
+                                 "Leaky" = "#FF416C")) +
     project_theme +
-    cap_axes
+    cap_axes +
+    # theme(legend.box = "vertical") +
+    guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
+           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
   )
 
 
