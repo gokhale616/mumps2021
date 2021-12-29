@@ -622,9 +622,9 @@ vseir_skel_sim <- Csnippet("
     const double *I1local = E1local+n;
     const double *E2local = I1local+n;
     const double *I2local = E2local+n;
-    const double *Vlocal  = I2local+n;;
+    const double *Vlocal  = I2local+n;
     const double *Clocal  = Vlocal+n;
-    const souble *Vslocal = Vslocal+n; 
+    const double *Vslocal = Vslocal+n; 
     
     double *DSlocal  = &DS_1;
     double *DE1local = DSlocal+n;
@@ -812,7 +812,7 @@ vseir_skel_sim <- Csnippet("
       /* Keep account of new cases */
       /* ========================= */
       DC(i) = gamma*(I1(i)+I2(i)); 
-      DVs(i) = delta*V(i)
+      DVs(i) = delta*V(i);
     }
 ")
 
@@ -853,7 +853,7 @@ vseir_init_sim <- Csnippet("
   double *I2 = &I2_1;
   double *V = &V_1;
   double *C = &C_1;
-  double *Vs = &Vs_1
+  double *Vs = &Vs_1;
   
   int n = agegroups;
   

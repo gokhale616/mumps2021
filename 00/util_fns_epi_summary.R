@@ -511,12 +511,9 @@ calculate_average_beta <- function(p_vals,
 # this function produces summary measure of simulated epidemics
 summarize_epidemiology <- function(traj_cov_data, p_vals) {
   # life expectancy is assumed to be 80 years
-  L = 80*365.25
-  G = 5
-  
   traj_cov_data %.>% 
     map_dfr(1:nrow(.), function(c, x = .) {
-      #browser()
+      # browser()
       
       int_x <- (
         x %.>% 
@@ -524,65 +521,71 @@ summarize_epidemiology <- function(traj_cov_data, p_vals) {
           mutate_all(., .funs = function(x){ifelse(x < 0, 0, x)})
         )
       
-      int_x %.>% 
-        transmute(., 
-                  `.id` = `.id`,
-                  year = year,
-                  # scale population sizes to represent system compartments per 100000
-                  Ns_1 = 1e5/N_1, Ns_2 = 1e5/N_2, Ns_3 = 1e5/N_3,
-                  Ns_4 = 1e5/N_4, Ns_5 = 1e5/N_5,
-                  # scale the susceptible compartments
-                  Ss_1  = S_1*Ns_1, Ss_2  = S_2*Ns_2, Ss_3  = S_3*Ns_3,
-                  Ss_4  = S_4*Ns_4, Ss_5  = S_5*Ns_5,
-                  # scale the vaccinated compartments
-                  Vs_1  = V_1*Ns_1, Vs_2  = V_2*Ns_2, Vs_3  = V_3*Ns_3,
-                  Vs_4  = V_4*Ns_4, Vs_5  = V_5*Ns_5,
-                  # define and scale the recovered compartments
-                  Rs_1  = (N_1 - (S_1 + V_1 + I1_1 + I2_1 + E1_1 + E2_1))*Ns_1,
-                  Rs_2  = (N_2 - (S_2 + V_2 + I1_2 + I2_2 + E1_2 + E2_2))*Ns_2, 
-                  Rs_3  = (N_3 - (S_3 + V_3 + I1_3 + I2_3 + E1_3 + E2_3))*Ns_3,
-                  Rs_4  = (N_4 - (S_4 + V_4 + I1_4 + I2_4 + E1_4 + E2_4))*Ns_4,
-                  Rs_5  = (N_5 - (S_5 + V_5 + I1_5 + I2_5 + E1_5 + E2_5))*Ns_5,
-                  # scale the true new cases compartments
-                  Cs_1 = (C_1)*Ns_1, Cs_2 = (C_2)*Ns_2, Cs_3 = (C_3)*Ns_3, 
-                  Cs_4 = (C_4)*Ns_4, Cs_5 = (C_5)*Ns_5, 
-                  # define the total infectious compartments
-                  I_1 = (I1_1+I2_1), I_2 = (I1_2+I2_2), I_3 = (I1_3+I2_3),
-                  I_4 = (I1_4+I2_4), I_5 = (I1_5+I2_5),
-                  # calculate effective R0 for the system
-                  Reff = calculate_Reff_mq(p_vals = p_vals, 
-                                           N_1 = N_1, N_2 = N_2, N_3 = N_3, 
-                                           N_4 = N_4, N_5 = N_5, 
-                                           S_1 = S_1, S_2 = S_2, S_3 = S_3, 
-                                           S_4 = S_4, S_5 = S_5,
-                                           V_1 = V_1, V_2 = V_2, V_3 = V_3, 
-                                           V_4 = V_4, V_5 = V_5,
-                                           t = year), 
-                  # calculate effective R0 for the system
-                  average_beta = calculate_average_beta(p_vals = p_vals,
-                                                        N_1 = N_1, N_2 = N_2, N_3 = N_3,
-                                                        N_4 = N_4, N_5 = N_5,
-                                                        S_1 = S_1, S_2 = S_2, S_3 = S_3,
-                                                        S_4 = S_4, S_5 = S_5,
-                                                        V_1 = V_1, V_2 = V_2, V_3 = V_3,
-                                                        V_4 = V_4, V_5 = V_5,
-                                                        I_1 = I_1, I_2 = I_2, I_3 = I_3,
-                                                        I_4 = I_4, I_5 = I_5,
-                                                        t = year)$B,
-                  # calculate the mean age at infection as a function of the effective R0
-                  mean_age_at_infection = calculate_average_beta(p_vals = p_vals,
-                                                                 N_1 = N_1, N_2 = N_2, N_3 = N_3,
-                                                                 N_4 = N_4, N_5 = N_5,
-                                                                 S_1 = S_1, S_2 = S_2, S_3 = S_3,
-                                                                 S_4 = S_4, S_5 = S_5,
-                                                                 V_1 = V_1, V_2 = V_2, V_3 = V_3,
-                                                                 V_4 = V_4, V_5 = V_5,
-                                                                 I_1 = I_1, I_2 = I_2, I_3 = I_3,
-                                                                 I_4 = I_4, I_5 = I_5,
-                                                                 t = year)$A
-        )  
+      res <-(
+        int_x %.>% 
+          transmute(., 
+                    `.id` = `.id`,
+                    year = year,
+                    # scale population sizes to represent system compartments per 100000
+                    Ns_1 = 1e5/N_1, Ns_2 = 1e5/N_2, Ns_3 = 1e5/N_3,
+                    Ns_4 = 1e5/N_4, Ns_5 = 1e5/N_5,
+                    # scale the susceptible compartments
+                    Ss_1  = S_1*Ns_1, Ss_2  = S_2*Ns_2, Ss_3  = S_3*Ns_3,
+                    Ss_4  = S_4*Ns_4, Ss_5  = S_5*Ns_5,
+                    # scale the vaccinated compartments
+                    Vs_1  = V_1*Ns_1, Vs_2  = V_2*Ns_2, Vs_3  = V_3*Ns_3,
+                    Vs_4  = V_4*Ns_4, Vs_5  = V_5*Ns_5,
+                    # define and scale the recovered compartments
+                    Rs_1  = (N_1 - (S_1 + V_1 + I1_1 + I2_1 + E1_1 + E2_1))*Ns_1,
+                    Rs_2  = (N_2 - (S_2 + V_2 + I1_2 + I2_2 + E1_2 + E2_2))*Ns_2, 
+                    Rs_3  = (N_3 - (S_3 + V_3 + I1_3 + I2_3 + E1_3 + E2_3))*Ns_3,
+                    Rs_4  = (N_4 - (S_4 + V_4 + I1_4 + I2_4 + E1_4 + E2_4))*Ns_4,
+                    Rs_5  = (N_5 - (S_5 + V_5 + I1_5 + I2_5 + E1_5 + E2_5))*Ns_5,
+                    # scale the true new cases compartments
+                    Cs_1 = (C_1)*Ns_1, Cs_2 = (C_2)*Ns_2, Cs_3 = (C_3)*Ns_3, 
+                    Cs_4 = (C_4)*Ns_4, Cs_5 = (C_5)*Ns_5, 
+                    # define the total infectious compartments
+                    Is_1 = (I1_1+I2_1)*Ns_1, Is_2 = (I1_2+I2_2)*Ns_2, Is_3 = (I1_3+I2_3)*Ns_3,
+                    Is_4 = (I1_4+I2_4)*Ns_4, Is_5 = (I1_5+I2_5)*Ns_5,
+                    # total infectious 
+                    Is = (I1_1 + I1_2 + I1_3 + I1_4 + I1_5 + I2_1 + I2_2 + I2_3 + I2_4 + I2_5)*1e5/(N_1 + N_2 + N_3 + N_4 + N_5),
+                    # calculate effective R0 for the system
+                    Reff = calculate_Reff_mq(p_vals = p_vals, 
+                                             N_1 = N_1, N_2 = N_2, N_3 = N_3, 
+                                             N_4 = N_4, N_5 = N_5, 
+                                             S_1 = S_1, S_2 = S_2, S_3 = S_3, 
+                                             S_4 = S_4, S_5 = S_5,
+                                             V_1 = V_1, V_2 = V_2, V_3 = V_3, 
+                                             V_4 = V_4, V_5 = V_5,
+                                             t = year),
+                    # # calculate effective R0 for the system
+                    # average_beta = calculate_average_beta(p_vals = p_vals,
+                    #                                       N_1 = N_1, N_2 = N_2, N_3 = N_3,
+                    #                                       N_4 = N_4, N_5 = N_5,
+                    #                                       S_1 = S_1, S_2 = S_2, S_3 = S_3,
+                    #                                       S_4 = S_4, S_5 = S_5,
+                    #                                       V_1 = V_1, V_2 = V_2, V_3 = V_3,
+                    #                                       V_4 = V_4, V_5 = V_5,
+                    #                                       I_1 = I_1, I_2 = I_2, I_3 = I_3,
+                    #                                       I_4 = I_4, I_5 = I_5,
+                    #                                       t = year)$B,
+                    # # calculate the mean age at infection as a function of the effective R0
+                    # mean_age_at_infection = calculate_average_beta(p_vals = p_vals,
+                    #                                                N_1 = N_1, N_2 = N_2, N_3 = N_3,
+                    #                                                N_4 = N_4, N_5 = N_5,
+                    #                                                S_1 = S_1, S_2 = S_2, S_3 = S_3,
+                    #                                                S_4 = S_4, S_5 = S_5,
+                    #                                                V_1 = V_1, V_2 = V_2, V_3 = V_3,
+                    #                                                V_4 = V_4, V_5 = V_5,
+                    #                                                I_1 = I_1, I_2 = I_2, I_3 = I_3,
+                    #                                                I_4 = I_4, I_5 = I_5,
+                    #                                                t = year)$A
+          )) 
+        
       
       
+      res
+    
     })
   
   

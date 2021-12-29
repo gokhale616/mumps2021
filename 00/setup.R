@@ -78,7 +78,7 @@ gen_x_breaks <- seq(1977, 2018, length.out = 7) %.>% ceiling(.)
 
 mar_val <- 0.001
 
-cap_axes <- coord_capped_cart(bottom='both', left = "none", gap = 1) 
+cap_axes <- function(gap = 1, ...) {coord_capped_cart(bottom='both', left = "none", gap = gap, ...)} 
 
 project_theme <- (theme_bw(base_size = 11) +
                   theme(strip.background = element_blank(),
