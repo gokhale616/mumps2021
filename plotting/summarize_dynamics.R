@@ -1,20 +1,17 @@
-# this script is dependent on ./fit_plot.R
-# it requires the object ./sim_from_these which contain mle of the best fitting model
-
+# get some values ready for this plot 
+# simulate dynamics to the check simulation match to theoretical results 
 fin_year <- 2020
 
-# define a pomp obect to suumarize the epidemiology
-po_to_sum <- make_pomp(., 
-                       covar = mod_mumps_covariates_sigmoidal, 
-                       extrapolate_simulation = TRUE, 
-                       extra_start_t = 1965-1/52, extra_end_t = fin_year, 
-                       temp_scale = 1/52)
+# mle_values
+best_model <- all_result_df %.>% filter(., best_fit_covar == 1) 
 
-# Generate trajectories from all the compartments 
-comp_traj <- trajectory(po_to_sum, 
-                        param = sim_from_these, 
-                        method = "ode23", format = "d")
-
+# convert tibble to vector of param values for simulations 
+best_model_p_vec <- (
+  best_model %.>% 
+  select(., -c(R0, Rp, hypothesis, vacc_covariate, d_AIC, best_fit_covar)) %.>% 
+  mutate(., epsilon2 = 0, p_intro = 6, t_intro = 3000) %.>% 
+  unlist(.) %.>% sim_p_vals(.)
+  )
 
 
 # generate an interpolated dataframe with the population sizes
@@ -36,287 +33,297 @@ interpolated_covs <- (
                    xout = xnew, 
                    method = "linear") %.>% 
     as_tibble(.)
-  )  
+)  
 
 
-# Join the two data frames together for compartmental goodness!
+
+# test how the pdf looks for different values 
+time_tibble <- tibble(time = seq(0, 300, by = 1/1e3))
+
+
+prob_exp <- function(time, rate) {
+  exp(-rate*time)
+}
+
+log_t <- function(prob,rate) {
+  -log(prob)/rate
+}
+
+time_tibble %<>% mutate(., p_immunity_lost = prob_exp(time, rate = (1/best_model$dwan+1/80)))
+
+# base on the the estimated R0 what is the critical level of vaccination?
+critic_lev_vacc <- 1-1/best_model$R0
+
+t_critic_lev_vacc_reached <- log_t(prob = critic_lev_vacc, rate = (1/best_model$dwan+1/80))
+
+anno_segment <- (
+  time_tibble %.>% 
+    filter(., time %in% c(10, 20, 40, 80)) %.>% 
+    transmute(., 
+              x_c = time, 
+              y_c = p_immunity_lost, zero = 0) %.>% 
+    bind_rows(., 
+              tibble(x_c = t_critic_lev_vacc_reached, 
+                     y_c = critic_lev_vacc, 
+                     zero = 0)) %.>% 
+    arrange(., x_c)
+  )
+
+
+y_low_lim <- prob_exp(100, rate = (1/best_model$dwan+1/80))
+
+
+# this is the plot of immune distribution taking values from the best fitting model
+
+immune_distbn_plot <- (
+  time_tibble %.>% 
+    ggplot(.) +
+    geom_segment(aes(x = 0, xend = time, y = p_immunity_lost, yend = p_immunity_lost, 
+                     colour = p_immunity_lost)) +
+    geom_point(data = anno_segment, aes(x = x_c, y = y_c, colour = y_c), shape = 21, fill = "white", 
+               size = 3) +
+    geom_label(data = anno_segment, 
+              aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
+                  x = x_c, y = y_c, fill = y_c), 
+              nudge_x = 13.5, nudge_y = 0.05, colour = "white", size = 1.75) +
+    annotate(geom = "segment", y = 0.98, yend = 0.98, x = 42.5, xend = 30.5, 
+            arrow = arrow(length = unit(1.75, "mm")), colour = "grey30", size = 0.5) +
+    annotate(geom = "text", y = 0.97, x = 45, 
+             hjust = 0, 
+             label= "Critical vaccination 
+level",
+             colour = "grey30", size = 2.5) +
+    labs(x = "Time Since Immunization (Years)", 
+         y = "Percent Immune\nPost Vaccination") +
+    scale_y_continuous(limits = c(0, 1), breaks = seq(round(0, 1), 1, by = 0.25), 
+                       labels = scales::percent) +
+    scale_x_continuous(breaks = seq(0, 100, by = 25)) +
+    scale_colour_gradient(low = "grey30", high = "#6be585", 
+                          limits = c(0, 1), 
+                          guide = "none") +
+    scale_fill_gradient(low = "grey30", high = "#6be585",
+                          limits = c(0, 1), 
+                          guide = "none") +
+    project_theme +
+    cap_axes(xlim = c(0,100))
+  )
+
+
+# define a pomp obect to summarize the epidemiology
+po_to_sum <- make_pomp(., 
+                       covar = mod_mumps_covariates_sigmoidal, 
+                       extrapolate_simulation = TRUE, 
+                       extra_start_t = 1965-1/52, extra_end_t = fin_year, 
+                       temp_scale = 1/52)
+
+# Generate trajectories from all the compartments 
+comp_traj <- (
+  trajectory(po_to_sum, 
+             param = best_model_p_vec, 
+             method = "ode23", format = "d") 
+  )
+
 
 comp_traj_w_cov <- (
   comp_traj %.>% 
-    select(., -`.id`) %.>% 
-    filter(., year > 1950-1/52) %.>% 
-    right_join(., interpolated_covs, by ="year") %.>% 
-    drop_na(.) %.>% 
-    mutate(., 
-           R_1 = N_1 - (S_1 + V_1 + E1_1 + E2_1 + I1_1 + I2_1), 
-           R_2 = N_2 - (S_2 + V_2 + E1_2 + E2_2 + I1_2 + I2_2), 
-           R_3 = N_3 - (S_3 + V_3 + E1_3 + E2_3 + I1_3 + I2_3), 
-           R_4 = N_4 - (S_4 + V_4 + E1_4 + E2_4 + I1_4 + I2_4), 
-           R_5 = N_5 - (S_5 + V_5 + E1_5 + E2_5 + I1_5 + I2_5))
-  )
-
-
-# only compartments that are not infection related
-comp_traj_F <- (
-  comp_traj_w_cov %.>% 
-    mutate(., year = floor(year)) %.>%  
-    group_by(., year) %.>%   
-    summarize_all(., mean) %.>%   
-    ungroup(.) %.>% 
-    mutate(., 
-           S_1 = S_1/N_1, S_2 = S_2/N_2, S_3 = S_3/N_3, S_4 = S_4/N_4, S_5 = S_5/N_5, 
-           V_1 = V_1/N_1, V_2 = V_2/N_2, V_3 = V_3/N_3, V_4 = V_4/N_4, V_5 = V_5/N_5, 
-           R_1 = R_1/N_1, R_2 = R_2/N_2, R_3 = R_3/N_3, R_4 = R_4/N_4, R_5 = R_5/N_5, 
-           `.id` = 1) %.>% 
-    select(., year, `.id`, starts_with("S_"), starts_with("V_"), starts_with("R_")) %.>% 
-    prep_as_plot_trajectory(., init_year = 1950-1/52) %.>%  
-    mutate(., 
-           comp_exp = case_when(comp_exp == "S" ~ "Susceptible", 
-                                comp_exp == "V" ~ "Vaccinated", 
-                                comp_exp == "R" ~ "Recovered", 
-                                TRUE ~ comp_exp) %.>% factor(., 
-                                                             level = c("Susceptible", "Recovered", 
-                                                                        "Vaccinated")))  
-      
+    right_join(., interpolated_covs, by = "year") %.>% 
+    as_tibble(.) %.>% 
+    mutate(., `.id` = as.numeric(`.id`)) %.>% 
+    drop_na(.)
 )
 
-# only compartment that are infectious 
-comp_traj_V <- (
-  comp_traj_w_cov %.>% 
-    mutate(., year = floor(year)) %.>%  
-    group_by(., year) %.>%   
-    summarize_all(., mean) %.>%   
-    ungroup(.) %.>% 
-    mutate(.,
-           Ns_1 = 1e5/N_1, Ns_2 = 1e5/N_2, Ns_3 = 1e5/N_3, Ns_4 = 1e5/N_4, Ns_5 = 1e5/N_5, 
-           E_1 = (E1_1 + E2_1)*Ns_1, E_2 = (E1_2 + E2_2)*Ns_2, E_3 = (E1_3 + E2_3)*Ns_3, 
-           E_4 = (E1_4 + E2_4)*Ns_4, E_5 = (E1_5 + E2_5)*Ns_5, 
-           I_1 = (I1_1 + I2_1)*Ns_1, I_2 = (I1_2 + I2_2)*Ns_2, I_3 = (I1_3 + I2_3)*Ns_3, 
-           I_4 = (I1_4 + I2_4)*Ns_4, I_5 = (I1_5 + I2_5)*Ns_5, 
-           C_1 = C_1*Ns_1, C_2 = C_2*Ns_2, C_3 = C_3*Ns_3, C_4 = C_4*Ns_4, C_5 = C_5*Ns_5, 
-           `.id` = 1) %.>% 
-    select(., year, `.id`, starts_with("E_"), starts_with("I_"), starts_with("C_")) %.>% 
-    prep_as_plot_trajectory(., init_year = 1950-1/52) %.>%  
+##############################################################################################################  
+# from here on we will be looking at what is happening at the vaccinated population and how they lose immunity
+##############################################################################################################
+V_prop_traj <- (
+  comp_traj_w_cov %>% 
     mutate(., 
-           comp_exp = case_when(comp_exp == "E" ~ "Exposed", 
-                                comp_exp == "I" ~ "Infectious", 
-                                comp_exp == "C" ~ "True Cases", 
-                                TRUE ~ comp_exp) %.>% factor(., 
-                                                             level = c("Exposed", "Infectious", 
-                                                                       "True Cases")))  
-  
+           Vs = Vs_1 + Vs_2 + Vs_3 + Vs_4 + Vs_5, 
+            V = V_1 + V_2 + V_3 + V_4 + V_5,
+            N = N_1 + N_2 + N_3 + N_4 + N_5, 
+           Vprop = (V)/N, 
+           Vprop_1 = (V_1)/N_1,
+           Vprop_2 = (V_2)/N_2, Vprop_3 = (V_3)/N_3,
+           Vprop_4 = (V_4)/N_4, Vprop_5 = (V_5)/N_5,
+           Vsprop_1 = (Vs_1)*1e5/N_1,
+           Vsprop_2 = (Vs_2)*1e5/N_2, Vsprop_3 = (Vs_3)*1e5/N_3,
+           Vsprop_4 = (Vs_4)*1e5/N_4, Vsprop_5 = (Vs_5)*1e5/N_5,
+           ) %.>% 
+    select(., `.id`, year, starts_with("Vprop"), starts_with("Vsprop"))
+           
+)
+
+V_prop_traj_for_plot <- (
+  V_prop_traj %.>% 
+    select(., -Vprop) %.>% 
+    prep_as_plot_trajectory(., init_year = 1965-1/52) 
   
 )
 
-# ### .. calculate the mean age at infection
-# mean_age_inf_data <- (
-#   comp_traj_w_cov %.>% 
-#     filter(., year > 1965 & year < 2020) %.>% 
-#     mutate(., `.id` = 1) %.>% 
-#     select(., year, `.id`, starts_with("I1_")) %.>% 
-#     prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
-#     group_by(., year) %.>% 
-#     mutate(., wt = count/sum(count)) %.>% 
-#     ungroup(.) %.>% 
-#     mutate(., mean_cohort_age = case_when(age_cohort == age_names[1] ~ (4+0)/2, 
-#                                           age_cohort == age_names[2] ~ (14+5)/2, 
-#                                           age_cohort == age_names[3] ~ (24+15)/2, 
-#                                           age_cohort == age_names[4] ~ (39+25)/2, 
-#                                           age_cohort == age_names[5] ~ (40+80)/2)) %.>% 
-#     select(., year, mean_cohort_age, wt) %.>% 
-#     group_by(., year) %.>% 
-#     mutate(., mean_age_at_inf  = sum(mean_cohort_age*wt)) %.>% 
-#     select(., year, mean_age_at_inf) %.>% 
-#     ungroup()
-# )
+
+anno_Vs_tot_prop_data <- (
+  V_prop_traj %.>% 
+    select(., year, Vprop) #%.>% 
+    #mutate(., year = floor(year)) %.>% 
+    #group_by(., year) %.>% 
+    #summarize_all(., sum)
+)
+
 
 year_break_x <- seq(1970, fin_year, 15)
 
-plot_comp_summary <- function(traj_data, y_label, legend_position = c(0.2, 0.7), ...) {
-  
-  traj_data %.>% 
-    ggplot(., aes(x = year, y = count, colour = age_cohort)) +
-    geom_line(size = 1) +
+Vs_plot <- (
+  V_prop_traj_for_plot %.>%
+    filter(., comp_exp == "Vsprop") %.>% 
+    ggplot(.) +
+    geom_line(aes(x = year, y = count, 
+                  colour = age_cohort), size = 0.8) +
+    labs(y = "Immunity Lost       \nPer 100,000       ", x = "Year", 
+         color = "Age\nCohort") +
+    scale_y_continuous(labels = scales::scientific, 
+                       limits = c(0, 3e4), 
+                       breaks = seq(0, 3e4,by = 1e4)
+                       ) +
+    scale_x_continuous(breaks = year_break_x) +
+    scale_colour_brewer(palette = "Oranges", direction = -1) +    
     project_theme +
-    labs(y = y_label, 
-         x = "", 
-         colour = "Age\nCohort") +
-    scale_color_brewer(palette = "PuBuGn", direction = -1) +
-    scale_y_continuous(...) +
-    scale_x_continuous(breaks = year_break_x) +  
-    cap_axes +
-    theme(legend.position = legend_position) +
+    cap_axes() +
+    theme(legend.position = c(0.33, 0.55)) +
     guides(colour = guide_legend(nrow = 3))
-    
+  )
+
   
+
+
+V_prop_plot <- (
+  V_prop_traj_for_plot %.>%
+    filter(., comp_exp == "Vprop") %.>% 
+    ggplot(.) +
+    geom_area(aes(x = year, y = count, 
+                  fill = age_cohort), position = position_dodge(width = 0), alpha = 0.7) +
+    geom_line(data = anno_Vs_tot_prop_data, 
+              aes(x = year, y = Vprop, colour = "total"), size = 1.2) +
+    annotate(geom = "segment", 
+             x = 1965, xend = 2020, 
+             y = critic_lev_vacc, yend = critic_lev_vacc,
+             colour = "#6be585", linetype = "dotdash", size = 1.2) +
+    annotate(geom = "text", 
+             label = "Critical Vaccination Level",
+             y = (critic_lev_vacc)-0.1, x = 1978, 
+             colour = "grey30", size = 2.5) +
+    labs(x = "", y = "Percent Vaccinated", fill = "Age\nCohort") +
+    scale_y_continuous(labels = scales::percent, 
+                       limits = c(0, 1), 
+                       breaks = seq(0, 1,by = 0.2)) +
+    scale_x_continuous(breaks = year_break_x) +
+    scale_fill_brewer(palette = "Oranges", direction = -1, guide = "none") +    
+    scale_colour_manual(values = ("total" = "#FFE000"), labels = "Total", name= "") +    
+    project_theme +
+    theme(legend.position = c(0.15, 0.45), 
+          legend.spacing.y = unit(0.1, "cm")
+          ) +
+    cap_axes() 
+    ) 
+
+
+Vs_prop_plot <- plot_grid(V_prop_plot, Vs_plot, nrow = 2, rel_heights = c(1, 1), 
+                          labels = c("B", "C"), align = "v", axis = "lb")
+
+
+##############################################################################################################
+############# now we look at what is happening to the effective R0 and the infectious individuals ############
+##############################################################################################################
+
+# check if the epi_summary exits if not make it 
+
+path_dir <- "../result_data/epi_summary"
+
+if(dir.exists(path_dir) == FALSE) {
+  dir.create(path_dir)
+  message("Directory 'epi_summary' has been created, proceeding to populate!")
+  
+  # generate summary measures for for compartments 
+  
+  summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
+                                            p_vals = c(best_model_p_vec,
+                                                       params_for_Rp)) %.>% 
+    select(., `.id`, year, starts_with("Is_"), Is, Reff)
+  
+  
+  save(summarized_traj, file = paste0(path_dir, "/summarized_traj.rds"))
+  
+} else {
+  message("Directory 'epi_summary' already exists, moving on!")
 }
 
 
-pSusc_plot <-(
-  comp_traj_F %.>% 
-    mutate(., count = case_when(count > 1 ~ 1,
-                                count < 0 ~ 0,
-                                TRUE ~ count)
-    ) %.>% 
-    filter(., comp_exp == "Susceptible") %.>%  
-    plot_comp_summary(., 
-                      y_label = "Percent Susceptible", 
-                      legend_position = c(0.5, 0.7), 
-                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
-  )
-
-pRecv_plot <-(
-  comp_traj_F %.>% 
-    mutate(., count = case_when(count > 1 ~ 1,
-                                count < 0 ~ 0,
-                                TRUE ~ count)
-    ) %.>%
-    filter(., comp_exp == "Recovered") %.>%  
-    plot_comp_summary(., y_label = "Percent Recovered", legend_position = "none", 
-                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
-)
+load(paste0(path_dir, "/summarized_traj.rds"))
 
 
-pVacc_plot <-(
-  comp_traj_F %.>% 
-    filter(., comp_exp == "Vaccinated") %.>%  
-    plot_comp_summary(., y_label = "Percent Vaccinated", legend_position = "none", 
-                      labels = scales::percent, limits = c(0,1), breaks = c(0, 0.25, 0.5, 0.75, 1))
-)
-
-
-nExpo_plot <- (
-  comp_traj_V %.>% 
-    filter(., comp_exp == "Exposed") %.>% 
-    plot_comp_summary(., 
-                      y_label = expression(log[10](Exposed~Per~100000)), legend_position = "none", 
-                      trans =  "log10",  breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
-                      limits = c(1e-3, 1e3))
-)
-
-nInfc_plot <- (
-  comp_traj_V %.>% 
-    filter(., comp_exp == "Infectious") %.>% 
-    plot_comp_summary(., 
-                      y_label = expression(log[10](Infectious~Per~100000)), legend_position = "none", 
-                      trans =  "log10", breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
-                      limits = c(1e-3, 1e3))
-)
-
-  
-nTrCs_plot <- (
-  comp_traj_V %.>% 
-    filter(., comp_exp == "True Cases") %.>% 
-    plot_comp_summary(., 
-                      y_label = expression(log[10](True~Cases~Per~100000)), legend_position = "none", 
-                      trans =  "log10", breaks = c(1e-2, 1e-1, 1e0, 1e1, 1e2), 
-                      limits = c(1e-3, 1e3))
-)
-
-         
-
-
-
-
-# estimate the average transmission rate and the corresponding mean age at infection! - Fingers crossed!!!
-append_rp_with_these <- c(N = 1e8, p = 1, nu = 1/80, ad = age_class_duration)
-
-tic()
-summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov %.>% mutate(., `.id` = 1),
-                                          p_vals = c(sim_from_these,
-                                                append_rp_with_these))
-toc()
-
-
-#load("./summarized_traj.rds")
-
-# find annual averages
-treated_summarized_traj <- (
+Is_anno_data <- (
   summarized_traj %.>% 
-    mutate(., year_val = floor(year)) %.>% 
-    select(., year_val, Reff, average_beta, mean_age_at_infection) %.>% 
-    group_by(., year_val) %.>% 
-    summarise_all(., mean) %.>% 
-    ungroup(.) %.>% 
-    mutate(., mean_age_at_infection = ifelse(mean_age_at_infection > 80, 80, mean_age_at_infection)) %.>%
-    gather(., "summary", "value", -year_val)
-  ) 
-
-
-
-average_beta_plot <- (
-  treated_summarized_traj %.>% 
-    filter(., summary == "average_beta") %.>% 
-    ggplot(., aes(x = year_val, y = value)) +
-    labs(x = "Year", 
-         y = "Average Transmission Rate") +
-    geom_line(size = 1, color = "grey30") +
-    scale_x_continuous(breaks = year_break_x) +
-    scale_y_continuous(breaks = c(80, 120, 160, 200, 240), limits = c(80, 240)) + 
-    project_theme +
-    cap_axes
+    mutate(., year = floor(year)) %.>% 
+    select(., year, Is) #%.>% 
+    # group_by(., year) %.>% 
+    # summarize_all(., sum) %.>% 
+    # ungroup(.)
     )
-
-mean_age_inf_plot <- (
-  treated_summarized_traj %.>% 
-    filter(., summary == "mean_age_at_infection") %.>%
-    ggplot(., aes(x = year_val, y = value)) +
-    labs(x = "Year", 
-         y = "Mean Age At Infection") +
-    geom_line(size = 1, color = "grey30") +
-    scale_x_continuous(breaks = year_break_x) +
-    scale_y_continuous(breaks = c(0, 20, 40, 60, 80), limits = c(0, 80)) +
-    project_theme +
-    cap_axes
-)
-
-
-Reff_plot <- (
-  treated_summarized_traj %.>% 
-  filter(., summary == "Reff") %.>% 
-  ggplot(., aes(x = year_val, y = value)) +
-  labs(x = "Year", 
-       y = "Effective Reproductive Number") +
-  geom_line(size = 1, color = "grey30") +
-  geom_hline(yintercept = 1, size = 0.8, linetype = "dotdash", colour = "red")  +
-  scale_x_continuous(breaks = year_break_x) +
-  scale_y_continuous(breaks = c(0.92, 0.96, 1, 1.04, 1.08), limits = c(0.92, 1.08)) +
-  project_theme +
-  cap_axes
-  )
-
-
-
-F_plot_grid <- (
-  plot_grid(pSusc_plot, pRecv_plot, pVacc_plot, nrow = 1,
-            labels = c("A", "B", "C"), align = "hv")
-)
-
-V_plot_grid <- (
-  plot_grid(nExpo_plot, nInfc_plot, nTrCs_plot, nrow = 1,
-            labels = c("C", "D", "E"), align = "hv")
-)
-
-
-stat_plot_grid <- (
-  plot_grid(average_beta_plot, mean_age_inf_plot, Reff_plot, nrow = 1,
-          labels = c("F", "G", "H"), align = "hv")
-  )
-
-
-
-summary_plot_grid <- (
-  plot_grid(F_plot_grid, V_plot_grid, 
-            stat_plot_grid,   
-            nrow = 3, align = "h", axis = "lr")
-  )
-
-
-
-
-
-
   
+
+prevalence_plot <- (
+  summarized_traj %.>% 
+  select(., `.id`, year, starts_with("Is_")) %.>% 
+  prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
+  ggplot(., aes(x = year)) +
+  geom_line(aes(y = count, colour = age_cohort), size = 0.8) +
+  labs(y = "Infectious per 100,0000", 
+       x = "Year") +
+  scale_x_continuous(breaks = year_break_x) +
+  scale_y_continuous(trans = "log10") +
+  scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
+  project_theme+
+  cap_axes()
+  )
+  
+  
+  
+  
+Reff_plot <- (
+  summarized_traj %.>% 
+    select(., year, Reff) %.>% 
+    mutate(., gt1 = case_when(Reff > 1 ~ "yes!", 
+                              Reff < 1 ~ "nein!")
+           ) %.>% 
+    ggplot(., aes(x = year, y = Reff)) +
+    geom_line(aes(colour = gt1, group = 1), size = 1) +
+    labs(x = "Year", y = "Effective Reproductive\nNumber") +
+    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "#009FFF"), 
+                        labels = c("yes!" = "Super Critical", "nein!" = "Sub-critical"), 
+                        name = "") +
+    scale_y_continuous(limits = c(0.90, 1.10), breaks = c(0.90, 0.95, 1, 1.05, 1.10)) +
+    scale_x_continuous(breaks = year_break_x) +
+    project_theme +
+    cap_axes() +
+    theme(legend.position = c(0.35, 0.8)) +
+    guides(colour = guide_legend(nrow = 2))
+)
+    
+
+
+immune_summary_plot <- plot_grid(immune_distbn_plot, Vs_prop_plot, nrow = 2, 
+                                 align = "h", axis = "lb", rel_heights = c(0.75, 1), 
+                                 labels = c("A", ""))
+
+
+
+prev_summary_plot <- plot_grid(Reff_plot, prevalence_plot, nrow = 2, 
+                               align = "v", rel_heights = c(0.75, 1), 
+                               labels = c("D", "E"))
+
+
+epi_summary_plt <- (
+  plot_grid(immune_summary_plot, prev_summary_plot, nrow = 1, 
+            align = "h", axis = "lr", rel_heights = c(1, 1)))
 
 
 

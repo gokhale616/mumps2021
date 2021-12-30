@@ -53,7 +53,7 @@ abs_inc_plt <- (
     scale_fill_manual(values = age_cols) +
     project_theme +
     # theme(axis.text.x = element_blank()) +
-    cap_axes +
+    cap_axes() +
     theme(axis.title = element_text(size = 8.5), 
           plot.margin = unit(rep(mar_val, 4), "cm"), 
           legend.position = c(0.65, 0.7),
@@ -103,7 +103,7 @@ inc_rate_plt <- (
     scale_y_continuous(breaks = c(0, 3, 6, 9, 12), limits = c(0, 15)) +
     project_theme +
     # theme(axis.text.x = element_blank()) +
-    cap_axes +
+    cap_axes() +
     theme(axis.title = element_text(size = 8.5),
           plot.margin = unit(rep(mar_val, 4), "cm")) 
 )
@@ -123,7 +123,7 @@ prop_inc_plt <- (
   scale_y_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1),
                      labels = scales::percent_format(accuracy = 1)) +  
   project_theme +
-  cap_axes + 
+  cap_axes() + 
   theme(axis.title = element_text(size = 8.5), 
         plot.margin = unit(rep(mar_val, 4), "cm")) 
   )

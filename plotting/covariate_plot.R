@@ -5,7 +5,7 @@ contact_plt <- (
     project_theme +
     theme(legend.position = "bottom", 
           text = element_text(size = 20)) +
-    cap_axes +
+    cap_axes() +
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
                                  title.position = "top"))
@@ -51,7 +51,7 @@ prob_report_plt <- (
     scale_y_continuous(limits = y_lims, breaks = y_breaks, 
                        labels = scales::percent) +
     project_theme +
-    cap_axes
+    cap_axes()
   )
 
 
@@ -71,7 +71,7 @@ norm_births_plt <- (
     scale_y_continuous(limits = y_lims, breaks = y_breaks, 
                        labels = scales::percent) +
     project_theme +
-    cap_axes
+    cap_axes()
   )
 
 
@@ -91,7 +91,7 @@ p1_cover_plt <- (
                      labels = scales::percent) +
   scale_colour_manual(values = c(interpolate_colour, default_colour)) +
   project_theme +
-  cap_axes +
+  cap_axes() +
   theme(legend.position = "none")  
   )
 
@@ -131,7 +131,7 @@ p2_cover_plt <- (
                        labels = scales::percent) +
     scale_colour_manual(values = c(interpolate_colour, default_colour)) +
     project_theme +
-    cap_axes +
+    cap_axes() +
     guides(colour = guide_legend(direction = "horizontal", 
                                  nrow = 2))
   )
@@ -178,7 +178,7 @@ pop_plt <- (
                        labels = scales::scientific) +
     scale_fill_brewer(palette = "Blues", direction = -1) +
     project_theme +
-    cap_axes +
+    cap_axes() +
     theme(legend.position = "none")  
     ) 
     
@@ -208,7 +208,7 @@ mig_plt <- (
                        labels = scales::scientific) +
     scale_fill_brewer(palette = "Blues", direction = -1) +
     project_theme +
-    cap_axes +
+    cap_axes() +
     guides(fill = guide_legend(direction = "horizontal", nrow = 2))
 )
 

@@ -60,7 +60,7 @@ neonatal_dose_plot <- (
     scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.25), 
                        labels = scales::percent) + 
     project_theme +
-    cap_axes#+
+    cap_axes()#+
     #theme(text = element_text(size = 15))
     )
 
@@ -91,7 +91,7 @@ imputed_vacc_coverage_plot <- (
                           labels = c("Mean", "Median")) +
     scale_colour_manual(values = c("Weekly" = "grey30", 
                                    "Annual" = "deepskyblue1")) +
-    cap_axes +
+    cap_axes() +
     theme(legend.position = c(0.25, 0.8)#, 
           #text = element_text(size = 15)
           ) +
@@ -111,7 +111,7 @@ case_data_for_imptn_plot <- (
                  labels = date_format("%Y")) +
     scale_y_continuous(labels = scales::scientific) +
     project_theme+
-    cap_axes #+
+    cap_axes() #+
     #theme(text = element_text(size = 15))
     )
 

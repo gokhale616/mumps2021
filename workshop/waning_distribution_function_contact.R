@@ -186,43 +186,60 @@ Vs_prop_plot <- (
 ############# now we look at what is happening to the effective R0 and the infectious individuals ############
 ##############################################################################################################
 
-# generate an interpolated dataframe with the population sizes
+# check if the epi_summary exits if not make it 
 
-interp_range <- c(1965, fin_year)
+path_dir <- "../result_data/epi_summary"
 
-xnew <- seq(interp_range[1], interp_range[2], by = 1/52)
-
-interpolated_covs <- (
-  mod_mumps_covariates_sigmoidal %.>% 
-    bind_rows(., 
-              mod_mumps_covariates_sigmoidal %.>% 
-                slice(., rep(n(), interp_range[2]-2018))) %.>% 
-    mutate(., 
-           year = seq(1910, interp_range[2], by = 1)) %.>% 
-    filter(., year > 1949) %.>%   
-    select(., year, starts_with("N_")) %.>% 
-    interp.dataset(y = ., x=.$year, 
-                   xout = xnew, 
-                   method = "linear") %.>% 
-    as_tibble(.)
-)  
-
-comp_traj_w_cov <- (
-  comp_traj %.>% 
-    right_join(., interpolated_covs, by = "year") %.>% 
-    as_tibble(.) %.>% 
-    mutate(., `.id` = as.numeric(`.id`)) %.>% 
-    drop_na(.)
+if(dir.exists(path_dir) == FALSE) {
+  dir.create(path_dir)
+  message("Directory 'epi_summary' has been created, proceeding to populate!")
+  
+  # generate an interpolated dataframe with the population sizes
+  
+  interp_range <- c(1965, fin_year)
+  
+  xnew <- seq(interp_range[1], interp_range[2], by = 1/52)
+  
+  interpolated_covs <- (
+    mod_mumps_covariates_sigmoidal %.>% 
+      bind_rows(., 
+                mod_mumps_covariates_sigmoidal %.>% 
+                  slice(., rep(n(), interp_range[2]-2018))) %.>% 
+      mutate(., 
+             year = seq(1910, interp_range[2], by = 1)) %.>% 
+      filter(., year > 1949) %.>%   
+      select(., year, starts_with("N_")) %.>% 
+      interp.dataset(y = ., x=.$year, 
+                     xout = xnew, 
+                     method = "linear") %.>% 
+      as_tibble(.)
+  )  
+  
+  comp_traj_w_cov <- (
+    comp_traj %.>% 
+      right_join(., interpolated_covs, by = "year") %.>% 
+      as_tibble(.) %.>% 
+      mutate(., `.id` = as.numeric(`.id`)) %.>% 
+      drop_na(.)
   )
+  
+  
+  # generate summary measures for for compartments 
+  
+  summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
+                                            p_vals = c(best_model_p_vec,
+                                                       params_for_Rp)) %.>% 
+    select(., `.id`, year, starts_with("Is_"), Is, Reff)
+  
+  
+  save(summarized_traj, file = paste0(path_dir, "/summarized_traj.rds"))
+  
+} else {
+  message("Directory 'epi_summary' already exists, moving on!")
+}
 
 
-# generate summary measures for for compartments 
-tic()
-summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
-                                          p_vals = c(best_model_p_vec,
-                                                     params_for_Rp)) %.>% 
-  select(., `.id`, year, starts_with("Is_"), Is, Reff)
-toc()
+load(paste0(path_dir, "/summarized_traj.rds"))
 
 
 Is_anno_data <- (
@@ -245,7 +262,7 @@ prevalence_plot <- (
        x = "Year") +
   scale_x_continuous(breaks = year_break_x) +
   scale_y_continuous(trans = "log10") +
-  scale_colour_brewer(palette = "Oranges", direction = -1, guide = FALSE) +
+  scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
   project_theme+
   cap_axes()
   )
@@ -257,14 +274,13 @@ Reff_plot <- (
   summarized_traj %.>% 
     select(., year, Reff) %.>% 
     mutate(., gt1 = case_when(Reff > 1 ~ "yes!", 
-                              Reff < 1 ~ "nein!",
-                              Reff == 1 ~ "uno!")
+                              Reff < 1 ~ "nein!")
            ) %.>% 
     ggplot(., aes(x = year, y = Reff)) +
     geom_line(aes(colour = gt1, group = 1), size = 1.2) +
     labs(x = "Year", y = "Effective Reproductive\nNumber") +
-    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "#009FFF", "uno!" = "grey30"), 
-                        labels = c("yes!" = ">1", "nein!" = "<1", "uno!" = "1"), 
+    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "#009FFF"), 
+                        labels = c("yes!" = ">1", "nein!" = "<1"), 
                         name = "") +
     scale_y_continuous(limits = c(0.90, 1.10), breaks = c(0.90, 0.95, 1, 1.05, 1.10)) +
     scale_x_continuous(breaks = year_break_x) +
@@ -275,22 +291,21 @@ Reff_plot <- (
 )
     
 
+immune_summary_plot <- plot_grid(immune_distbn_plot, Vs_prop_plot, nrow = 2, 
+                                 align = "v", rel_heights = c(0.5, 1), 
+                                 labels = c("A", "C"))
 
 
 
+prev_summary_plot <- plot_grid(Reff_plot, prevalence_plot, nrow = 2, 
+                               align = "v", rel_heights = c(0.5, 1), 
+                               labels = c("B", "D"))
 
 
+epi_summary_plt <- (
+  plot_grid(immune_summary_plot, prev_summary_plot, nrow = 1, 
+          align = "h", rel_heights = c(1, 1)))
 
-
-
-
-
-
-
-
-
-plot_grid(immune_distbn_plot, Reff_plot, Vs_prop_plot, prevalence_plot, nrow = 2, 
-          align = "v", rel_heights = c(0.65, 0.65, 1, 1), labels = c("A", "B", "C", "D"))
 
 
 

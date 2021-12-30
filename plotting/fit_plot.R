@@ -62,7 +62,7 @@ fit_plot <- (
                         name = "Case\nTrajectory") +
     scale_x_continuous(breaks = gen_x_breaks, expand = c(0, 0)) +
     project_theme +
-    cap_axes +
+    cap_axes() +
     guides(colour = guide_legend(title.position = "top", ncol = 1, order = 1), 
            fill = guide_legend(title.position = "top", ncol = 1, order = 2))  
   )
@@ -130,7 +130,7 @@ Rsq_fit_plot <- (
                         labels = c("Within\nsample", "Out of\nsample"), 
                         name = "Log-linear\nModel Fit") +
     project_theme + 
-    cap_axes +
+    cap_axes() +
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
                                  title.position = "top", 

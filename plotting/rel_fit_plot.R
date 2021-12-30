@@ -152,7 +152,7 @@ rel_fit_plt <- (
                                  "Waning (Erlang, N = 3)" = "#003973", 
                                  "Leaky" = "#FF416C")) +
     project_theme +
-    cap_axes +
+    cap_axes() +
     guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
            colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
   )
