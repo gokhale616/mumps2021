@@ -1,6 +1,6 @@
 %% fig 1 
 \newcommand{\capInc}{
-\textbf{Mumps incidence in the United States.} (A) Cases of mumps per 100,000 of national population size; (B) Root raw cases of mumps across 5 age cohorts (colors). (C) Contribution of age cohorts (colours) to mumps case volume; (D-E) State-wise distribution of mumps incidence during resurgence eras.
+\textbf{Mumps incidence in the United States.} (A) Cases of mumps per 100,000 of national population size; (B) Root raw cases of mumps across 5 age cohorts (Purple gradient). (C) Contribution of age cohorts (colours) to mumps case volume; (D-E) State-wise distribution of mumps incidence during resurgence eras.
 }
 
 %% fig 2 
@@ -9,14 +9,14 @@
 }
 
 \newcommand{\capSumplot}{
-\textbf{Summarizing epidemiological dynamics.}  
+\textbf{Dissecting dynamics of mumps remergence.} (A) Represents the rate of vaccine dervied immune decay under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) since the time of vaccination. (B) Weekly percent effectively vaccinated, total (yellow), and across various age cohorts (orange gradient). Green dashed line represents the crtical vaccnation level calculated using $R_0 = 14$ for the waning model. (C) Individuals per $10^5$ who weekly lose their vaccine derived immunity across various cohorts. (D) Weekly effective reproductive number through time that highlights regions of super-critical (red) and subcritical (sea-green) epidemic transitions.  (E) Individuals per $10^5$ who are infectious from mumps across various age classes for the waning model.
 }
 
 
 
 %% fig 3
 \newcommand{\capImpCoverage}{
-\textbf{Reconstructed neonatal vaccine rate.} Weekly vaccine uptake trajectories, lower panel, were reconstrtucted using a particle filter with over-dispersed normal ($\psi = 0.8$, $\rho = 0.04$) weigths. Trajectories were averaged to calculate the annual vaccine cover, upper panel. 1000 particles were used in the filtering process.   
+\textbf{Reconstructed neonatal vaccine rate.} (A) Time series for the available mumps annual vaccine coverage rates for the neonatal dose. The blue region highlights the period where vaccine data is missing. (B) Weekly mumps incidence over the  period where vaccine data is missing. (C) Weekly vaccine uptake trajectories, upper  panel, were imputed using a particle filter using over-dispersed normal ($\psi = 0.8$, $\rho = 0.04$) weigths. Trajectories were averaged to calculate the annual vaccine cover, lower panel, to be used in the model fotting analysis. 1000 particles were used in the filtering procedure.   
 }
 
 
@@ -31,6 +31,10 @@
 }
 
 \newcommand{\capRelFitplot}{
-\textbf{Relative Model Fits.}
+\textbf{Relative Model Fits.} Facet plots demonstrate relative qualitative fits of the 4 hypotheses tested to the age specific incidence of mumps. Coloured lines represent median trajectories and ribbons respresent 80\% prediction intervals corresponding to the model of vaccine imerfection.
+}
+
+\newcommand{\capAuxParamplot}{
+\textbf{Auxillary parameter estimates of Process and Observation model.} Faceted barplots represent age specfic maximum likelihood estimates (blue gradient) of probability of infection (q), reporting probability ($\rho$) and dispersion parameter ($\psi$) corresponding to the the hypotheses tested.
 }
 

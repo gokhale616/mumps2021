@@ -38,27 +38,28 @@ interpolated_covs <- (
 
 
 # test how the pdf looks for different values 
-time_tibble <- tibble(time = seq(0, 300, by = 1/1e3))
+time_tibble <- tibble(time = seq(0, 700, by = 1/1e3))
 
 
 prob_exp <- function(time, rate) {
   exp(-rate*time)
 }
 
+
 log_t <- function(prob,rate) {
   -log(prob)/rate
 }
 
-time_tibble %<>% mutate(., p_immunity_lost = prob_exp(time, rate = (1/best_model$dwan+1/80)))
+time_tibble %<>% mutate(., p_immunity_lost = prob_exp(time, rate = (1/best_model$dwan)))
 
 # base on the the estimated R0 what is the critical level of vaccination?
 critic_lev_vacc <- 1-1/best_model$R0
 
-t_critic_lev_vacc_reached <- log_t(prob = critic_lev_vacc, rate = (1/best_model$dwan+1/80))
+t_critic_lev_vacc_reached <- log_t(prob = critic_lev_vacc, rate = (1/best_model$dwan))
 
 anno_segment <- (
   time_tibble %.>% 
-    filter(., time %in% c(10, 20, 40, 80)) %.>% 
+    filter(., time %in% c(25, 50, 75)) %.>% 
     transmute(., 
               x_c = time, 
               y_c = p_immunity_lost, zero = 0) %.>% 
@@ -70,7 +71,7 @@ anno_segment <- (
   )
 
 
-y_low_lim <- prob_exp(100, rate = (1/best_model$dwan+1/80))
+y_low_lim <- prob_exp(100, rate = (1/best_model$dwan))
 
 
 # this is the plot of immune distribution taking values from the best fitting model
@@ -85,13 +86,11 @@ immune_distbn_plot <- (
     geom_label(data = anno_segment, 
               aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
                   x = x_c, y = y_c, fill = y_c), 
-              nudge_x = 13.5, nudge_y = 0.05, colour = "white", size = 1.75) +
-    annotate(geom = "segment", y = 0.98, yend = 0.98, x = 42.5, xend = 30.5, 
+              nudge_x = 13.5, nudge_y = 0.065, colour = "white", size = 1.75) +
+    annotate(geom = "segment", y = 1, yend = 1, x = 42.5, xend = 35.5, 
             arrow = arrow(length = unit(1.75, "mm")), colour = "grey30", size = 0.5) +
-    annotate(geom = "text", y = 0.97, x = 45, 
-             hjust = 0, 
-             label= "Critical vaccination 
-level",
+    annotate(geom = "text", y = 1, x = 70, 
+             label= "Critical Vaccination Level",
              colour = "grey30", size = 2.5) +
     labs(x = "Time Since Immunization (Years)", 
          y = "Percent Immune\nPost Vaccination") +
@@ -105,7 +104,7 @@ level",
                           limits = c(0, 1), 
                           guide = "none") +
     project_theme +
-    cap_axes(xlim = c(0,100))
+    cap_axes(xlim = c(0,100), expand = FALSE)
   )
 
 
@@ -178,7 +177,7 @@ Vs_plot <- (
     ggplot(.) +
     geom_line(aes(x = year, y = count, 
                   colour = age_cohort), size = 0.8) +
-    labs(y = "Immunity Lost       \nPer 100,000       ", x = "Year", 
+    labs(y = expression(Immunity~Lost~Per~10^5~phantom(1000)), x = "Year", 
          color = "Age\nCohort") +
     scale_y_continuous(labels = scales::scientific, 
                        limits = c(0, 3e4), 
@@ -211,7 +210,7 @@ V_prop_plot <- (
              label = "Critical Vaccination Level",
              y = (critic_lev_vacc)-0.1, x = 1978, 
              colour = "grey30", size = 2.5) +
-    labs(x = "", y = "Percent Vaccinated", fill = "Age\nCohort") +
+    labs(x = "", y = "Percent Effectively           \nVaccinated           ", fill = "Age\nCohort") +
     scale_y_continuous(labels = scales::percent, 
                        limits = c(0, 1), 
                        breaks = seq(0, 1,by = 0.2)) +
@@ -276,13 +275,16 @@ prevalence_plot <- (
   prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
   ggplot(., aes(x = year)) +
   geom_line(aes(y = count, colour = age_cohort), size = 0.8) +
-  labs(y = "Infectious per 100,0000", 
+  labs(y = expression(Infectious~per~10^5), 
        x = "Year") +
   scale_x_continuous(breaks = year_break_x) +
-  scale_y_continuous(trans = "log10") +
+  scale_y_continuous(trans = "log10", breaks = c(1e-3, 1e-2, 1e-1, 1e0, 
+                                                 1e1, 1e2, 1e3), 
+                     limits = c(1e-3, 1e3)) +
+  annotation_logticks(sides = "l")  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
   project_theme+
-  cap_axes()
+  cap_axes(expand = FALSE)
   )
   
   
@@ -296,8 +298,8 @@ Reff_plot <- (
            ) %.>% 
     ggplot(., aes(x = year, y = Reff)) +
     geom_line(aes(colour = gt1, group = 1), size = 1) +
-    labs(x = "Year", y = "Effective Reproductive\nNumber") +
-    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "#009FFF"), 
+    labs(x = "Year", y = "Effective Reproductive    \nNumber    ") +
+    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
                         labels = c("yes!" = "Super Critical", "nein!" = "Sub-critical"), 
                         name = "") +
     scale_y_continuous(limits = c(0.90, 1.10), breaks = c(0.90, 0.95, 1, 1.05, 1.10)) +
@@ -310,20 +312,28 @@ Reff_plot <- (
     
 
 
+
+
+
+
+
 immune_summary_plot <- plot_grid(immune_distbn_plot, Vs_prop_plot, nrow = 2, 
-                                 align = "h", axis = "lb", rel_heights = c(0.75, 1), 
+                                 align = "h", axis = "l", rel_heights = c(0.5, 1), 
                                  labels = c("A", ""))
 
 
 
 prev_summary_plot <- plot_grid(Reff_plot, prevalence_plot, nrow = 2, 
-                               align = "v", rel_heights = c(0.75, 1), 
+                               align = "v", rel_heights = c(0.5, 1), 
                                labels = c("D", "E"))
 
 
+
 epi_summary_plt <- (
-  plot_grid(immune_summary_plot, prev_summary_plot, nrow = 1, 
-            align = "h", axis = "lr", rel_heights = c(1, 1)))
+  plot_grid(immune_summary_plot, prev_summary_plot, nrow = 1, align = "hv", axis = "bl"))
+
+
+
 
 
 

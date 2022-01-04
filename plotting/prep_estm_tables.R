@@ -119,7 +119,7 @@ table_hypo_compare <- (
             Quantity = case_when(Quantity == "d_AIC"~"$\\Delta AIC$",
                                  Quantity == "R0"~"$R_0$",
                                  Quantity == "Rp"~"$R_p$",
-                                 Quantity == "impact"~"$\\psi$",
+                                 Quantity == "impact"~"$\\xi$",
                                  Quantity == "beta1"~"$\\beta_1$", 
                                  Quantity == "sigma"~"$\\sigma^{-1}$ (Days)", 
                                  Quantity == "dwan"~ "$\\delta^{-1}$ (Years)",  

@@ -82,6 +82,7 @@ script_var <- c("inc_plot.R",
                 "fit_plot.R",
                 "summarize_dynamics.R",
                 "rel_fit_plot.R",
+                "other_params_plot.R",
                 "covariate_plot.R",
                 "imputed_vacc_plot.R")
 
@@ -153,6 +154,12 @@ plot(all_cov_plt)
 <<rel_fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[3]>>=
 
 plot(rel_fit_plt)
+
+@
+
+<<aux_param_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capAuxParamplot', out.width = outwidth[3]>>=
+
+plot(aux_para_plot)
 
 @
 

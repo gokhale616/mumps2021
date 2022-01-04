@@ -43,7 +43,7 @@ prob_report_plt <- (
     ggplot(., aes(x = year, y = eta_a)) +
     geom_line(size = 0.8, colour = default_colour) +
     geom_point(pch = 21, fill = "white", size = 2, colour = default_colour) +
-    labs(x = "", y = "Age-stratified\n Case Records  ") + #P(Age reported) Case reports\n  age recorded
+    labs(x = "", y = expression(Age~Recorded~(eta[a])~phantom(100))) +
     annotate(geom = "text", label = "Case Data", 
              angle = 90, x = 1974, y = 0.5) +
     anno_case_layer +
@@ -176,7 +176,7 @@ pop_plt <- (
     scale_x_continuous(limits = x_lims, breaks = x_breaks) +
     scale_y_continuous(limits = c(0, 4e8), breaks = seq(0, 4e8, by = 1e8), 
                        labels = scales::scientific) +
-    scale_fill_brewer(palette = "Blues", direction = -1) +
+    scale_fill_brewer(palette = "Greys", direction = -1) +
     project_theme +
     cap_axes() +
     theme(legend.position = "none")  
@@ -206,7 +206,7 @@ mig_plt <- (
     scale_y_continuous(limits = c(-0.06, 0.06), 
                        breaks = c(-0.06, -0.03, 0, 0.03, 0.06), 
                        labels = scales::scientific) +
-    scale_fill_brewer(palette = "Blues", direction = -1) +
+    scale_fill_brewer(palette = "Greys", direction = -1) +
     project_theme +
     cap_axes() +
     guides(fill = guide_legend(direction = "horizontal", nrow = 2))

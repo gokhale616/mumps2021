@@ -754,6 +754,8 @@ vseir_skel_sim <- Csnippet("
         DE2(i) = lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
         DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         DV(i)  = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
+        
+        DVs(i) = - LV(i)*Vs(i); 
       
       } else if (i == 1) {
         
@@ -783,6 +785,8 @@ vseir_skel_sim <- Csnippet("
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
+          DVs(i) = - (LV(i))*Vs(i);
+      
       } else {
         
           // individuals age in and out of age cohort after the first
@@ -799,12 +803,14 @@ vseir_skel_sim <- Csnippet("
           /* balance transition equations */
           /* ============================ */
           
-          DS(i)  = LV(i-1)*S(i-1)  + delta*V(i)    - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);             
+          DS(i)  = LV(i-1)*S(i-1) + delta*V(i) - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);
           DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*V(i)) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
           DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*V(i)) - (sigma + LV(i) - MU_AGE(i))*E2(i);
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = LV(i-1)*V(i-1)  - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
+          
+          DVs(i) = - (LV(i))*Vs(i);
           
       }
       
@@ -812,7 +818,6 @@ vseir_skel_sim <- Csnippet("
       /* Keep account of new cases */
       /* ========================= */
       DC(i) = gamma*(I1(i)+I2(i)); 
-      DVs(i) = delta*V(i);
     }
 ")
 
