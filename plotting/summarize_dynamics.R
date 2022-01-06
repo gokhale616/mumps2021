@@ -79,6 +79,8 @@ y_low_lim <- prob_exp(100, rate = (1/best_model$dwan))
 immune_distbn_plot <- (
   time_tibble %.>% 
     ggplot(.) +
+    annotate(geom = "segment", y = critic_lev_vacc, yend = critic_lev_vacc, x = 0, xend = 200, 
+             size = 0.9, colour = "#6be585", linetype = "dashed") +
     geom_segment(aes(x = 0, xend = time, y = p_immunity_lost, yend = p_immunity_lost, 
                      colour = p_immunity_lost)) +
     geom_point(data = anno_segment, aes(x = x_c, y = y_c, colour = y_c), shape = 21, fill = "white", 
@@ -86,10 +88,8 @@ immune_distbn_plot <- (
     geom_label(data = anno_segment, 
               aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
                   x = x_c, y = y_c, fill = y_c), 
-              nudge_x = 13.5, nudge_y = 0.065, colour = "white", size = 1.75) +
-    annotate(geom = "segment", y = 1, yend = 1, x = 42.5, xend = 35.5, 
-            arrow = arrow(length = unit(1.75, "mm")), colour = "grey30", size = 0.5) +
-    annotate(geom = "text", y = 1, x = 70, 
+              nudge_x = 13, nudge_y = 0.065, colour = "white", size = 1.5) +
+    annotate(geom = "text", y = 1, x = 75, 
              label= "Critical Vaccination Level",
              colour = "grey30", size = 2.5) +
     labs(x = "Time Since Immunization (Years)", 
@@ -104,7 +104,7 @@ immune_distbn_plot <- (
                           limits = c(0, 1), 
                           guide = "none") +
     project_theme +
-    cap_axes(xlim = c(0,100), expand = FALSE)
+    cap_axes(xlim = c(0,100))
   )
 
 
@@ -177,56 +177,53 @@ Vs_plot <- (
     ggplot(.) +
     geom_line(aes(x = year, y = count, 
                   colour = age_cohort), size = 0.8) +
-    labs(y = expression(Immunity~Lost~Per~10^5~phantom(1000)), x = "Year", 
+    labs(y = expression(Immunity~Lost~Per~10^5), x = "Year", 
          color = "Age\nCohort") +
     scale_y_continuous(labels = scales::scientific, 
-                       limits = c(0, 3e4), 
-                       breaks = seq(0, 3e4,by = 1e4)
+                       limits = c(0, 1.5e1), 
+                       #breaks = seq(0, 3e4,by = 1e4)
                        ) +
     scale_x_continuous(breaks = year_break_x) +
-    scale_colour_brewer(palette = "Oranges", direction = -1) +    
+    scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +    
     project_theme +
     cap_axes() +
-    theme(legend.position = c(0.33, 0.55)) +
-    guides(colour = guide_legend(nrow = 3))
+    theme() 
   )
 
-  
 
+orange_age_cohort <- brewer_pal(palette = "Oranges", direction = -1)(5)
 
 V_prop_plot <- (
   V_prop_traj_for_plot %.>%
     filter(., comp_exp == "Vprop") %.>% 
     ggplot(.) +
-    geom_area(aes(x = year, y = count, 
-                  fill = age_cohort), position = position_dodge(width = 0), alpha = 0.7) +
+    geom_line(aes(x = year, y = count, 
+                  colour = age_cohort), size = 0.8) +
     geom_line(data = anno_Vs_tot_prop_data, 
-              aes(x = year, y = Vprop, colour = "total"), size = 1.2) +
+              aes(x = year, y = Vprop, colour = "total"), size = 0.8) +
     annotate(geom = "segment", 
              x = 1965, xend = 2020, 
              y = critic_lev_vacc, yend = critic_lev_vacc,
-             colour = "#6be585", linetype = "dotdash", size = 1.2) +
+             colour = "#6be585", linetype = "dashed", size = 0.9) +
     annotate(geom = "text", 
              label = "Critical Vaccination Level",
-             y = (critic_lev_vacc)-0.1, x = 1978, 
+             y = critic_lev_vacc-0.075, x = 1978, 
              colour = "grey30", size = 2.5) +
-    labs(x = "", y = "Percent Effectively           \nVaccinated           ", fill = "Age\nCohort") +
+    labs(x = "Year", y = "Percent Effectively   \nVaccinated    ") +
     scale_y_continuous(labels = scales::percent, 
                        limits = c(0, 1), 
                        breaks = seq(0, 1,by = 0.2)) +
     scale_x_continuous(breaks = year_break_x) +
-    scale_fill_brewer(palette = "Oranges", direction = -1, guide = "none") +    
-    scale_colour_manual(values = ("total" = "#FFE000"), labels = "Total", name= "") +    
+    scale_colour_manual(values = c(orange_age_cohort, "#FFE000"), name = "Age\nCohort") +
     project_theme +
-    theme(legend.position = c(0.15, 0.45), 
-          legend.spacing.y = unit(0.1, "cm")
+    theme(legend.position = c(0.50, 1.1),
+          legend.key.size = unit(0.55, "lines"),
+          legend.title = element_text(size = 6.5), 
+          legend.text = element_text(size = 6.5)
           ) +
-    cap_axes() 
+    cap_axes() +
+    guides(colour = guide_legend(nrow = 2, title.position = "left"))
     ) 
-
-
-Vs_prop_plot <- plot_grid(V_prop_plot, Vs_plot, nrow = 2, rel_heights = c(1, 1), 
-                          labels = c("B", "C"), align = "v", axis = "lb")
 
 
 ##############################################################################################################
@@ -246,7 +243,7 @@ if(dir.exists(path_dir) == FALSE) {
   summarized_traj <- summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
                                             p_vals = c(best_model_p_vec,
                                                        params_for_Rp)) %.>% 
-    select(., `.id`, year, starts_with("Is_"), Is, Reff)
+    select(., `.id`, year, starts_with("Is_"), starts_with("Cs_"), Is, Reff)
   
   
   save(summarized_traj, file = paste0(path_dir, "/summarized_traj.rds"))
@@ -275,7 +272,7 @@ prevalence_plot <- (
   prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
   ggplot(., aes(x = year)) +
   geom_line(aes(y = count, colour = age_cohort), size = 0.8) +
-  labs(y = expression(Infectious~per~10^5), 
+  labs(y = expression(Prevalence~per~10^5), 
        x = "Year") +
   scale_x_continuous(breaks = year_break_x) +
   scale_y_continuous(trans = "log10", breaks = c(1e-3, 1e-2, 1e-1, 1e0, 
@@ -284,12 +281,71 @@ prevalence_plot <- (
   annotation_logticks(sides = "l")  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
   project_theme+
-  cap_axes(expand = FALSE)
+  cap_axes()
   )
   
+
+reporting_probs <- best_model_p_vec[sprintf("rho_age_%d", 1:5)] 
+
+# calculate the observed incidence per 1e5 for some years - here, the unknown age class ignored 
+obs_age_incidence <- (
+  mumps_case_reports_l %.>%
+    select(., year, age_cohort, cases) %.>% 
+    filter(., age_cohort != "unknonwn") %.>% 
+    mutate(., tcases = case_when(age_cohort == age_names[1] ~ cases/reporting_probs[1], 
+                                 age_cohort == age_names[2] ~ cases/reporting_probs[2], 
+                                 age_cohort == age_names[3] ~ cases/reporting_probs[3], 
+                                 age_cohort == age_names[4] ~ cases/reporting_probs[4], 
+                                 age_cohort == age_names[5] ~ cases/reporting_probs[5])) %.>% 
+    right_join(., 
+               mumps_covariates %.>% 
+                 filter(., year > 1975) %.>% 
+                 select(., year, starts_with("N_")) %.>% 
+                 mutate(., `.id` = 1) %.>% 
+                 prep_as_plot_trajectory(., init_year = 1965) %.>% 
+                 transmute(., year = year, age_cohort = age_cohort, popn_factor = 1e5/count),
+                 by = c("year", "age_cohort")) %.>% 
+    transmute(., year = year, age_cohort = age_cohort, inc = tcases*popn_factor) # %.>% 
+    #filter(., year %in% seq(1976, 2018, by = 5))
+  )
+
+
+expctd_age_incidence <- (
+  summarized_traj %.>% 
+  select(., `.id`, year, starts_with("Cs_")) %.>% 
+  prep_as_plot_trajectory(., init_year = 1965-1/52)
+  )
+
+
+age_distribution_plot <- (
+  expctd_age_incidence %.>% 
+    ggplot(., aes(x = year, y = count, fill = age_cohort)) +
+    geom_area(stat = "identity", position = "fill") +
+    geom_bar(data = obs_age_incidence, 
+             width = 1,
+             aes(x = year, y = inc, colour = age_cohort), 
+             stat = "identity", position = "fill", fill = "NA", size = 0.3) +
+    labs(x = "Year", y = "Observed v/s Expected \nTrue Incidence\nAge Distribution", 
+         colour = "Age\nCohort")+
+    scale_y_continuous(labels = scales::percent) +
+    scale_x_continuous(breaks = year_break_x) +
+    scale_fill_brewer(palette = "Oranges", direction = -1, guide = "none") +    
+    scale_colour_brewer(palette = "Purples", direction = -1) +
+    project_theme +
+    theme(legend.position = c(0.50, 1.125)) +
+    cap_axes() +
+    theme(legend.key.size = unit(0.55, "lines"),
+          legend.title = element_text(size = 6.5), 
+          legend.text = element_text(size = 6.5)#, 
+          #legend.key.height = unit(0.5, "lines")
+          ) +
+    guides(colour = guide_legend(title.position = "top", nrow = 1))
+    
+    
+)
   
-  
-  
+
+
 Reff_plot <- (
   summarized_traj %.>% 
     select(., year, Reff) %.>% 
@@ -306,7 +362,10 @@ Reff_plot <- (
     scale_x_continuous(breaks = year_break_x) +
     project_theme +
     cap_axes() +
-    theme(legend.position = c(0.35, 0.8)) +
+    theme(legend.position = c(0.35, 0.85), 
+          legend.key.size = unit(0.55, "lines"),
+          legend.title = element_text(size = 6.5), 
+          legend.text = element_text(size = 6.5)) +
     guides(colour = guide_legend(nrow = 2))
 )
     
@@ -314,30 +373,109 @@ Reff_plot <- (
 
 
 
-
-
-
-immune_summary_plot <- plot_grid(immune_distbn_plot, Vs_prop_plot, nrow = 2, 
-                                 align = "h", axis = "l", rel_heights = c(0.5, 1), 
-                                 labels = c("A", ""))
-
-
-
-prev_summary_plot <- plot_grid(Reff_plot, prevalence_plot, nrow = 2, 
-                               align = "v", rel_heights = c(0.5, 1), 
-                               labels = c("D", "E"))
-
-
-
 epi_summary_plt <- (
-  plot_grid(immune_summary_plot, prev_summary_plot, nrow = 1, align = "hv", axis = "bl"))
+  immune_distbn_plot + 
+  V_prop_plot + Vs_plot + 
+  Reff_plot + prevalence_plot + age_distribution_plot +
+  plot_layout(
+    design = "
+    AD
+    BE
+    CF
+    "
+  ) + plot_annotation(tag_levels = "A")
+)
+
+
+# quantitative comparison of expected v/s observed age distributions
+exp_obs_age_distbn <- (
+  expctd_age_incidence %.>% 
+    mutate(., year  = floor(year)) %.>% 
+    group_by(., year, age_cohort) %.>% 
+    summarise(., ann_count = sum(count)) %.>% 
+    ungroup(.) %.>% 
+    group_by(., year) %.>% 
+    mutate(., prop_count = ann_count/sum(ann_count)) %.>% 
+    ungroup(.) %.>% 
+    filter(., year >= 1977) %.>% 
+    select(., year, age_cohort, prop_count) %.>% 
+    right_join(., 
+               by = c("year", "age_cohort"),
+               obs_age_incidence %.>% 
+                 group_by(., year) %.>% 
+                 mutate(., prop_inc = inc/sum(inc)) %.>% 
+                 ungroup(.) %.>% 
+                 filter(., year >= 1977) %.>% 
+                 select(., year, age_cohort, prop_inc))
+  )
+  
+  
+  
+year_vec <- exp_obs_age_distbn$year %.>% unique(.)
+
+compare_age_distn_data <- (
+  map_dfr(seq_along(year_vec), function(c, df = exp_obs_age_distbn) {
+  # browser()
+  exptected_age_distn <-  (
+    df %.>% 
+      filter(., year == year_vec[c]) %.>% 
+      select(., age_cohort, prop_count) %.>% 
+      spread(., age_cohort, prop_count) %.>% 
+      unlist(.)
+    )
+  
+  observed_age_distn <-  (
+    df %.>% 
+      filter(., year == year_vec[c]) %.>% 
+      select(., age_cohort, prop_inc) %.>% 
+      spread(., age_cohort, prop_inc) %.>% 
+      unlist(.)
+  )
+  
+  if(is.na(observed_age_distn) == FALSE) {
+    accomodate_NA <- FALSE
+    KLD_res <- KLD(exptected_age_distn, observed_age_distn, base = 2)  
+  } else {
+      accomodate_NA <- TRUE
+  }
+  
+  
+  
+  tibble(year = year_vec[c], 
+         ms_KLD = ifelse(accomodate_NA == TRUE, NA, KLD_res$mean.sum.KLD), 
+         #intrisinc_discripancy  = ifelse(accomodate_NA == TRUE, NA, KLD_res$intrinsic.discrepancy)
+         )
+      
+})
+)  
+  
+  
+
+KL_divergence_plt <- (
+  compare_age_distn_data %.>% 
+    drop_na(.) %.>% 
+    mutate(., in_or_out  = ifelse(year <= 2012, "in", "out")) %.>% 
+    ggplot(., aes(x = year, y = ms_KLD, fill = in_or_out)) +
+    geom_bar(stat = "identity", size = 0.8) +
+    labs(x = "Year", y = "KL Divergence") +
+    scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
+    scale_fill_manual(values = model_col, 
+                      labels = c("Within\nSample", "Out of\nSample"), 
+                      name = "") +
+    project_theme +
+    cap_axes() +
+    theme(text = element_text(size = 20))
+  )
+
+  
 
 
 
 
 
-
-
-
-
+  
+  
+  
+  
+  
 

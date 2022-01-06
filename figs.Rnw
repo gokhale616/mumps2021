@@ -135,7 +135,11 @@ plot(imputed_vacc_coverage_grid_plt)
 
 @
 
+<<cov_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capCov', out.width = outwidth[3]>>=
 
+plot(all_cov_plt)
+
+@
 
 <<contact_matrix_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capContact', out.width = outwidth[1]>>=
 
@@ -143,12 +147,12 @@ plot(contact_plt)
 
 @
 
-<<cov_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capCov', out.width = outwidth[3]>>=
 
-plot(all_cov_plt)
+<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[1]>>=
+
+plot(KL_divergence_plt)
 
 @
-
 
 
 <<rel_fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[3]>>=
@@ -156,6 +160,7 @@ plot(all_cov_plt)
 plot(rel_fit_plt)
 
 @
+
 
 <<aux_param_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capAuxParamplot', out.width = outwidth[3]>>=
 

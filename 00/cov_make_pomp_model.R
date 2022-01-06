@@ -755,7 +755,7 @@ vseir_skel_sim <- Csnippet("
         DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         DV(i)  = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
         
-        DVs(i) = - LV(i)*Vs(i); 
+        DVs(i) = delta*V(i); 
       
       } else if (i == 1) {
         
@@ -785,7 +785,7 @@ vseir_skel_sim <- Csnippet("
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
       
-          DVs(i) = - (LV(i))*Vs(i);
+          DVs(i) = delta*V(i);
       
       } else {
         
@@ -810,7 +810,7 @@ vseir_skel_sim <- Csnippet("
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           DV(i)  = LV(i-1)*V(i-1)  - (epsilon1*lambda1 + epsilon2*lambda2 + delta + LV(i) - MU_AGE(i))*V(i);
           
-          DVs(i) = - (LV(i))*Vs(i);
+          DVs(i) = delta*V(i);
           
       }
       
@@ -1213,7 +1213,7 @@ make_pomp <- function(...,
            rinit = vseir_init_sim,
            rmeasure = vseir_rmeas,
            dmeasure = vseir_dmeas,
-           accumvars = c(sprintf("C_%d", 1:5)),
+           accumvars = c(sprintf("C_%d", 1:5), sprintf("Vs_%d", 1:5)),
            covar = covariate_table(covar, times = "Year", order = "constant"),
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 

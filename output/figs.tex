@@ -111,12 +111,7 @@
 \input{captions}
 
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in building shared-object library from C snippets: in 'Cbuilder': compilation error: cannot compile shared-object library '/var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.so': status = 1\\\#\# compiler messages:\\\#\# clang -I"{}/Library/Frameworks/R.framework/Resources/include"{} -DNDEBUG -I'/Library/Frameworks/R.framework/Versions/4.1/Resources/library/pomp/include' -I'/Users/devengokhale/Documents/GitHub/mumps2021/plotting' \ -I/usr/local/include \ \ -fPIC \ -Wall -g -O2 \ -c /var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.c -o /var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.o\\\#\# /var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.c:1442:96: error: expected ';' after expression\\\#\# \ \ \ \ \ \ \ \ \ \ DVs(i) = LV(i-1)*Vs(i-1) + delta*V(i) - (lambda1 + lambda2 + LV(i) - MU\_AGE(i))*Vs(i)\\\#\# \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textasciicircum{}\\\#\# \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ;\\\#\# /var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.c:1466:96: error: expected ';' after expression\\\#\# \ \ \ \ \ \ \ \ \ \ DVs(i) = LV(i-1)*Vs(i-1) + delta*V(i) - (lambda1 + lambda2 + LV(i) - MU\_AGE(i))*Vs(i)\\\#\# \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textasciicircum{}\\\#\# \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ;\\\#\# 2 errors generated.\\\#\# make: *** [/var/folders/1t/74vfvcw17h340b6m4bqzqt880000gn/T//RtmpskMWNQ/776/pomp\_8af0b4287c2a60bc5828394e036a9576.o] Error 1}}\end{kframe}
-\end{knitrout}
 
 
 \begin{knitrout}
@@ -204,7 +199,17 @@ $t_{intro}$ & - & - & - & 2000\\
 
 \end{knitrout}
 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
+{\centering \includegraphics[width=17.8cm]{figure/plot-cov_data_plot-1} 
+
+}
+
+\caption[\capCov]{\capCov}\label{fig:cov_data_plot}
+\end{figure}
+
+\end{knitrout}
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
@@ -218,18 +223,18 @@ $t_{intro}$ & - & - & - & 2000\\
 
 \end{knitrout}
 
+
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=17.8cm]{figure/plot-cov_data_plot-1} 
+{\centering \includegraphics[width=8.7cm]{figure/plot-KLdiv_plot-1} 
 
 }
 
-\caption[\capCov]{\capCov}\label{fig:cov_data_plot}
+\caption[\capKLdiv]{\capKLdiv}\label{fig:KLdiv_plot}
 \end{figure}
 
 \end{knitrout}
-
 
 
 \begin{knitrout}
@@ -243,6 +248,7 @@ $t_{intro}$ & - & - & - & 2000\\
 \end{figure}
 
 \end{knitrout}
+
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
