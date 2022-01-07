@@ -114,6 +114,12 @@ plot(fit_plot_grid)
 
 @
 
+<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[2]>>=
+
+plot(compare_age_dstbn_plt)
+
+@
+
 <<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
 
 plot(epi_summary_plt)
@@ -144,13 +150,6 @@ plot(all_cov_plt)
 <<contact_matrix_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capContact', out.width = outwidth[1]>>=
 
 plot(contact_plt)
-
-@
-
-
-<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[1]>>=
-
-plot(KL_divergence_plt)
 
 @
 

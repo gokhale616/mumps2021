@@ -15,8 +15,7 @@ lib_dep <- c("tidyverse",
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
              "parallel", "nloptr", 
              "lemon", "wesanderson", "patchwork",
-             "lubridate",
-             "kableExtra")
+             "ggpattern", "lubridate", "kableExtra")
 
 
 
