@@ -217,11 +217,6 @@ V_prop_plot <- (
     scale_colour_manual(values = c(orange_age_cohort, "#FFE000"), name = "Age\nCohort", 
                         breaks = c(age_names, "total")) +
     project_theme +
-    theme(legend.position = c(0.50, 1.1),
-          legend.key.size = unit(0.55, "lines"),
-          legend.title = element_text(size = 6.5), 
-          legend.text = element_text(size = 6.5)
-          ) +
     cap_axes() +
     guides(colour = guide_legend(nrow = 2, title.position = "left"))
     ) 
@@ -260,10 +255,7 @@ load(paste0(path_dir, "/summarized_traj.rds"))
 Is_anno_data <- (
   summarized_traj %.>% 
     mutate(., year = floor(year)) %.>% 
-    select(., year, Is) #%.>% 
-    # group_by(., year) %.>% 
-    # summarize_all(., sum) %.>% 
-    # ungroup(.)
+    select(., year, Is) 
     )
   
 
@@ -281,7 +273,7 @@ prevalence_plot <- (
                      limits = c(1e-3, 1e3)) +
   annotation_logticks(sides = "l")  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
-  project_theme+
+  project_theme +
   cap_axes()
   )
   
@@ -297,19 +289,13 @@ Reff_plot <- (
     labs(x = "Year", y = "Effective Reproductive    \nNumber    ") +
     scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
                         labels = c("yes!" = "Super Critical", "nein!" = "Sub-critical"), 
-                        name = "") +
+                        name = "Epidemic\nSignature") +
     scale_y_continuous(limits = c(0.90, 1.10), breaks = c(0.90, 0.95, 1, 1.05, 1.10)) +
     scale_x_continuous(breaks = year_break_x) +
     project_theme +
     cap_axes() +
-    theme(legend.position = c(0.35, 0.85), 
-          legend.key.size = unit(0.55, "lines"),
-          legend.title = element_text(size = 6.5), 
-          legend.text = element_text(size = 6.5)) +
     guides(colour = guide_legend(nrow = 2))
 )
-
-
 
 
 
@@ -318,18 +304,21 @@ epi_summary_plt <- (
     V_prop_plot + Vs_plot + 
     Reff_plot + prevalence_plot +
     plot_layout(
+      guides = "collect",
       design = "
     AD
     BE
     CE
     "
-    ) + plot_annotation(tag_levels = "A")
+    ) + 
+    plot_annotation(tag_levels = "A") &
+    theme(legend.position = "bottom")
 )
 
 
 
 
-reporting_probs <- best_model_p_vec[sprintf("rho_age_%d", 1:5)] 
+reporting_probs <- best_model_p_vec[sprintf("rho_age_%s", c(1:5, "u"))] 
 
 # calculate the observed incidence per 1e5 for some years - here, the unknown age class ignored 
 obs_age_incidence <- (
@@ -359,7 +348,7 @@ expctd_age_incidence <- (
     select(., `.id`, year, starts_with("Cs_")) %.>% 
     prep_as_plot_trajectory(., init_year = 1965-1/52) %.>% 
     mutate(.,
-           in_sample = ifelse(year<2013, "ja", "nein"),
+           in_sample = ifelse(year<2012+20/52, "ja", "nein"),
            cmplx_grdnt = paste0(age_cohort, "_", in_sample) %.>% 
              factor(., levels = c(paste0(age_names, "_", "ja"), 
                                   paste0(age_names, "_", "nein")
@@ -379,20 +368,19 @@ grey30_gradnt <- c("grey30", "#6E6E6E", "#8F8F8F", "#B0B0B0", "#D1D1D1")
 age_distribution_plot <- (
   expctd_age_incidence %.>% 
     filter(., year > 1977-20/52 & year < 2018+20/52) %.>% 
-    ggplot(., aes(x = year, y = count, fill = cmplx_grdnt)) +
-    geom_area(stat = "identity", position = "fill") +
-    geom_bar_pattern(data = obs_age_incidence, 
-                     aes(x = year, y = inc, colour = age_cohort, pattern_fill = age_cohort), 
-                     stat = "identity", position = "fill", 
-                     fill = "NA", 
-                     width = 0.75, 
-                     pattern_angle = 45,
-                     pattern_density = 0.075,
-                     pattern_spacing = 0.01,
-                     pattern = "stripe",
-                     pattern_colour = NA
-                     ) +
-    labs(x = "Year", y = "Observed v/s Expected \nTrue Incidence\nAge Distribution", 
+    ggplot(., aes(x = year, y = count)) +
+    geom_area(aes(fill = cmplx_grdnt), stat = "identity", position = "fill") +
+    # geom_bar_pattern(data = obs_age_incidence, 
+    #                  aes(x = year, y = inc, colour = age_cohort, pattern_fill = age_cohort), 
+    #                  stat = "identity", position = "fill", 
+    #                  fill = "NA", width = 0.75, 
+    #                  pattern_angle = 45, pattern_density = 0.075,
+    #                  pattern_spacing = 0.01, pattern = "stripe",
+    #                  pattern_colour = NA
+    #                  ) +
+    geom_bar(data = obs_age_incidence, aes(x = year, y = inc, colour = age_cohort), 
+             stat = "identity", position = "fill", fill = NA, size = 0.8, width =0.75) +
+    labs(x = "Year", y = "Observed v/s Expected \nIncidence Age Distribution", 
          colour = "Age\nCohort", 
          pattern_fill = "Age\nCohort")+
     scale_y_continuous(labels = scales::percent) +
@@ -408,106 +396,203 @@ age_distribution_plot <- (
     theme(legend.position = "top") +
     cap_axes() +
     theme() +
-    guides(colour = guide_legend(title.position = "top", nrow = 1, 
-                                 override.aes =list(colour = grey30_gradnt)), 
-           pattern_fill = guide_legend(override.aes = list(pattern_fill = grey30_gradnt)) 
-           )
+    guides(colour = guide_legend(title.position = "top", nrow = 2, 
+                                 override.aes=list(fill = grey30_gradnt)))
     
     
 )
   
 
+#### trying something out ###
+# simulate from the observation process 
+simulated_annual_case_data <- (
+  sim_obs_model(po_obj = po_to_sum, params = best_model_p_vec, 
+                times = time(po_to_sum), 
+                nsim = 1000, 
+                root_transform = FALSE, 
+                summarise_obs_process = FALSE) %.>% 
+    mutate(., 
+           year = floor(year)) %.>%   
+    filter(., year > 1976 & year < 2019) %.>% 
+    # calculate the annual number of cases recorded
+    group_by(., year, `.id`, age_class) %.>% 
+    summarise(., cases = sum(cases)) %.>% 
+    ungroup(.)
+)
 
-# quantitative comparison of expected v/s observed age distributions
-exp_obs_age_distbn <- (
-  expctd_age_incidence %.>% 
-    mutate(., year  = floor(year)) %.>% 
-    group_by(., year, age_cohort) %.>% 
-    summarise(., ann_count = sum(count)) %.>% 
-    ungroup(.) %.>% 
-    group_by(., year) %.>% 
-    mutate(., prop_count = ann_count/sum(ann_count)) %.>% 
-    ungroup(.) %.>% 
-    filter(., year >= 1977) %.>% 
-    select(., year, age_cohort, prop_count) %.>% 
+
+# calculate true incidence per 10^5
+simulated_annual_inc_data <- (
+  simulated_annual_case_data %.>%
+    # add scaling factor to calculate true annual cases 
     right_join(., 
-               by = c("year", "age_cohort"),
-               obs_age_incidence %.>% 
-                 group_by(., year) %.>% 
-                 mutate(., prop_inc = inc/sum(inc)) %.>% 
-                 ungroup(.) %.>% 
-                 filter(., year >= 1977) %.>% 
-                 select(., year, age_cohort, prop_inc))
+               mumps_covariates %.>% 
+                 filter(., year > 1976 & year < 2019) %.>% 
+                 select(., year,eta_a),
+               by = "year") %.>% 
+    mutate(., 
+           rp_sf = case_when(age_class == age_names_u[1] ~ eta_a*reporting_probs[1], 
+                             age_class == age_names_u[2] ~ eta_a*reporting_probs[2], 
+                             age_class == age_names_u[3] ~ eta_a*reporting_probs[3], 
+                             age_class == age_names_u[4] ~ eta_a*reporting_probs[4], 
+                             age_class == age_names_u[5] ~ eta_a*reporting_probs[5], 
+                             age_class == age_names_u[6] ~ (1-eta_a)*reporting_probs[6]
+           ),
+           true_cases = cases/rp_sf
+    ) %.>% 
+    # ignoring the "unknown" age class from here on
+    filter(., age_class != "unknown") %.>% 
+    # add population sizes to calculate and calculate true incidence
+    right_join(., 
+               mumps_covariates %.>% 
+                 mutate(., `.id` = 1) %.>% 
+                 select(., year, `.id`, starts_with("N_")) %.>% 
+                 prep_as_plot_trajectory(., init_year = 1977-1/52) %.>% 
+                 transmute(., year = year, age_class = age_cohort, popn_sf = 1e5/count),
+               by = c("year", "age_class")) %.>% 
+    mutate(., 
+           sim_inc = true_cases*popn_sf) %.>% 
+    # calculate incidence age distribution
+    group_by(., year, `.id`) %.>% 
+    mutate(., 
+           sim_prop_inc = sim_inc/sum(sim_inc)) %.>% 
+    ungroup(.)
+)
+
+
+# make one data with observed v/s simlulated proportion
+obs_sim_annual_inc_data <- (
+  simulated_annual_inc_data %.>%   
+    right_join(., 
+               by = c("year", "age_class"),
+               mumps_case_reports_l %.>%
+                 # ignoring the "unknown" age class
+                 filter(., age_cohort != "unknown") %.>% 
+                 transmute(., 
+                           year = year, age_class = age_cohort, 
+                           obs_cases = cases)
+    ) %.>% 
+    # calculate the true observed incidence
+    mutate(., 
+           true_obs_cases = obs_cases/rp_sf, 
+           obs_inc = true_obs_cases*popn_sf) %.>% 
+    # calculate incidence distribution 
+    group_by(., year, `.id`) %.>% 
+    mutate(., 
+           obs_prop_inc = obs_inc/sum(obs_inc)) %.>% 
+    ungroup(.)
+)
+
+
+# check if the Kl_summary exits if not make it 
+path_dirKL <- "../result_data/KL_summary"
+
+if(dir.exists(path_dirKL) == FALSE) {
+  
+  dir.create(path_dirKL)
+  message("Directory 'KL_summary' has been created, proceeding to populate!")
+
+  
+  # prepare data for plotting
+  obs_sim_annual_KL_data <- (
+    obs_sim_annual_inc_data %.>% 
+      select(., 
+             year, `.id`, age_class, 
+             sim_prop_inc, obs_prop_inc)
   )
   
   
-  
-year_vec <- exp_obs_age_distbn$year %.>% unique(.)
-
-compare_age_distn_data <- (
-  map_dfr(seq_along(year_vec), function(c, df = exp_obs_age_distbn) {
-  # browser()
-  exptected_age_distn <-  (
-    df %.>% 
-      filter(., year == year_vec[c]) %.>% 
-      select(., age_cohort, prop_count) %.>% 
-      spread(., age_cohort, prop_count) %.>% 
-      unlist(.)
-    )
-  
-  observed_age_distn <-  (
-    df %.>% 
-      filter(., year == year_vec[c]) %.>% 
-      select(., age_cohort, prop_inc) %.>% 
-      spread(., age_cohort, prop_inc) %.>% 
-      unlist(.)
-  )
-  
-  if(is.na(observed_age_distn) == FALSE) {
-    accomodate_NA <- FALSE
-    KLD_res <- KLD(exptected_age_distn, observed_age_distn, base = 2)  
-  } else {
-      accomodate_NA <- TRUE
-  }
-  
-  
-  
-  tibble(year = year_vec[c], 
-         ms_KLD = ifelse(accomodate_NA == TRUE, NA, KLD_res$mean.sum.KLD), 
-         #intrisinc_discripancy  = ifelse(accomodate_NA == TRUE, NA, KLD_res$intrinsic.discrepancy)
-         )
-      
-})
-)  
-  
-  
-# this is a supplementary plot looking at the discrepancy between observed and expected age distribution.
-
-KL_divergence_plot <- (
-  compare_age_distn_data %.>% 
-    drop_na(.) %.>% 
-    mutate(., in_or_out  = ifelse(year <= 2012, "in", "out")) %.>% 
-    ggplot(., aes(x = year, y = ms_KLD, fill = in_or_out)) +
-    geom_bar(stat = "identity", size = 0.8) +
-    labs(x = "Year", y = "KL Divergence") +
-    scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
-    scale_fill_manual(values = model_col, 
-                      labels = c("Within\nSample", "Out of\nSample"), 
-                      name = "Prediction") +
-    project_theme +
-    cap_axes() +
-    theme(legend.position = "top") +
-    guides(fill = guide_legend(title.position = "top"))
+  cal_age_distn_KL <- function(y, i) {
     
-  )
-
+    df <- obs_sim_annual_KL_data
+    year_vec <- df$year %.>% unique(.)
+    # browser()
+    sim_distn <- (
+      df %.>% 
+        filter(., year == year_vec[y] &`.id` == i) %.>% 
+        select(., age_class, sim_prop_inc) %.>%
+        spread(., key = age_class, value = sim_prop_inc) %.>% 
+        unlist(.)
+      )
   
+    obs_distn <- (
+      df %.>% 
+        filter(., year == year_vec[y] &`.id` == i) %.>% 
+        select(., age_class, obs_prop_inc) %.>%
+        spread(., key = age_class, value = obs_prop_inc) %.>% 
+        unlist(.)
+      )
+    
+    
+    if(is.na(obs_distn) == FALSE) {
+      accomodate_NA <- FALSE
+      KLD_res <- KLD(sim_distn, obs_distn, base = 2)  
+    } else {
+      accomodate_NA <- TRUE
+    }
+    
+    # browser()
+    
+    tibble(year = year_vec[y],
+           `.id` = i,
+           ms_KLD = ifelse(accomodate_NA == TRUE, NA, KLD_res$mean.sum.KLD), 
+    )
+    
+  
+  }
+
+
+  # calculate KL div distribution
+  KL_distbn <- map_dfr(1:42, function(y) {map_dfr(1:1000, function(i) {cal_age_distn_KL(y, i)})})
+
+  save(KL_distbn, file = paste0(path_dirKL, "/KL_distbn.rds"))
+  
+} else {
+  message("Directory 'KL_summary' already exists, moving on!")
+}
+
+
+load(paste0(path_dirKL, "/KL_distbn.rds"))
+
+
+obs_inc_data <- (
+  obs_sim_annual_inc_data %.>% 
+    filter(., `.id` == 1) %.>% 
+    group_by(., year) %.>%   
+    summarise(., sqrt_tot_inc = obs_inc %.>% sum(.) %.>% sqrt(.))  
+)
+  
+
+# this is a supplementary plot looking at the discrepancy between observed and expected age distribution.
+KL_divergence_plot <- (
+  KL_distbn %.>% 
+    mutate(., in_or_out  = ifelse(year <= 2012, "in", "out")) %.>% 
+    ggplot(., aes(x = year)) +
+    geom_boxplot(aes(y = ms_KLD, group = year, colour = in_or_out),
+                 outlier.shape = 21, outlier.fill = "white") +
+    geom_area(data = obs_inc_data, aes(y = sqrt_tot_inc/250), fill = "#734b6d", alpha = .2) +
+    labs(x = "Year", y = "Kullback-Leibler\nDivergence") +
+    scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1), 
+                       sec.axis = sec_axis(~.*250, breaks = seq(0, 125, 25), 
+                                           name = expression(sqrt(Incidence~per~10^5)))) +
+    scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
+    scale_colour_manual(values = model_col, 
+                      labels = c("Within\nSample", "Out of\nSample"), 
+                      name = "Prediction\nEpoch") +
+    project_theme +
+    coord_capped_cart(bottom='both', left = "both",  right='both') +
+    theme(legend.position = "top") +
+    guides(colour = guide_legend(title.position = "top", nrow = 2))
+  
+)
+
+
 
 compare_age_dstbn_plt <- (
-  KL_divergence_plot + age_distribution_plot + 
-  plot_layout(
-    guides = "collect",
-    design = "
+  age_distribution_plot + KL_divergence_plot + 
+    plot_layout(
+      guides = "collect",
+      design = "
     A
     B
     "
@@ -515,13 +600,6 @@ compare_age_dstbn_plt <- (
     plot_annotation(tag_levels = "A") &
     theme(legend.position='bottom') 
 )
-  
 
-
-
-  
-  
-  
-  
   
 

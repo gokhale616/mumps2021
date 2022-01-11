@@ -64,7 +64,8 @@ fit_plot <- (
     project_theme +
     cap_axes() +
     guides(colour = guide_legend(title.position = "top", ncol = 1, order = 1), 
-           fill = guide_legend(title.position = "top", ncol = 1, order = 2))  
+           fill = guide_legend(title.position = "top", ncol = 1, order = 2, 
+                               override.aes = list(alpha = 1)))  
   )
   
 
@@ -134,7 +135,7 @@ Rsq_fit_plot <- (
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
                                  title.position = "top", 
-                                 direction = "horizontal"), 
+                                 direction = "horizontal"),
            colour = guide_legend(title.position = "top", ncol = 1))
   )
 

@@ -114,7 +114,7 @@ plot(fit_plot_grid)
 
 @
 
-<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[2]>>=
+<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[3]>>=
 
 plot(compare_age_dstbn_plt)
 
