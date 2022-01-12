@@ -288,7 +288,7 @@ Reff_plot <- (
     geom_line(aes(colour = gt1, group = 1), size = 1) +
     labs(x = "Year", y = "Effective Reproductive    \nNumber    ") +
     scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
-                        labels = c("yes!" = "Super Critical", "nein!" = "Sub-critical"), 
+                        labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"), 
                         name = "Epidemic\nSignature") +
     scale_y_continuous(limits = c(0.90, 1.10), breaks = c(0.90, 0.95, 1, 1.05, 1.10)) +
     scale_x_continuous(breaks = year_break_x) +
@@ -438,7 +438,9 @@ simulated_annual_inc_data <- (
                  mutate(., `.id` = 1) %.>% 
                  select(., year, `.id`, starts_with("N_")) %.>% 
                  prep_as_plot_trajectory(., init_year = 1977-1/52) %.>% 
-                 transmute(., year = year, age_class = age_cohort, popn_sf = 1e5/count),
+                 transmute(., 
+                           year = year, age_class = age_cohort, 
+                           popn = count, popn_sf = 1e5/count),
                by = c("year", "age_class")) %.>% 
     mutate(., 
            sim_inc = true_cases*popn_sf) %.>% 
@@ -549,7 +551,8 @@ obs_inc_data <- (
   obs_sim_annual_inc_data %.>% 
     filter(., `.id` == 1) %.>% 
     group_by(., year) %.>%   
-    summarise(., sqrt_tot_inc = obs_inc %.>% sum(.) %.>% sqrt(.))  
+    summarise(., 
+              sqrt_tot_inc = ((sum(true_obs_cases)/sum(popn))*1e5) %.>% sqrt(.))  
 )
   
 
@@ -560,11 +563,11 @@ KL_divergence_plot <- (
     ggplot(., aes(x = year)) +
     geom_boxplot(aes(y = ms_KLD, group = year, colour = in_or_out),
                  outlier.shape = 21, outlier.fill = "white") +
-    geom_area(data = obs_inc_data, aes(y = sqrt_tot_inc/250), fill = "#734b6d", alpha = .2) +
+    geom_area(data = obs_inc_data, aes(y = sqrt_tot_inc/100), fill = "#734b6d", alpha = .2) +
     labs(x = "Year", y = "Kullback-Leibler\nDivergence") +
     scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1), 
-                       sec.axis = sec_axis(~.*250, breaks = seq(0, 125, 25), 
-                                           name = expression(sqrt(Total~Incidence~Per~10^5)))) +
+                       sec.axis = sec_axis(~.*100, breaks = seq(0, 50, 10), 
+                                           name = expression(sqrt(Incidence~Per~10^5)))) +
     scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
     scale_colour_manual(values = model_col, 
                       labels = c("Within\nSample", "Out of\nSample"), 

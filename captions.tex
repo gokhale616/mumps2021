@@ -5,11 +5,15 @@
 
 %% fig 2 
 \newcommand{\capFitplot}{
-\textbf{Model-data agreement.} (A) Qualitative model fits within sample time-series (1977-2012, seagreen) and corresponding out of sample prediction (2013-2018, orange) for the waning hypothesis. Ribbons represent 80\% Predictiona intervals for within-sample fits (seagreen) and outs of sample prediction (orange). (B) Quantitatve measure of agreement was assessed using coefficeint of variation, ($R^2$, reported inset) estimated at a log scale, for within sample era (seagreen) and out of sample era (orange). 
+\textbf{Model-data agreement.} (A) Qualitative model fits within sample time-series (1977-2012, seagreen) and corresponding out of sample prediction (2013-2018, orange) for the waning hypothesis. Ribbons represent 80\% Prediction intervals corresponding to the two prediction epochs. (B) Quantitatve measure of agreement was assessed using coefficeint of variation, ($R^2$, reported inset) estimated assessing the log-linear variation explained by the model corresponding to the two prediction epochs. 
+}
+
+\newcommand{\capKLdiv}{
+\textbf{Comparing age distribution of observed \textit{v/s.}expected true incidence of mumps.} (A) Qualitative agreement of age-distribution of incidence per $10^5$, as expected under the waning model, to the observed age-distribution (purple gradient). Simulated incidence has been broken down into two prediction epochs - within sample (sea-green gradient) and out of sample (orange gradient to match the analysis presented in figure~\ref{fig:fit_plot}. (B) Quantitative agreement between observed \textit{v/s.} expected age-distribution of incidence using the Kullback-Leibler Divergence (KLD, left y-axis) through time. Boxplots represent bootsrapped distribution of KLD calculated by comparing observed age-distribution to 1000 synthetically generated time-series assuming observeation noise. The area plot represents an estimate of age-aggregated mumps incidence per $10^5$ (right y-axis). 
 }
 
 \newcommand{\capSumplot}{
-\textbf{Dissecting dynamics of mumps remergence.} (A) Represents the rate of vaccine dervied immune decay under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) since the time of vaccination. (B) Weekly percent effectively vaccinated, total (yellow), and across various age cohorts (orange gradient). Green dashed line represents the crtical vaccnation level calculated using $R_0 = 14$ for the waning model. (C) Individuals per $10^5$ who weekly lose their vaccine derived immunity across various cohorts. (D) Weekly effective reproductive number through time that highlights regions of super-critical (red) and subcritical (sea-green) epidemic transitions.  (E) Prevalence per $10^5$ of mumps across various age classes model. (F) Comparison between expected (organge gradient) and observed (purple gradient) age distribution of incidence per $10$
+\textbf{Dissecting dynamics of mumps remergence.} (A) Rate of vaccine immunity decay in a cohort under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) post vaccination. (B) Weekly percent effectively vaccinated, Total (yellow), and across various age cohorts (red gradient). Green dashed line represents the crtical vaccnation level calculated using $R_0 = 14$ for the waning model. (C) Weekly loss of vaccine derived immunity per $10^5$. (D) Weekly dynamics in the effective reproductive number highlighting supercritical (red) and subcritical (green) epidemic signatures.  (E) Prevalence per $10^5$ of mumps across various age classes.
 }
 
 
@@ -31,16 +35,13 @@
 }
 
 
-\newcommand{\capKLdiv}{
-\textbf{Kullback-Leibler Divergence.} 
-}
-
 \newcommand{\capRelFitplot}{
-\textbf{Relative Model Fit.} 
+\textbf{Relative Model Fit.}  Qualitative agreement of age-specific observed cases of mumps (facet rows, black) to 4 models of vaccine imperfection (facet columns) - No Loss (violet), Waning (Exponential, seagreen), Waning (Erlang, N = 3, darkblue), and Leaky (pink).
+Colored solid lines represent median trajectories where as ribbons repsresent 80\% prediction intervals. Relative quantitative model-data agreement has been conveyed using Akaike information criterion ($\Delta$AIC, reported inset) among various models.
 }
 
 
 \newcommand{\capAuxParamplot}{
-\textbf{Auxillary parameter estimates of Process and Observation model.} Faceted barplots represent age specfic maximum likelihood estimates (blue gradient) of probability of infection (q), reporting probability ($\rho$) and dispersion parameter ($\psi$) corresponding to the the hypotheses tested.
+\textbf{Age-specific parameter estimates of Process and Observation model.} Faceted barplots represent maximum likelihood estimates of probability of infection (q), reporting probability ($\rho$) and dispersion parameter ($\psi$) corresponding to the four hypotheses of mumps reemergence (columns). Age-class has been reported using a blue gradient.
 }
 

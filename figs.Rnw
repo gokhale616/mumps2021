@@ -120,6 +120,7 @@ plot(compare_age_dstbn_plt)
 
 @
 
+
 <<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
 
 plot(epi_summary_plt)

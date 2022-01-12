@@ -541,9 +541,16 @@ summarize_epidemiology <- function(traj_cov_data, p_vals) {
                     Rs_3  = (N_3 - (S_3 + V_3 + I1_3 + I2_3 + E1_3 + E2_3))*Ns_3,
                     Rs_4  = (N_4 - (S_4 + V_4 + I1_4 + I2_4 + E1_4 + E2_4))*Ns_4,
                     Rs_5  = (N_5 - (S_5 + V_5 + I1_5 + I2_5 + E1_5 + E2_5))*Ns_5,
+                    # proportion of I2 age structured
+                    I2p_1 = I2_1/(I1_1+I2_1), I2p_2 = I2_2/(I1_2+I2_2), I2p_3 = I2_3/(I1_3+I2_3),
+                    I2p_4 = I2_4/(I1_4+I2_4), I2p_5 = I2_5/(I1_5+I2_5),
+                    # proportion of total I2
+                    I2p = (I2_1 + I2_2 + I2_3 + I2_4 + I2_5)/(I1_1+I2_1 + I1_2+I2_2 + I1_3+I2_3 + I1_4+I2_4 + I1_5+I2_5),
                     # scale the true new cases compartments
                     Cs_1 = (C_1)*Ns_1, Cs_2 = (C_2)*Ns_2, Cs_3 = (C_3)*Ns_3, 
                     Cs_4 = (C_4)*Ns_4, Cs_5 = (C_5)*Ns_5, 
+                    # scaled total cases 
+                    Cs = (C_1 + C_2 + C_3 + C_4 + C_5)*1e5/(N_1 + N_2 + N_3 + N_4 + N_5),
                     # define the total infectious compartments
                     Is_1 = (I1_1+I2_1)*Ns_1, Is_2 = (I1_2+I2_2)*Ns_2, Is_3 = (I1_3+I2_3)*Ns_3,
                     Is_4 = (I1_4+I2_4)*Ns_4, Is_5 = (I1_5+I2_5)*Ns_5,
@@ -557,30 +564,7 @@ summarize_epidemiology <- function(traj_cov_data, p_vals) {
                                              S_4 = S_4, S_5 = S_5,
                                              V_1 = V_1, V_2 = V_2, V_3 = V_3, 
                                              V_4 = V_4, V_5 = V_5,
-                                             t = year),
-                    # # calculate effective R0 for the system
-                    # average_beta = calculate_average_beta(p_vals = p_vals,
-                    #                                       N_1 = N_1, N_2 = N_2, N_3 = N_3,
-                    #                                       N_4 = N_4, N_5 = N_5,
-                    #                                       S_1 = S_1, S_2 = S_2, S_3 = S_3,
-                    #                                       S_4 = S_4, S_5 = S_5,
-                    #                                       V_1 = V_1, V_2 = V_2, V_3 = V_3,
-                    #                                       V_4 = V_4, V_5 = V_5,
-                    #                                       I_1 = I_1, I_2 = I_2, I_3 = I_3,
-                    #                                       I_4 = I_4, I_5 = I_5,
-                    #                                       t = year)$B,
-                    # # calculate the mean age at infection as a function of the effective R0
-                    # mean_age_at_infection = calculate_average_beta(p_vals = p_vals,
-                    #                                                N_1 = N_1, N_2 = N_2, N_3 = N_3,
-                    #                                                N_4 = N_4, N_5 = N_5,
-                    #                                                S_1 = S_1, S_2 = S_2, S_3 = S_3,
-                    #                                                S_4 = S_4, S_5 = S_5,
-                    #                                                V_1 = V_1, V_2 = V_2, V_3 = V_3,
-                    #                                                V_4 = V_4, V_5 = V_5,
-                    #                                                I_1 = I_1, I_2 = I_2, I_3 = I_3,
-                    #                                                I_4 = I_4, I_5 = I_5,
-                    #                                                t = year)$A
-          )) 
+                                             t = year))) 
         
       
       
