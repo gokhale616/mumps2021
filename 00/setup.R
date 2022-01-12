@@ -13,9 +13,9 @@ lib_dep <- c("tidyverse",
              "usmap",
              "readxl", "socialmixr", "ggthemes", 
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
-             "parallel", "nloptr", 
+             "nloptr", 
              "lemon", "wesanderson", "patchwork",
-             "ggpattern", "lubridate", "kableExtra")
+             "lubridate", "kableExtra")
 
 
 

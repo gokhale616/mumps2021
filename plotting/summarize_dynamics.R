@@ -271,7 +271,7 @@ prevalence_plot <- (
   scale_y_continuous(trans = "log10", breaks = c(1e-3, 1e-2, 1e-1, 1e0, 
                                                  1e1, 1e2, 1e3), 
                      limits = c(1e-3, 1e3)) +
-  annotation_logticks(sides = "l")  +
+  annotation_logticks(sides = "l", short = unit(0.1, "cm"))  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
   project_theme +
   cap_axes()
@@ -370,14 +370,6 @@ age_distribution_plot <- (
     filter(., year > 1977-20/52 & year < 2018+20/52) %.>% 
     ggplot(., aes(x = year, y = count)) +
     geom_area(aes(fill = cmplx_grdnt), stat = "identity", position = "fill") +
-    # geom_bar_pattern(data = obs_age_incidence, 
-    #                  aes(x = year, y = inc, colour = age_cohort, pattern_fill = age_cohort), 
-    #                  stat = "identity", position = "fill", 
-    #                  fill = "NA", width = 0.75, 
-    #                  pattern_angle = 45, pattern_density = 0.075,
-    #                  pattern_spacing = 0.01, pattern = "stripe",
-    #                  pattern_colour = NA
-    #                  ) +
     geom_bar(data = obs_age_incidence, aes(x = year, y = inc, colour = age_cohort), 
              stat = "identity", position = "fill", fill = NA, size = 0.8, width =0.75) +
     labs(x = "Year", y = "Observed v/s Expected \nIncidence Age Distribution", 
@@ -390,8 +382,6 @@ age_distribution_plot <- (
                                  paste0(age_names, "_", "nein")),
                       guide = "none") +    
     scale_colour_brewer(palette = "Purples", direction = -1) +
-    scale_pattern_fill_brewer(palette = "Purples", direction = -1, guide = "none") +
-    scale_pattern_manual(guide = "none") +
     project_theme +
     theme(legend.position = "top") +
     cap_axes() +
@@ -574,7 +564,7 @@ KL_divergence_plot <- (
     labs(x = "Year", y = "Kullback-Leibler\nDivergence") +
     scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1), 
                        sec.axis = sec_axis(~.*250, breaks = seq(0, 125, 25), 
-                                           name = expression(sqrt(Incidence~per~10^5)))) +
+                                           name = expression(sqrt(Total~Incidence~Per~10^5)))) +
     scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
     scale_colour_manual(values = model_col, 
                       labels = c("Within\nSample", "Out of\nSample"), 

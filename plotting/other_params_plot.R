@@ -27,9 +27,9 @@ aux_params <- (
                                   age_cohort == "5"~ age_names_u[5],
                                   age_cohort == "u"~ age_names_u[6]
                                   ) %.>% factor(., levels = age_names_u), 
-           aux_param =case_when(aux_param == "q" ~ "Probability~Of~Infection~(q)", 
-                                aux_param == "rho" ~ "Reporting~Probabilty~(rho)", 
-                                aux_param == "psi" ~ "Dispersion~Parameter~(psi)") %.>% as_factor(.), 
+           aux_param =case_when(aux_param == "q" ~ "q", 
+                                aux_param == "rho" ~ "rho", 
+                                aux_param == "psi" ~ "psi") %.>% as_factor(.), 
            hypothesis =  case_when(hypothesis == "noloss" ~ "No Loss", 
                                    hypothesis == "waning" ~ "Waning\n(Exponential)", 
                                    hypothesis == "gwaning" ~ "Waning\n(Erlang, N = 3)", 
@@ -40,23 +40,85 @@ aux_params <- (
   )
 
 
-aux_para_plot <- (
+poi_plot <- (
   aux_params %.>% 
-    ggplot(., aes(x= hypothesis, y  = value, fill = age_cohort)) +
-    geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
-    facet_grid(rows = vars(aux_param), scales = "fixed", 
-               labeller = label_parsed) +
-    geom_text(aes(y = 1e1, label = round(value, 3)), 
-               position = position_dodge(width = 0.9), 
-               angle = 90) +
-    labs(., 
-         x = "Model", y = "Estimate Value", fill = "Age\nCohort") +
-    scale_y_continuous(trans = "log10", limits = c(1e-4, 5e1)) +
-    scale_fill_manual(values = c(brewer_pal(palette = "Blues", direction = -1)(5), "darkturquoise")) +
-    project_theme +
-    cap_axes())
-
-
+  filter(., aux_param == "q") %.>% 
+  ggplot(., aes(x = age_cohort, 
+                y  = value, 
+                fill = age_cohort)) +
+  labs(x = "", y = expression(atop("Probability Of", paste("Infection (", q, ")")))) +
+  geom_bar(stat = "identity", 
+           position = position_dodge(width = 0.9)) +
+  facet_grid(cols = vars(hypothesis),
+             scales = "free_y") +
+  scale_fill_manual(values = c(brewer_pal(palette = "Blues", direction = -1)(5)), 
+                    guide= "none") +
+  project_theme +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.line.x = element_blank()) +
+  coord_capped_cart(left = "both")
+  )
   
+  
+rho_plot <- (
+  aux_params %.>% 
+    filter(., aux_param == "rho") %.>% 
+    ggplot(., aes(x = age_cohort, 
+                  y  = value, 
+                  fill = age_cohort)) +
+    labs(x = "", y = expression(atop("Reporting", paste("Probability (", rho, ")")))) +
+    geom_bar(stat = "identity", 
+             position = position_dodge(width = 0.9)) +
+    facet_grid(cols = vars(hypothesis),
+               scales = "free_y") +
+    scale_fill_manual(values = c(brewer_pal(palette = "Blues", direction = -1)(5), 
+                                 "darkturquoise"), 
+                      guide= "none") +
+    project_theme +
+    theme(axis.text.x = element_blank(), 
+          axis.ticks.x = element_blank(), 
+          axis.line.x = element_blank(), 
+          strip.text.x = element_blank()) +
+    coord_capped_cart(left = "both")
+)
 
 
+psi_plot <- (
+  aux_params %.>% 
+    filter(., aux_param == "psi") %.>% 
+    ggplot(., aes(x = age_cohort, 
+                  y  = value, 
+                  fill = age_cohort)) +
+    labs(x = "", 
+         y = expression(atop("Dispersion", paste("Parameter (", psi, ")"))), 
+         fill = "Age\nCohort") +
+    geom_bar(stat = "identity", 
+             position = position_dodge(width = 0.9)) +
+    facet_grid(cols = vars(hypothesis),
+               scales = "free_y") +
+    scale_fill_manual(values = c(brewer_pal(palette = "Blues", direction = -1)(5), 
+                                 "darkturquoise")) +
+    project_theme +
+    theme(axis.text.x = element_blank(), 
+          axis.ticks.x = element_blank(), 
+          axis.line.x = element_blank(), 
+          strip.text.x = element_blank()) +
+    coord_capped_cart(left = "both")
+)
+
+
+
+aux_para_plot <- (
+    poi_plot + rho_plot + psi_plot +
+      plot_layout(
+        guides = "collect",
+        design = "
+    A
+    B
+    C
+    "
+      ) + 
+      plot_annotation(tag_levels = "A") &
+      theme(legend.position='bottom') 
+  )
