@@ -84,7 +84,7 @@ leaky_waning_effect <- function(c = 1, param_grid,
     reemergence_stats %.>%
       mutate(., 
              epsilon = param_grid$epsilon2[c],
-             dwan = param_grid$epsilon2[c],
+             dwan = param_grid$dwan[c],
              time_of_reemergence = ifelse(year == 0, 2019, year)) %.>% 
       select(., -year))
   
