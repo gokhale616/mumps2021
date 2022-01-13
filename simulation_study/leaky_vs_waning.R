@@ -1,10 +1,11 @@
 # might have to change this to src_cl if cluster is needed
-source("../00/src.R", chdir = TRUE)
+source("../00/src_cl.R", chdir = TRUE)
 source("../plotting/prep_estm_tables.R", chdir = TRUE)
 source("../fit/treat_vacc_covar.R", chdir = TRUE)
 
 # simulate dynamics to the check simulation match to theoretical results 
-fin_year <- 2018
+fin_year <- 2020
+fine_res <- 1/12
 
 # mle_values
 best_model <- all_result_df %.>% filter(., best_fit_covar == 1) 
@@ -23,7 +24,7 @@ po_to_sim <- make_pomp(.,
                        covar = mod_mumps_covariates_sigmoidal, 
                        extrapolate_simulation = TRUE, 
                        extra_start_t = 1965, extra_end_t = fin_year, 
-                       temp_scale = 1/1)
+                       temp_scale = fine_res)
 
 
 leaky_waning_effect <- function(c = 1, param_grid, 
@@ -50,11 +51,38 @@ leaky_waning_effect <- function(c = 1, param_grid,
   )
   
   
+  if(fine_res < 1) {
+    
+    interp_range <- c(1965, fin_year)
+    
+    xnew <- seq(interp_range[1], interp_range[2], by = fine_res)
+    
+    interpolated_covs <- (
+      mod_mumps_covariates_sigmoidal %.>% 
+        bind_rows(., 
+                  mod_mumps_covariates_sigmoidal %.>% 
+                    slice(., rep(n(), interp_range[2]-2018))) %.>% 
+        mutate(., 
+               year = seq(1910, interp_range[2], by = 1)) %.>% 
+        filter(., year > 1965) %.>%   
+        select(., year, starts_with("N_")) %.>% 
+        interp.dataset(y = ., x=.$year, 
+                       xout = xnew, 
+                       method = "linear") %.>% 
+        as_tibble(.)
+    )  
+    
+    
+  } else {
+    interpolated_covs <- mod_mumps_covariates_sigmoidal
+  }
+  
+  
   # combine with covariate data
   comp_traj_w_cov <- (
     comp_traj %.>% 
       right_join(., 
-                 mod_mumps_covariates_sigmoidal %.>% 
+                 interpolated_covs %.>% 
                    filter(., year > 1965),
                  by = "year") %.>% 
       as_tibble(.) %.>% 
@@ -93,7 +121,20 @@ leaky_waning_effect <- function(c = 1, param_grid,
 }
 
 
-test_param_grid <- expand.grid(epsilon2 = seq(0, 1, by = 0.1), 
-                               dwan = seq(5, 300, length.out = 10))
+test_param_grid <- expand.grid(epsilon2 = seq(0, 1, length.out = 20), 
+                               dwan = seq(5, 300, length.out = 20))
 
-sim_study_outcome <- map_dfr(1:100, leaky_waning_effect, param_grid = test_param_grid)
+
+if(FALSE) {
+tic()
+map_dfr(1:10, leaky_waning_effect, param_grid = test_param_grid)
+toc()
+}
+
+library(furrr)
+tic()
+plan("multisession", workers = (detectCores()-1))
+future_map_dfr(1:nrow(test_param_grid), leaky_waning_effect, param_grid = test_param_grid)
+toc()
+
+
