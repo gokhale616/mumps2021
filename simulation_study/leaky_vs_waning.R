@@ -1,6 +1,6 @@
 # might have to change this to src_cl if cluster is needed
 source("../00/src_cl.R", chdir = TRUE)
-source("../plotting/prep_estm_tables.R", chdir = TRUE)
+source("./load_pram_est.R", chdir = TRUE)
 source("../fit/treat_vacc_covar.R", chdir = TRUE)
 
 # simulate dynamics to the check simulation match to theoretical results 
@@ -121,8 +121,8 @@ leaky_waning_effect <- function(c = 1, param_grid,
 }
 
 
-test_param_grid <- expand.grid(epsilon2 = seq(0, 1, length.out = 20), 
-                               dwan = seq(5, 300, length.out = 20))
+test_param_grid <- expand.grid(epsilon2 = seq(0, 1, length.out = 100), 
+                               dwan = seq(5, 300, length.out = 100))
 
 
 if(FALSE) {
@@ -133,8 +133,10 @@ toc()
 
 library(furrr)
 tic()
-plan("multisession", workers = (detectCores()-1))
-future_map_dfr(1:nrow(test_param_grid), leaky_waning_effect, param_grid = test_param_grid)
+plan("multisession", workers = detectCores())
+sim_study_res <- future_map_dfr(1:nrow(test_param_grid), 
+                                leaky_waning_effect, 
+                                param_grid = test_param_grid)
 toc()
 
-
+save(sim_study_res, file = "../result_data/sim_study/sim_study_res.rds")
