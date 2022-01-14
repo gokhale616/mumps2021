@@ -176,6 +176,109 @@ est_mle_kbl <- (
   )
 
 
+
+#load confidence intervals
+CI_result_path <- "../result_data/CI"
+
+list.files(path = CI_result_path, 
+           full.names = TRUE) %.>% 
+  lapply(., load,  envir = .GlobalEnv)
+
+
+# make a single data frame for CIs and back transfrom
+all_hypo_bootstrap_res <- (
+  noloss_bootstrap_res %.>% 
+    bind_rows(., 
+              waning_bootstrap_res) %.>% 
+    bind_rows(., gwaning_bootstrap_res) %.>% 
+    bind_rows(., leaky2_bootstrap_res) %.>% 
+  mutate_at(., .vars = vars(starts_with("q_age_"), starts_with("rho_age_"), 
+                            beta1, epsilon2), .funs = invlogit) %.>% 
+  mutate_at(., .vars = vars(starts_with("psi_"), 
+                            sigma, dwan, t_intro), .funs = exp)
+  ) %.>% 
+  # some modifications to avoid default conflicts downstream
+  mutate(., 
+         epsilon2 = ifelse(hypo_name == "leaky", epsilon2, 0), 
+         t_intro  = ifelse(hypo_name == "leaky", t_intro, 3000), 
+         p_intro  = ifelse(hypo_name == "leaky", 3, 6),
+         dwan     = ifelse(hypo_name %in% c("waning", "gwaning"), dwan, Inf)
+         )
+
+
+# calculate additional parameters before summarizing
+
+if(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds") == FALSE) {
+  messgae("Preparing bootstrapped derived quatitites! Takes 40secs on 8cores")
+  
+  plan(multiprocess)
+  
+  all_hypo_bootstrap_res_quants <- (
+    future_map_dfr(1:nrow(all_hypo_bootstrap_res), function(x) {
+      
+      # hypo_name
+      hypo_name <- (
+        all_hypo_bootstrap_res %.>% 
+          slice(., x) %.>% 
+          select(., hypo_name) %.>%
+          unlist(.)
+      )  
+      
+      
+      # pick the parameters   
+      param_int <-(
+        all_hypo_bootstrap_res %.>% 
+          slice(., x) %.>% 
+          select(., -c(hypo_name, covar_name)) %.>% 
+          unlist(.) %.>% 
+          sim_p_vals(.)
+      )
+      
+      if(hypo_name == "gwaning") {
+        R0 <- c(param_int, params_for_R0) %.>% calculate_R0_mq(.)$reprodutive_number 
+        
+        Rp <- c(param_int, params_for_Rp) %.>% calculate_R0_mq(.)$reprodutive_number   
+      } else {
+        R0 <- c(param_int, params_for_R0) %.>% calculate_R0_mq(.)$reprodutive_number 
+        
+        Rp <- c(param_int, params_for_Rp) %.>% calculate_R0_mq(.)$reprodutive_number   
+      }
+      
+      
+      all_hypo_bootstrap_res %.>% 
+        slice(., x) %.>% 
+        mutate(., 
+               R0 = R0, 
+               Rp = Rp, 
+               impact = 1-R0/Rp)
+      
+      
+      
+    })
+  )
+  
+  save(all_hypo_bootstrap_res_quants, file = "../result_data/CI/all_hypo_bootstrap_res_quants.rds")
+    
+} else {
+  message("loading bootstrapped quantitites from results!")
+}
+
+load(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds"))
+
+
+# get rid of covariate column and summarize 
+all_hypo_bootstrap_res_quants_l <- (
+  all_hypo_bootstrap_res_quants %.>% 
+    select(., -c(covar_name) %.>%
+    gather(., key = "parameter", value = "est_val", -hypo_name))
+  )
+
+
+
+
+
+
+
 # table for the main manuscript
 # est_mle_kbl <- make_table(table_data =  table_hypo_compare)
 
