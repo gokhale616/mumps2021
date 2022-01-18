@@ -1,3 +1,7 @@
+library(furrr)
+library(rioja)
+library(progressr)
+
 # might have to change this to src_cl if cluster is needed
 source("../00/src_cl.R", chdir = TRUE)
 source("./load_pram_est.R", chdir = TRUE)
@@ -27,15 +31,19 @@ po_to_sim <- make_pomp(.,
                        temp_scale = fine_res)
 
 
-leaky_waning_effect <- function(c = 1, param_grid, 
+leaky_waning_effect <- function(x = 1, param_grid, 
                                 po_obj = po_to_sim,
-                                def_param = best_model_p_vec) {
+                                def_param = best_model_p_vec, 
+                                p) {
   
-  # browser()
+  
+  # progressor
+  p()
+  #browser()
   # select value of leakiness and waning to be substituted
   val_to_replace <- (
     param_grid %.>% 
-      slice(., c) %.>% 
+      slice(., x) %.>% 
       unlist(.)  
     )
   
@@ -101,18 +109,20 @@ leaky_waning_effect <- function(c = 1, param_grid,
   # collect stats
   reemergence_stats <- (
     summarized_traj %.>% 
-      filter(., year > 2002 & Reff < 1) %.>%
+      filter(., year >= 2002 & Reff < 1) %.>%
       arrange(., year) %.>%   
       slice(., 1) %.>% 
       replace(., is.na(.), 0)
     )  
   
+  #print((x/nrow(param_grid))*100)
+  
   # collect outcome
   outcome <- (
     reemergence_stats %.>%
       mutate(., 
-             epsilon = param_grid$epsilon2[c],
-             dwan = param_grid$dwan[c],
+             epsilon = param_grid$epsilon2[x],
+             dwan = param_grid$dwan[x],
              time_of_reemergence = ifelse(year == 0, 2019, year)) %.>% 
       select(., -year))
   
@@ -121,22 +131,31 @@ leaky_waning_effect <- function(c = 1, param_grid,
 }
 
 
-test_param_grid <- expand.grid(epsilon2 = seq(0, 1, length.out = 100), 
-                               dwan = seq(5, 300, length.out = 100))
+test_param_grid <- expand.grid(epsilon2 = seq(0, 1, length.out = 10), 
+                               dwan = seq(5, 300, length.out = 10))
 
 
 if(FALSE) {
 tic()
-map_dfr(1:10, leaky_waning_effect, param_grid = test_param_grid)
+map(1:nrow(test_param_grid), leaky_waning_effect, param_grid = test_param_grid)
 toc()
 }
 
-library(furrr)
+
+
 tic()
 plan("multisession", workers = detectCores())
-sim_study_res <- future_map_dfr(1:nrow(test_param_grid), 
-                                leaky_waning_effect, 
-                                param_grid = test_param_grid)
+
+with_progress({
+  
+  p <- progressor(steps = nrow(test_param_grid))
+  
+  sim_study_res <- future_map(1:nrow(test_param_grid), 
+                              leaky_waning_effect, 
+                              param_grid = test_param_grid, 
+                              p = p)
+  })
+
 toc()
 
-save(sim_study_res, file = "../result_data/sim_study/sim_study_res.rds")
+#save(sim_study_res, file = "../result_data/sim_study/sim_study_res.rds")

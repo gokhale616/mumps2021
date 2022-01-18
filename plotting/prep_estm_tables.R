@@ -250,7 +250,7 @@ if(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds") == FALSE) {
         mutate(., 
                R0 = R0, 
                Rp = Rp, 
-               impact = 1-R0/Rp)
+               impact = 1-Rp/R0)
       
       
       
@@ -266,14 +266,42 @@ if(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds") == FALSE) {
 load(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds"))
 
 
+
 # get rid of covariate column and summarize 
 all_hypo_bootstrap_res_quants_l <- (
   all_hypo_bootstrap_res_quants %.>% 
-    select(., -c(covar_name) %.>%
-    gather(., key = "parameter", value = "est_val", -hypo_name))
+    select(., -c(covar_name, `.id`)) %.>%
+    gather(., key = "parameter", value = "est_val", -hypo_name)
   )
 
 
+all_hypo_bootstrap_res_quants_l %.>% 
+  mutate(., est_val = ifelse(is.infinite(est_val), NA, est_val)) %.>% 
+  filter(., 
+         parameter %in% c("dwan")) %.>% 
+  ggplot(., aes(x = est_val)) + 
+  geom_histogram(bins = 30) +
+  facet_grid(col = vars(parameter), row = vars(hypo_name), "free")  
+  
+  
+  
+
+
+
+# CI's find 
+all_hypo_CI <- (
+  all_hypo_bootstrap_res_quants_l %.>% 
+    group_by(., hypo_name, parameter) %.>%
+    summarise(., 
+              qs = quantile(est_val, c(0.1, 0.9), na.rm = TRUE), 
+              prob = c("0.1", "0.90"), 
+              .groups = 'drop') %.>%
+    ungroup(.) %.>% 
+    spread(., key = prob, value = qs)
+  )
+  
+
+  
 
 
 
