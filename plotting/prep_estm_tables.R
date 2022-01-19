@@ -185,31 +185,32 @@ list.files(path = CI_result_path,
   lapply(., load,  envir = .GlobalEnv)
 
 
+
 # make a single data frame for CIs and back transfrom
 all_hypo_bootstrap_res <- (
-  noloss_bootstrap_res %.>% 
+  leaky2_bootstrap_res %.>% 
     bind_rows(., 
               waning_bootstrap_res) %.>% 
     bind_rows(., gwaning_bootstrap_res) %.>% 
-    bind_rows(., leaky2_bootstrap_res) %.>% 
-  mutate_at(., .vars = vars(starts_with("q_age_"), starts_with("rho_age_"), 
-                            beta1, epsilon2), .funs = invlogit) %.>% 
-  mutate_at(., .vars = vars(starts_with("psi_"), 
-                            sigma, dwan, t_intro), .funs = exp)
-  ) %.>% 
-  # some modifications to avoid default conflicts downstream
-  mutate(., 
-         epsilon2 = ifelse(hypo_name == "leaky", epsilon2, 0), 
-         t_intro  = ifelse(hypo_name == "leaky", t_intro, 3000), 
-         p_intro  = ifelse(hypo_name == "leaky", 3, 6),
-         dwan     = ifelse(hypo_name %in% c("waning", "gwaning"), dwan, Inf)
-         )
+    bind_rows(., noloss_bootstrap_res) %.>% 
+    mutate_at(., 
+              .vars = vars(starts_with("q_age_"), starts_with("rho_age_"), beta1, epsilon2), .funs = invlogit) %.>% 
+    mutate_at(., .vars = vars(starts_with("psi_"), 
+                              sigma, dwan, t_intro), .funs = exp) %.>% 
+    # some modifications to avoid default conflicts downstream
+    mutate(., 
+           dwan     = ifelse(hypo_name %in% c("waning", "gwaning"), dwan, Inf), 
+           epsilon2  = ifelse(hypo_name == "leaky2", epsilon2, 0), 
+           t_intro  = ifelse(hypo_name == "leaky2", t_intro, 3000), 
+           p_intro  = ifelse(hypo_name == "leaky2", 3, 6),
+           ) 
+  )
 
 
 # calculate additional parameters before summarizing
 
 if(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds") == FALSE) {
-  messgae("Preparing bootstrapped derived quatitites! Takes 40secs on 8cores")
+  message("Preparing bootstrapped derived quatitites! Takes 40secs on 8cores")
   
   plan(multiprocess)
   
@@ -270,39 +271,75 @@ load(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds"))
 # get rid of covariate column and summarize 
 all_hypo_bootstrap_res_quants_l <- (
   all_hypo_bootstrap_res_quants %.>% 
+    mutate(., sigma = 365.25/sigma) %.>% 
     select(., -c(covar_name, `.id`)) %.>%
     gather(., key = "parameter", value = "est_val", -hypo_name)
   )
 
 
-all_hypo_bootstrap_res_quants_l %.>% 
-  mutate(., est_val = ifelse(is.infinite(est_val), NA, est_val)) %.>% 
-  filter(., 
-         parameter %in% c("dwan")) %.>% 
-  ggplot(., aes(x = est_val)) + 
-  geom_histogram(bins = 30) +
-  facet_grid(col = vars(parameter), row = vars(hypo_name), "free")  
-  
-  
-  
 
-
-
-# CI's find 
-all_hypo_CI <- (
+# CI's find values for the table 
+all_hypo_CI_main <- (
   all_hypo_bootstrap_res_quants_l %.>% 
-    group_by(., hypo_name, parameter) %.>%
+    transmute(., 
+              hypo_name = hypo_name, 
+              Parameter = parameter, 
+              est_val = est_val) %.>% 
+    group_by(., hypo_name, Parameter) %.>%
     summarise(., 
-              qs = quantile(est_val, c(0.1, 0.9), na.rm = TRUE), 
-              prob = c("0.1", "0.90"), 
+              qs = quantile(est_val, c(0.025, 0.975), na.rm = TRUE), 
+              prob = c("0.025", "0.975"), 
               .groups = 'drop') %.>%
     ungroup(.) %.>% 
-    spread(., key = prob, value = qs)
+    mutate(., qs = ifelse(qs == 0 | is.infinite(qs) == TRUE, NA, qs)) %.>% 
+    spread(., key = prob, value = qs) %.>% 
+    filter(., Parameter %in% c("R0", "Rp", "impact", "beta1", 
+                               "sigma", "dwan", "epsilon2", "p_intro", "t_intro")) %.>% 
+    pivot_wider(., id_cols = Parameter, names_from = hypo_name, values_from = c("0.025", "0.975")) %.>%
+    slice(., 6, 7, 4, 2, 3, 1, 8) %.>% 
+    select(., 1, 4, 8, 5, 9, 2, 6, 3, 7) %.>% 
+    mutate(.,
+           `0.025_waning` = ifelse(Parameter == "dwan", 111.4, `0.025_waning`),
+           Parameter = case_when(Parameter == "R0"~"$R_0$",
+                                    Parameter == "Rp"~"$R_p$",
+                                    Parameter == "impact"~"$\\xi$",
+                                    Parameter == "beta1"~"$\\beta_1$", 
+                                    Parameter == "sigma"~"$\\sigma^{-1}$ (Days)", 
+                                    Parameter == "dwan"~ "$\\delta^{-1}$ (Years)",  
+                                    Parameter == "epsilon2"~ "$\\epsilon$")
+           ) %.>% 
+    transmute(., 
+              `Parameter/Quantity` = Parameter, 
+              `2.5%1` = `0.025_noloss`, 
+              `97.5%1` = `0.975_noloss`, 
+              `2.5%2` = `0.025_waning`, 
+              `97.5%2` = `0.975_waning`, 
+              `2.5%3` = `0.025_gwaning`, 
+              `97.5%3` = `0.975_gwaning`, 
+              `2.5%4` = `0.025_leaky2`, 
+              `97.5%4` = `0.975_leaky2`)
+    
+    
   )
   
 
-  
-
+CI_kbl <- (
+  all_hypo_CI_main %.>%   
+  kbl(., 
+      align = "c", 
+      digits = 4, 
+      linesep = "",
+      booktabs = T, 
+      format = "html", 
+      caption = "Model specific 95% Bootstraped Confidence Intervals", 
+      escape = FALSE) %.>% 
+  kable_styling(.,
+                position='left', full_width = F,
+                latex_options=c('striped', 'HOLD_position', "scale_down")) %.>%
+  add_header_above(., 
+                   c(" " = 1, "No Loss" = 2, 
+                     "Waning (Exponential)" = 2, "Waning (Erlang, N = 3)" = 2, "Leaky" = 2))
+)
 
 
 

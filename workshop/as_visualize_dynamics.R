@@ -3,23 +3,36 @@ source("../00/src.R", chdir = TRUE)
 
 # source all the treated covariates
 source("../fit/treat_vacc_covar.R", chdir = TRUE)
+source("../simulation_study/load_pram_est.R", chdir = TRUE)
 
-# source the script on reproductive numbers 
-source("./reproductive_numbers.R", chdir = TRUE)
+
+# mle_values
+best_model <- all_result_df %.>% filter(., best_fit_covar == 1) 
+
+# convert tibble to vector of param values for simulations 
+best_model_p_vec <- (
+  best_model %.>% 
+    select(., -c(R0, Rp, hypothesis, vacc_covariate, d_AIC, best_fit_covar)) %.>% 
+    mutate(., epsilon2 = 0, p_intro = 6, t_intro = 3000) %.>% 
+    unlist(.) %.>% sim_p_vals(.)
+)
+
+
 
 po_to_vis <- make_pomp(., 
                        covar = mod_mumps_covariates_sigmoidal, 
                        extrapolate_simulation = TRUE, 
-                       extra_start_t = 1950-1/52, extra_end_t = 2020, 
+                       extra_start_t = 1967-1/52, extra_end_t = 2020, 
                        temp_scale = 1/52)
 
 
-rp_vals_mod <- param_vals_est
+
+rp_vals_mod <-  best_model_p_vec
 
 # mod_these_params <- c("q", "sigma", "beta1", "dwan", "epsilon1", "t_intro", "p_intro", "iota", "epsilon2")
-mod_these_params <- c(sprintf("q_age_%d",1:5), "sigma", "beta1", "dwan")
+mod_these_params <- c(sprintf("q_age_%s", 1:5), "alpha", "dwan")
 
-rp_vals_mod[mod_these_params] <- c(rep(0.22, 5), 365.25/17, 0.11, 50)
+rp_vals_mod[mod_these_params] <- c(best_model_p_vec[sprintf("q_age_%s", 1:5)][1:4], 0.5, 0.00, Inf)
 
 sample_traj <- trajectory(po_to_vis, param = rp_vals_mod, method = "ode23", format = "d")
 
@@ -27,7 +40,7 @@ sample_traj <- trajectory(po_to_vis, param = rp_vals_mod, method = "ode23", form
 
 # something fishy with the C compartment!! - Maybe a compiler issue! 
 
-sample_plot_traj <- sample_traj %.>% prep_as_plot_trajectory(., init_year = 1950-1/52)
+sample_plot_traj <- sample_traj %.>% prep_as_plot_trajectory(., init_year = 1967-1/52)
 
 sample_plot_traj %.>%
   ggplot(., aes(x = year, y = count, colour = age_cohort)) +
@@ -35,7 +48,7 @@ sample_plot_traj %.>%
   facet_wrap(vars(comp_exp), scales = "free") +
   project_theme +
   scale_color_brewer(palette = "Blues", direction = -1) +
-  cap_axes
+  cap_axes()
 
 
 

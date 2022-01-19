@@ -416,10 +416,11 @@ calculate_Reff_mq <- function(p_vals,
     
     V_mat = rbind(cbind(V1, V2), cbind(V3, V4))
     
+    
     # browser()
     # calculate the next generation matrix
     K_mat <- F_mat%*%solve(V_mat)
-    # return spectral radius aka R
+    # return spectral radius aka R0
     max(eigen(K_mat)$values) %.>% 
       ifelse(is.nan(.) == TRUE, NA, .)
     })
@@ -532,6 +533,9 @@ summarize_epidemiology <- function(traj_cov_data, p_vals) {
                     # scale the susceptible compartments
                     Ss_1  = S_1*Ns_1, Ss_2  = S_2*Ns_2, Ss_3  = S_3*Ns_3,
                     Ss_4  = S_4*Ns_4, Ss_5  = S_5*Ns_5,
+                    # scale the susceptible compartments
+                    Sp_1  = S_1/N_1, Sp_2  = S_2/N_2, Sp_3  = S_3/N_3,
+                    Sp_4  = S_4/N_4, Sp_5  = S_5/N_5,
                     # scale the vaccinated compartments
                     Vs_1  = V_1*Ns_1, Vs_2  = V_2*Ns_2, Vs_3  = V_3*Ns_3,
                     Vs_4  = V_4*Ns_4, Vs_5  = V_5*Ns_5,
