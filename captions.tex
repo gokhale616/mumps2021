@@ -1,32 +1,31 @@
 %% fig 1 
 \newcommand{\capInc}{
-\textbf{Mumps incidence in the United States.} (A) Cases of mumps per 100,000 of national population size; (B) Root raw cases of mumps across 5 age cohorts (Purple gradient). (C) Contribution of age cohorts (colours) to mumps case volume; (D-E) State-wise distribution of mumps incidence during resurgence eras.
+\textbf{Mumps in the United States.} (A) Total reported mumps cases per $10^5$; (B) Age-stratified case reports across 5 age cohorts (Purple gradient). (C) Age-distribution of mumps case reports (Purple gradient); Spatial distribution of average mumps case reports per $10^5$ during reemergence eras - (D) 1985-1989 and (E) 2006-2012.
 }
 
 %% fig 2 
 \newcommand{\capFitplot}{
-\textbf{Model-data agreement.} (A) Qualitative model fits within sample time-series (1977-2012, seagreen) and corresponding out of sample prediction (2013-2018, orange) for the waning hypothesis. Ribbons represent 80\% Prediction intervals corresponding to the two prediction epochs. (B) Quantitatve measure of agreement was assessed using coefficeint of variation, ($R^2$, reported inset) estimated assessing the log-linear variation explained by the model corresponding to the two prediction epochs. 
+\textbf{Model-data agreement.} (A) Age-specific qualitative model fits to within sample time-series (1977-2012, seagreen) and the corresponding 5 year out of sample prediction (2013-2018, orange) for the waning hypothesis. Ribbons represent 80\% prediction intervals for the two prediction epochs. (B) Age-specific log-linear model agreement for within sample fit (seagreen lines and hollow circles) and out of sample predictions (orange linesand hollow circles). Statistical performance of the model was assessed using coeffcient of variation ($R^2$, reported inset) for the two predction epochs. Year of record is represented using a continuous grey gradient.   
 }
 
 \newcommand{\capKLdiv}{
-\textbf{Comparing age distribution of observed \textit{v/s.}expected true incidence of mumps.} (A) Qualitative agreement of age-distribution of incidence per $10^5$, as expected under the waning model, to the observed age-distribution (purple gradient). Simulated incidence has been broken down into two prediction epochs - within sample (sea-green gradient) and out of sample (orange gradient to match the analysis presented in figure~\ref{fig:fit_plot}. (B) Quantitative agreement between observed \textit{v/s.} expected age-distribution of incidence using the Kullback-Leibler Divergence (KLD, left y-axis) through time. Boxplots represent bootsrapped distribution of KLD calculated by comparing observed age-distribution to 1000 synthetically generated time-series assuming observeation noise. The area plot represents an estimate of age-aggregated mumps incidence per $10^5$ (right y-axis). 
+\textbf{Relative age distribution of mumps true incidence.} (A) Qualitative comparsion between expected, assuming the model of waning immunity, and the observed incidence per $10^5$ age-distribution (purple gradient, left, y-axis). Simulated incidence is broken down into the two prediction epochs - within sample (seagreen gradient) and out of sample (orange gradient) to match the analysis presented in figure~\ref{fig:fit_plot}. Lines represent comparsion of temporal shifts in the mean age of first infection (right, y-axis) under the waning model (dotted) and observed incidence (dashed).  (B) Quantitative agreement between observed \textit{v/s.} expected age-distribution of incidence using the Kullback-Leibler Divergence (KLD, left y-axis) through time. Boxplots represent bootsrapped distribution of KLD calculated by comparing observed age-distribution to 1000 synthetically generated time-series under the estimated observation noise. The area plot represents an estimate of age-aggregated mumps incidence per $10^5$ (right, y-axis). 
 }
 
 \newcommand{\capSumplot}{
-\textbf{Dissecting dynamics of mumps remergence.} (A) Rate of vaccine immunity decay in a cohort under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) post vaccination. (B) Weekly percent effectively vaccinated, Total (yellow), and across various age cohorts (red gradient). Green dashed line represents the crtical vaccnation level calculated using $R_0 = 14$ for the waning model. (C) Weekly loss of vaccine derived immunity per $10^5$. (D) Weekly dynamics in the effective reproductive number highlighting supercritical (red) and subcritical (green) epidemic signatures.  (E) Prevalence per $10^5$ of mumps across various age classes.
-}
+\textbf{Dissecting dynamics of mumps remergence.} (A) Rate of vaccine immunity decay under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) post vaccination. Green dashed line represents the crtical vaccnation level calculated using $R_0 = 14$ for the waning model. (B) Weekly changes in percent effectively vaccinated across age cohorts (red gradient), and total (yellow). (C) Weekly changes in percent susceptible across age cohorts. (D) Weekly dynamics in the effective reproductive number highlighting supercritical (red) and subcritical (green) epidemic signatures (left, y-axis). Annual vaccination rates of neonatal (light green) and booster (dark blue) doses (right, y-axis). (D) Expected weekly loss of vaccine derived immunity per $10^5$. (E) Prevalence per $10^5$ of mumps across various age classes.}
 
 
 
 %% fig 3
 \newcommand{\capImpCoverage}{
-\textbf{Reconstructed neonatal vaccine rate.} (A) Time series for the available mumps annual vaccine coverage rates for the neonatal dose. The blue region highlights the period where vaccine data is missing. (B) Weekly mumps incidence over the  period where vaccine data is missing. (C) Weekly vaccine uptake trajectories, upper  panel, were imputed using a particle filter using over-dispersed normal ($\psi = 0.8$, $\rho = 0.04$) weigths. Trajectories were averaged to calculate the annual vaccine cover, lower panel, to be used in the model fotting analysis. 1000 particles were used in the filtering procedure.   
+\textbf{Reconstructed neonatal vaccine rate.} (A) Time series for the available mumps annual vaccine coverage rates for the neonatal dose. The blue region highlights the period of missing vaccine data. (B) Weekly mumps incidence during the period where vaccine data is missing. (C) Imputed, weekly vaccine uptake (upper panel) by recursively filtering from 1000 stochastically generated trajectories conditioned on the initial decline of mumps in (B). Filtering distribution is assumed to be an over-dispersed normal ($\psi = 0.8$, $\rho = 0.04$). Averaged annual coverage (lower panel) is used in the testing of hypothesis.
 }
 
 
 %% fig 5
 \newcommand{\capCov}{
-\textbf{Model covariates.} (A-F) Demographic and epidmeiological variables were used to introduce realizm to the simulated dynamics; (A) Probability that for a given case age was reported; (B) Total normalized annual births; Annual mumps vaccination rates for the neonatal dose (C) and booster dose (D), Missing early uptake values were interpolated (sky blue); (E) Age-specific population size and (F) migration rates broken down by age cohorts.
+\textbf{Model covariates.} (A-F) Demographic and epidmeiological variables used in introducing realizm to the simulated dynamics; (A) Probability that for a given case age was reported; (B) Total normalized annual births; Annual mumps vaccination rates for the neonatal dose (C) and booster dose (D), Missing early uptake values were interpolated (blue); (E) Age-specific population size; And (F) migration rates broken down by age cohorts.
 }
 
 %% fig 4

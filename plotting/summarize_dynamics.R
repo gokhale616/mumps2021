@@ -215,7 +215,7 @@ V_prop_plot <- (
                        breaks = seq(0, 1,by = 0.2)) +
     scale_x_continuous(breaks = year_break_x) +
     scale_colour_manual(values = c(orange_age_cohort, "#FFE000"), name = "Age\nCohort", 
-                        breaks = c(age_names, "Total")) +
+                        breaks = c(age_names, "total")) +
     project_theme +
     cap_axes() +
     guides(colour = guide_legend(nrow = 2, title.position = "left"))
