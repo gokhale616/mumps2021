@@ -624,7 +624,7 @@ vseir_skel_sim <- Csnippet("
     const double *I2local = E2local+n;
     const double *Vlocal  = I2local+n;
     const double *Clocal  = Vlocal+n;
-    const double *Vslocal = Vslocal+n; 
+    const double *Vslocal = Clocal+n; 
     
     double *DSlocal  = &DS_1;
     double *DE1local = DSlocal+n;

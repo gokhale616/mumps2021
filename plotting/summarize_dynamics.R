@@ -214,7 +214,7 @@ V_prop_plot <- (
                        limits = c(0, 1), 
                        breaks = seq(0, 1,by = 0.2)) +
     scale_x_continuous(breaks = year_break_x) +
-    scale_colour_manual(values = c(orange_age_cohort, "#FFE000"), name = "Age\nCohort", 
+    scale_colour_manual(values = c(orange_age_cohort, "#4b6cb7"), name = "Age\nCohort", 
                         breaks = c(age_names, "total")) +
     project_theme +
     cap_axes() +
@@ -334,7 +334,7 @@ Reff_plot <- (
                                            name = "Vaccine\nCoverage")) +
     scale_x_continuous(breaks = year_break_x) +
     scale_fill_manual(name = "Dose\nType", 
-                      values = c("#A5CC82", "#00467F"), 
+                      values = c("grey50", "black"), 
                       labels = c("Neonatal", "Booster")) +
     project_theme +
     coord_capped_cart(bottom='both', left = "both",  right='both') +
@@ -541,34 +541,36 @@ age_distribution_plot <- (
   expctd_age_incidence %.>% 
     filter(., year > 1977-20/52 & year < 2018+20/52) %.>% 
     ggplot(., aes(x = year, y = count)) +
-    geom_area(aes(fill = cmplx_grdnt), stat = "identity", position = "fill") +
+    geom_area(aes(fill = cmplx_grdnt), stat = "identity", 
+              position = position_fill(reverse = TRUE)) +
     geom_bar(data = obs_age_incidence, 
              aes(x = year, y = inc, colour = age_cohort), 
-             stat = "identity", position = "fill", fill = NA, size = 0.8, width =0.75) +
+             stat = "identity", position = position_fill(reverse = TRUE), fill = NA, size = 0.8, width =0.75) +
     geom_line(data = mean_age_data, 
               aes(x = year, y = age/100, linetype = stat),
-              size = 1.2, colour = "grey30") +
+              size = 1.0, colour = "grey30", alpha = 0.75) +
     labs(x = "", y = "Observed v/s Expected \nIncidence Age Distribution", 
          colour = "Age\nCohort", 
          pattern_fill = "Age\nCohort")+
     scale_y_continuous(labels = scales::percent, 
                        sec.axis = sec_axis(~.*100, breaks = seq(0, 100, 25), 
-                                           name = "Mean Age\nOf First Infection (Years)")) +
+                                           name = "Age (Years)")) +
     scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
     scale_fill_manual(values = c(wis_fill_gradnt, oos_fill_gradnt), 
                       breaks = c(paste0(age_names, "_", "ja"), 
                                  paste0(age_names, "_", "nein")),
                       guide = "none") +    
     scale_colour_brewer(palette = "Purples", direction = -1) +
-    scale_linetype_manual(values = c(2, 3), labels = c("Observed", "Expected"), 
-                          name = "Summary\nDisplayed") +
+    scale_linetype_manual(values = c(1, 2), labels = c("Expected", "Observed"), 
+                          name = "Mean Age Of\nFirst Infection") +
     project_theme +
     theme(legend.position = "top") +
     cap_axes(right = "both") +
     theme() +
     guides(colour = guide_legend(title.position = "top", nrow = 2, 
                                  override.aes=list(fill = grey30_gradnt)), 
-           linetype = guide_legend(title.position = "top", nrow = 2))
+           linetype = guide_legend(title.position = "top", nrow = 2, 
+                                   override.aes = list(alpha = 1)))
   
   
 )
