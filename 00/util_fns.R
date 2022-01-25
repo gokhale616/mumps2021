@@ -1,3 +1,6 @@
+# a wraper function to recursively bind rows of a list 
+form_dfr <- function(list){do.call(rbind, lapply(1:length(list), function(x) {list[[x]]} ))}
+
 # this 'convenience' function modifies vector of default params to set hypothesis specific param estimates
 sim_p_vals <- function(estm_vect, default_p_vals = param_vals_est) {
   

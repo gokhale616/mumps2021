@@ -3,7 +3,7 @@ options(knitr.kable.NA = '-')
 
 # Load packages ----------------------------------------------------------------------------------------------
 
-lib_dep <- c("tidyverse", "furrr",
+lib_dep <- c("tidyverse", "furrr", "pbmcapply",
              "pomp", "magrittr", "wrapr", "stringr",
              "rioja",
              "readxl", "tictoc", "parallel", "subplex", 
