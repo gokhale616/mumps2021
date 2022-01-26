@@ -104,7 +104,7 @@ immune_distbn_plot <- (
                           limits = c(0, 1), 
                           guide = "none") +
     project_theme +
-    cap_axes(xlim = c(0,100))
+    cap_axes(xlim = c(0,100), ylim = c(0.25, 1))
   )
 
 
@@ -207,7 +207,7 @@ V_prop_plot <- (
              colour = "#6be585", linetype = "dashed", size = 0.9) +
     annotate(geom = "text", 
              label = "Critical Vaccination Level",
-             y = critic_lev_vacc-0.065, x = 1983, 
+             y = critic_lev_vacc+0.065, x = 1983, 
              colour = "grey30", size = 2.5) +
     labs(x = "", y = "Percent Effectively   \nVaccinated    ") +
     scale_y_continuous(labels = scales::percent, 
@@ -289,7 +289,7 @@ prevalence_plot <- (
   scale_y_continuous(trans = "log10", breaks = c(1e-3, 1e-2, 1e-1, 1e0, 
                                                  1e1, 1e2, 1e3), 
                      limits = c(1e-3, 1e3)) +
-  annotation_logticks(sides = "l", short = unit(0.1, "cm"))  +
+  annotation_logticks(sides = "l")  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
   project_theme +
   cap_axes()

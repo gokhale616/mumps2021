@@ -81,6 +81,7 @@ script_var <- c("inc_plot.R",
                 "prep_estm_tables.R", 
                 "fit_plot.R",
                 "summarize_dynamics.R",
+                "sim_study_vacc_efficacy.R",
                 "rel_fit_plot.R",
                 "other_params_plot.R",
                 "covariate_plot.R",
@@ -124,6 +125,12 @@ plot(compare_age_dstbn_plt)
 <<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
 
 plot(epi_summary_plt)
+
+@
+
+<<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', out.width = outwidth[3]>>=
+
+plot(vacc_RR_plt)
 
 @
 

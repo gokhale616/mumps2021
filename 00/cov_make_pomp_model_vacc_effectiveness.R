@@ -335,8 +335,8 @@ make_pomp_vacc_effective <- function(...,
                           sprintf("p%d", 1:2), "Births", "eta_a"),
            statenames = state_names_vacc_effective,
            paramnames = param_names_vacc_effective, 
-           cdir = getwd(), 
-           cfile = "test_vacc_effectiveness",
+           #cdir = getwd(), 
+           #cfile = "test_vacc_effectiveness",
            ...)
       ) 
   
