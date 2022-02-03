@@ -1,3 +1,58 @@
+# group of functions useful for hacking the colour bar if you require to add on a target
+ncolours <- seq(0, 1, length.out = 100)
+
+modify_palette_by_target <- function(colours = seq_gradient_pal("#dd3e54", "#6be585")(ncolours), 
+                                     target, 
+                                     plot_var, 
+                                     replace_colour = "#642B73") {
+  
+  # browser()
+  # rank data to lineraize values
+  if(target %in% plot_var) {
+    message("target exists!!")
+    int_target = target
+  } else {
+    # browser()
+    message("value closest to the target used")
+    int_target = plot_var[which.min(abs(target - plot_var))]
+  }
+  
+  
+  ranked_plot_var <- rank(plot_var)
+  
+  ranked_target <- ranked_plot_var[which(plot_var == int_target)]
+  
+  # normalize the target interval 
+  ranked_range <- range(ranked_plot_var) 
+  
+  target_interval <- ranked_plot_var[which(plot_var == int_target)]*c(0.99, 1.01)
+  
+  normalized_target_interval <- (target_interval - ranked_range[1])/diff(ranked_range)
+  
+  # browser()
+  
+  ramp <- scales::colour_ramp(colours)
+  
+  function(x) {
+    # Decide what values to replace
+    # browser()
+    ranked_x <- rank(x)
+    
+    normalized_ranked_x <- (ranked_x - range(ranked_x)[1])/diff(range(ranked_x))
+    
+    replace <- normalized_ranked_x > normalized_target_interval[1] & 
+      normalized_ranked_x < normalized_target_interval[2]
+    
+    out <- ramp(x)
+    # Actually replace values
+    out[replace] <- replace_colour
+    out
+  }
+}
+
+
+
+
 # a wraper function to recursively bind rows of a list 
 form_dfr <- function(list){do.call(rbind, lapply(1:length(list), function(x) {list[[x]]} ))}
 

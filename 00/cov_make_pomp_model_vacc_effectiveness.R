@@ -10,7 +10,8 @@ vseir_skel_vacc_effective <- Csnippet("
     int n = agegroups; 
     
     double lambda1;
-    double lambda2;
+    double lambda_s_v;
+    double lambda_w_v;
     
     const double *Cvlocal = &Cv1;
     const double *lvlocal = &lcv1;
@@ -28,6 +29,11 @@ vseir_skel_vacc_effective <- Csnippet("
     const double *Vlocal  = Itlocal+n;
     const double *Clocal  = Vlocal+n;
     const double *Vslocal = Clocal+n; 
+    const double *lambdas_local = Vslocal+n;
+    const double *lambdaw_local = lambdas_local+n;
+    const double *Nvlocal = lambdaw_local+n; 
+    const double *PRlocal = Nvlocal+n; 
+    //const double *Hlocal  = PRlocal+n;
     
     
     double *DSslocal = &DSs_1;
@@ -42,6 +48,11 @@ vseir_skel_vacc_effective <- Csnippet("
     double *DVlocal  = DItlocal+n;
     double *DClocal  = DVlocal+n;
     double *DVslocal = DClocal+n; 
+    double *Dlambdas_local = DVslocal+n;
+    double *Dlambdaw_local = Dlambdas_local+n;
+    double *DNvlocal = Dlambdaw_local+n; 
+    double *DPRlocal = DNvlocal+n; 
+    //double *DHlocal = DPRlocal+n;
     
     #define CM(J,K) Cvlocal[(J)+n*(K)]
     #define LV(K) lvlocal[(K)]
@@ -64,6 +75,12 @@ vseir_skel_vacc_effective <- Csnippet("
     #define V(K) Vlocal[(K)]
     #define C(K) Clocal[(K)]
     #define Vs(K) Vslocal[(K)]
+    #define Lambdas(K) lambdas_local[(K)]
+    #define Lambdaw(K) lambdaw_local[(K)]
+    #define Nv(K) Nvlocal[(K)]
+    #define PR(K) PRlocal[(K)]
+    //#define H(K)  Hlocal[(K)]
+    
     
     #define DSs(K) DSslocal[(K)]
     #define DSw(K) DSwlocal[(K)]
@@ -77,8 +94,13 @@ vseir_skel_vacc_effective <- Csnippet("
     #define DV(K)  DVlocal[(K)]
     #define DC(K)  DClocal[(K)]
     #define DVs(K) DVslocal[(K)]
+    #define DLambdas(K) Dlambdas_local[(K)]
+    #define DLambdaw(K) Dlambdaw_local[(K)]
+    #define DNv(K) DNvlocal[(K)]
+    #define DPR(K) DPRlocal[(K)]
+    //#define DH(K)  DHlocal[(K)]
     
-    
+
     
     /* ============================================================================== */
     /* augment the contact matrix to incorporate seasonality in the [5,15) sge cohort */
@@ -112,7 +134,9 @@ vseir_skel_vacc_effective <- Csnippet("
         // births occur only in the first age class - specially treat the [0,5) age cohort
         
         for (j = 0; j < n; j++) {
-          lambda1 += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+          lambda1  += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+          lambda_s_v += q*QAGE(i)*augCM[i][j]*(Is(j))/N_AGE(j);
+          lambda_w_v += q*QAGE(i)*augCM[i][j]*(Iw(j))/N_AGE(j);
           }
             
         /* ============================ */
@@ -126,58 +150,69 @@ vseir_skel_vacc_effective <- Csnippet("
         
         DSs(i) = uv_births  - (lambda1 + LV(i) - MU_AGE(i))*Ss(i);
         DSw(i) = delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);
-        DSt(i) = Ss(i) + Sw(i);  
+        DSt(i) = uv_births + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*St(i);
         
         DEs(i) = lambda1*Ss(i) - (sigma + LV(i) - MU_AGE(i))*Es(i);   
         DEw(i) = lambda1*Sw(i) - (sigma + LV(i) - MU_AGE(i))*Ew(i);
-        DEt(i) = Es(i) + Ew(i); 
+        DEt(i) = lambda1*St(i) - (sigma + LV(i) - MU_AGE(i))*Et(i); 
         
         
         DIs(i) = sigma*Es(i) - (gamma + LV(i) - MU_AGE(i))*Is(i);
         DIw(i) = sigma*Ew(i) - (gamma + LV(i) - MU_AGE(i))*Iw(i);
-        DIt(i) = Is(i) + Iw(i);
+        DIt(i) = sigma*Et(i) - (gamma + LV(i) - MU_AGE(i))*It(i);
         
         DV(i)  = v_births - (delta + LV(i) - MU_AGE(i))*V(i);
         
         DVs(i) = delta*V(i); 
+        
+        DLambdas(i) = lambda_s_v; 
+        DLambdaw(i) = lambda_w_v; 
       
       } else if (i == 1) {
         
           // individuals age in and out of age cohort after the first
         
           for (j = 0; j < n; j++) {
-            lambda1 += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+            lambda1  += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+            lambda_s_v += q*QAGE(i)*augCM[i][j]*(Is(j))/N_AGE(j);
+            lambda_w_v += q*QAGE(i)*augCM[i][j]*(Iw(j))/N_AGE(j);
           }
             
           /* ============================ */
           /* balance tranistion equations */
           /* ============================ */
           
-          double uv_grads_Ss = LV(i-1)*(1-(1-alpha)*p2)*Ss(i-1);
-          double uv_grads_Sw = LV(i-1)*(1-(1-alpha)*p2)*Sw(i-1);
+          //double uv_grads_Ss = LV(i-1)*(1-(1-alpha)*p2)*Ss(i-1);
+          //double uv_grads_Sw = LV(i-1)*(1-(1-alpha)*p2)*Sw(i-1);
+          double    uv_grads = LV(i-1)*(1-(1-alpha)*p2)*St(i-1);
           double     v_grads = LV(i-1)*(1-alpha)*p2*St(i-1);
           
-          DSs(i) =  uv_grads_Ss - (lambda1 + LV(i) - MU_AGE(i))*Ss(i);               
-          DSw(i) =  uv_grads_Sw + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);               
-          DSt(i) =  Ss(i) + Sw(i); 
+          DSs(i) =  uv_grads  - (lambda1 + LV(i) - MU_AGE(i))*Ss(i);               
+          DSw(i) =  delta*V(i) + LV(i-1)*Sw(i-1) - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);               
+          DSt(i) =  uv_grads + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*St(i); 
           
           DEs(i) = LV(i-1)*Es(i-1) + lambda1*Ss(i) - (sigma + LV(i) - MU_AGE(i))*Es(i); 
           DEw(i) = LV(i-1)*Ew(i-1) + lambda1*Sw(i) - (sigma + LV(i) - MU_AGE(i))*Ew(i); 
-          DEt(i) = Es(i) + Ew(i); 
+          DEt(i) = LV(i-1)*Et(i-1) + lambda1*St(i) - (sigma + LV(i) - MU_AGE(i))*Et(i); 
           
           DIs(i) = LV(i-1)*Is(i-1) + sigma*Es(i) - (gamma + LV(i) - MU_AGE(i))*Is(i);
           DIw(i) = LV(i-1)*Iw(i-1) + sigma*Ew(i) - (gamma + LV(i) - MU_AGE(i))*Iw(i);
-          DIt(i) = Is(i) + Iw(i);
+          DIt(i) = LV(i-1)*It(i-1) + sigma*Et(i) - (gamma + LV(i) - MU_AGE(i))*It(i);
           
           DV(i)  = v_grads + LV(i-1)*V(i-1) - (delta + LV(i) - MU_AGE(i))*V(i);
           
           DVs(i) = delta*V(i);
+          
+          DLambdas(i) = lambda_s_v; 
+          DLambdaw(i) = lambda_w_v; 
       
       } else {
         
           // individuals age in and out of age cohort after the first
           for (j = 0; j < n; j++) {
-            lambda1 += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+            lambda1  += q*QAGE(i)*augCM[i][j]*(It(j))/N_AGE(j);
+            lambda_s_v += q*QAGE(i)*augCM[i][j]*(Is(j))/N_AGE(j);
+            lambda_w_v += q*QAGE(i)*augCM[i][j]*(Iw(j))/N_AGE(j);
           }
           
           /* ============================ */
@@ -186,26 +221,35 @@ vseir_skel_vacc_effective <- Csnippet("
           
           DSs(i) = LV(i-1)*Ss(i-1) - (lambda1 + LV(i) - MU_AGE(i))*Ss(i);
           DSw(i) = LV(i-1)*Sw(i-1) + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);
-          DSt(i) = Ss(i) + Sw(i);
+          DSt(i) = LV(i-1)*St(i-1) + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*St(i);
           
           DEs(i) = LV(i-1)*Es(i-1) + lambda1*Ss(i) - (sigma + LV(i) - MU_AGE(i))*Es(i); 
           DEw(i) = LV(i-1)*Ew(i-1) + lambda1*Sw(i) - (sigma + LV(i) - MU_AGE(i))*Ew(i); 
-          DEt(i) = Es(i) + Ew(i); 
+          DEt(i) = LV(i-1)*Et(i-1) + lambda1*St(i) - (sigma + LV(i) - MU_AGE(i))*Et(i);  
           
           DIs(i) = LV(i-1)*Is(i-1) + sigma*Es(i) - (gamma + LV(i) - MU_AGE(i))*Is(i);
           DIw(i) = LV(i-1)*Iw(i-1) + sigma*Ew(i) - (gamma + LV(i) - MU_AGE(i))*Iw(i);
-          DIt(i) = Is(i) + Iw(i); 
+          DIt(i) = LV(i-1)*It(i-1) + sigma*Et(i) - (gamma + LV(i) - MU_AGE(i))*It(i);
           
           DV(i)  = LV(i-1)*V(i-1)  - (delta + LV(i) - MU_AGE(i))*V(i);
           
           DVs(i) = delta*V(i);
+          
+          DLambdas(i) = lambda_s_v; 
+          DLambdaw(i) = lambda_w_v; 
+          
+          
           
       }
       
       /* ========================= */
       /* Keep account of new cases */
       /* ========================= */
-      DC(i) = gamma*It(i); 
+      DC(i)  = gamma*It(i); 
+      DNv(i) = N_AGE(i); 
+      DPR(i) = Iw(i)/Is(i); 
+      //DH(i)  = Lambdaw(i)/Lambdas(i);
+      
     }
 ")
 
@@ -226,6 +270,11 @@ vseir_init_vacc_effective <- Csnippet("
   double *V = &V_1;
   double *C = &C_1;
   double *Vs = &Vs_1;
+  double *lambdas = &lambdas_1;
+  double *lambdaw = &lambdaw_1;
+  double *Nv = &Nv_1;
+  double *PR = &PR_1;
+  //double *H = &H_1;
   
   int n = agegroups;
   
@@ -247,6 +296,13 @@ vseir_init_vacc_effective <- Csnippet("
     V[i]  = 0;
     C[i]  = 0;
     Vs[i] = 0;
+    
+    lambdas[i] = 0; 
+    lambdaw[i] = 0; 
+    
+    Nv[i] = 0; 
+    PR[i] = 0;
+   //H[i] = 0;
   }
 ")
 
@@ -257,7 +313,11 @@ state_names_vacc_effective <- (
     sprintf("Es_%d",1:5), sprintf("Ew_%d",1:5), sprintf("Et_%d",1:5), 
     sprintf("Is_%d",1:5), sprintf("Iw_%d",1:5), sprintf("It_%d",1:5),
     sprintf("V_%d",1:5), sprintf("C_%d", 1:5),
-    sprintf("Vs_%d",1:5)
+    sprintf("Vs_%d",1:5), 
+    sprintf("lambdas_%d", 1:5), sprintf("lambdaw_%d", 1:5),
+    sprintf("Nv_%d",1:5), 
+    sprintf("PR_%d",1:5)#, 
+    #sprintf("H_%d",1:5)
     )
   )
 
@@ -328,7 +388,10 @@ make_pomp_vacc_effective <- function(...,
            times = "year", t0 = start_t, 
            skeleton = vectorfield(vseir_skel_vacc_effective),
            rinit = vseir_init_vacc_effective,
-           accumvars = c(sprintf("C_%d", 1:5), sprintf("Vs_%d", 1:5)),
+           accumvars = c(sprintf("C_%d", 1:5), sprintf("Vs_%d", 1:5),
+                         sprintf("lambdas_%d", 1:5), sprintf("lambdaw_%d", 1:5),
+                         sprintf("Nv_%d", 1:5), sprintf("PR_%d",1:5)# , 
+                         ),  
            covar = covariate_table(covar, times = "Year", order = "constant"),
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 
