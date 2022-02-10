@@ -1,3 +1,8 @@
+# requires 
+source("../00/src.R", chdir = TRUE)
+source("../plotting/prep_estm_tables.R", chdir = TRUE)
+
+
 # prepare the vector of the values used to in this sim study
 best_model_p_vec_vacc_eff <- (
   all_result_df %.>% 
@@ -15,7 +20,9 @@ best_model_p_vec_vacc_eff <- (
 po_vacc_eff_with_booster <- (
   make_pomp_vacc_effective(., 
   covar = mod_mumps_covariates_sigmoidal, 
-  temp_scale = 1/365.25)
+  temp_scale = 1/1, 
+  extra_start_t = 2019,
+  extra_end_t = 2100)
   )
 
 test_vacc_traj <- (
@@ -28,7 +35,7 @@ test_vacc_traj <- (
 
 
 
-dwan_grid <- tibble(dwan = c(seq(1, 200, by = 10), best_model_p_vec_vacc_eff["dwan"])) %.>% arrange(.)
+dwan_grid <- tibble(dwan = c(seq(1, 200, by = 5), best_model_p_vec_vacc_eff["dwan"])) %.>% arrange(.)
 
 
 vacc_eff_grid <- function(x = 11, dwan_data = dwan_grid, 
@@ -48,39 +55,35 @@ vacc_eff_grid <- function(x = 11, dwan_data = dwan_grid,
     trajectory(po_obj, 
                param = p_for_sim, 
                method = "ode23", format = "d") %.>% 
-    right_join(., 
-               mod_mumps_covariates_sigmoidal %.>% 
-                 filter(., year > 1966) %.>% 
-                 select(., year, starts_with("N")), 
-               by = "year"
-               ) %.>% 
-    mutate(., 
-           N = N_1 + N_2 + N_3 + N_4 + N_5, 
-           Is = Is_1 + Is_2 + Is_3 + Is_4 + Is_5, 
-           Iw = Iw_1 + Iw_2 + Iw_3 + Iw_4 + Iw_5,
-           It = It_1 + It_2 + It_3 + It_4 + It_5)
-    )
+    transmute(., 
+              year = year,
+              `.id`= 1, 
+              PR_1 = PR_1,
+              PR_2 = PR_2,
+              PR_3 = PR_3,
+              PR_4 = PR_4,
+              PR_5 = PR_5,
+              Itp_1 = It_1/Nv_1, 
+              Itp_2 = It_2/Nv_2, 
+              Itp_3 = It_3/Nv_3, 
+              Itp_4 = It_4/Nv_4, 
+              Itp_5 = It_5/Nv_5, 
+              H_1 = lambdaw_1/lambdas_1, 
+              H_2 = lambdaw_2/lambdas_2, 
+              H_3 = lambdaw_3/lambdas_3, 
+              H_4 = lambdaw_4/lambdas_4, 
+              H_5 = lambdaw_5/lambdas_5)
+    ) %.>% 
+    prep_as_plot_trajectory(., init_year = 2019) %.>% 
+    mutate(., dwan = dwan_int) %>% 
+    filter(., year > 2019)
   
   
-  # join the trajectory to the co-variate data to evaluate the vaccine efficacy and return data frame
+# join the trajectory to the co-variate data to evaluate the vaccine efficacy and return data frame
     
-comp_vacc_eff_traj %.>% 
-      transmute(., 
-                dwan = dwan_int,    
-                year = year,#seq(0, n()-1, by = 1),
-                Itp_1 = It_1/N_1, 
-                Itp_2 = It_2/N_2, 
-                Itp_3 = It_3/N_3,
-                Itp_4 = It_4/N_4,
-                Itp_5 = It_5/N_5, 
-                Itp   = It/N,  
-                Ef_I_1 = (Iw_1)/(Is_1), 
-                Ef_I_2 = (Iw_2)/(Is_2),
-                Ef_I_3 = (Iw_3)/(Is_3),
-                Ef_I_4 = (Iw_4)/(Is_4),
-                Ef_I_5 = (Iw_5)/(Is_5),
-                Ef_I   = (Iw)/(Is)
-      )
+comp_vacc_eff_traj 
+      
+      
 }
 
 #vacc_eff_grid(po_obj = po_vacc_eff_with_booster)
@@ -108,36 +111,165 @@ comp_vacc_eff_traj %.>%
 # 
 # load(paste0(vacc_eff_res_path, "vacc_effect/vaccine_eff.rds"))
 
-# interpolate to generate smoother trajectories 
-
-# xnew2 <- seq(min(vaccine_eff$year), max(vaccine_eff$year), by = 1/52)
-# 
-# interpolated_vaccine_eff <- (
-#   vaccine_eff %.>% 
-#     interp.dataset(y = ., x=.$year, 
-#                    xout = xnew2, 
-#                    method = "linear") %.>%
-#     as_tibble(.)) 
-
-
-
-log_a_tic <- annotation_logticks(sides = "l")  
-log_a_tic$data <- tibble(x = NA, 
-                         age_cohort = age_names[1])
-
-vacc_rel_prev <- (
+# prepare age-specific trajectroies grouped by age-classes
+# for [0,5)
+vaccine_eff_1 <- (
   vaccine_eff %.>% 
-    #filter(., year > 21) %.>% 
-    select(., dwan, year, sprintf("Ef_I_%s", 1:3)) %.>% 
-    gather(., key = "age_cohort", value = "rel_prev", -c(dwan, year)) %.>% 
-    mutate(., 
-           year = year - 22,
-           age_cohort = case_when(age_cohort == "Ef_I_1" ~ age_names[1], 
-                                     age_cohort == "Ef_I_2" ~ age_names[2], 
-                                     age_cohort == "Ef_I_3" ~ age_names[3]))
-    
+    filter(., 
+           age_cohort == age_names[1] & year < 2025 & comp_exp %in% c("PR", "H")
+           ) %.>% 
+    mutate(., year = year - 2020)
+  )
+
+vaccine_eff_2 <- (
+  vaccine_eff %.>% 
+    filter(., 
+           age_cohort == age_names[2] & year > 2024 & year < 2035 & comp_exp %in% c("PR", "H")
+    ) %.>% 
+    mutate(., year = year - 2025)
+)  
+  
+
+vaccine_eff_3 <- (
+  vaccine_eff %.>% 
+    filter(., 
+           age_cohort == age_names[3] & year > 2034 & year < 2045 & comp_exp %in% c("PR", "H")
+    ) %.>% 
+    mutate(., year = year - 2025 + 10)
+)  
+
+vaccine_eff_4 <- (
+  vaccine_eff %.>% 
+    filter(., 
+           age_cohort == age_names[4] & year > 2044 & year < 2060 & comp_exp %in% c("PR", "H")
+    ) %.>% 
+    mutate(., year = year - 2025 + 15)
+)  
+
+vaccine_eff_5 <- (
+  vaccine_eff %.>% 
+    filter(., 
+           age_cohort == age_names[5] & year > 2059 & comp_exp %in% c("PR", "H")
+    ) %.>% 
+    mutate(., year = year - 2025 + 35 )
+)  
+
+  
+plot_vacc_eff <- function(vacc_eff_df, 
+                          ylab = "Relative Hazard",
+                          breaks = c(1e-2, 1, 1e2, 1e4, 1e6), 
+                          limits = c(1e-2, 1e6), 
+                          xbr = seq(0,4,1), 
+                          legpos = "none") {
+  
+  # log_a_tic <- annotation_logticks(sides = "l")  
+  # log_a_tic$data <- tibble(x = NA, 
+  #                          age_cohort = age_names[1])
+  
+  # browser()
+  
+  vacc_eff_df %.>% 
+    ggplot(., aes(x = year, y = count)) +
+    geom_line(size = 0.8, aes(colour = dwan, group = dwan)) +
+    geom_hline(yintercept = 1, colour = "grey30", linetype = "dashed", size = 1) +
+    labs(x = "Years Since Immunizaion", 
+         y = ylab, 
+         colour = "Immune\nDuration") +
+    scale_y_continuous(trans = "log10", 
+                       breaks = breaks, 
+                       limits = limits
+    ) +
+    scale_x_continuous(breaks = xbr) +
+    annotation_logticks(sides = "l") +  
+    continuous_scale(
+      "color", "modified_palette",
+      modify_palette_by_target(plot_var = unique(.$dwan), 
+                               target = best_model_p_vec_vacc_eff["dwan"]),
+      guide = guide_colourbar(nbin = 100, 
+                              frame.colour = "black", 
+                              ticks.colour = "black", 
+                              title.position = "top", 
+                              direction = "horizontal") 
+    ) +
+    project_theme +
+    cap_axes() +
+    theme(legend.position = legpos)
+  
+}
+
+
+
+vaccine_eff_1_plot <- (
+    vaccine_eff_1 %.>% 
+    filter(., 
+           comp_exp == "H") %.>% 
+    plot_vacc_eff(., 
+                  breaks = c(1e-2, 1e-1, 1, 1e1, 1e2), 
+                  limits = c(1e-2, 1e2)
+                  )
+  )
+
+
+vaccine_eff_2_plot <- (
+  vaccine_eff_2 %.>% 
+    filter(., 
+           comp_exp == "H") %.>% 
+    plot_vacc_eff(., 
+                  breaks = c(1e-2, 1e-1, 1, 1e1, 1e2), 
+                  limits = c(1e-2, 1e2), 
+                  xbr = seq(0, 3, by = 2)
+    )
 )
 
+
+vaccine_eff_3_plot <- (
+  vaccine_eff_3 %.>% 
+    filter(., 
+           comp_exp == "H") %.>% 
+    plot_vacc_eff(., 
+                  breaks = c(1e-2, 1e-1, 1, 1e1, 1e2), 
+                  limits = c(1e-2, 1e2), 
+                  xbr = seq(20, 29, by = 2)
+    )
+)
+
+
+
+
+
+vaccine_eff %.>% 
+  ggplot(., aes(x = year, y = count)) +
+  geom_line(size = 0.8, aes(colour = dwan, group = dwan)) +
+  # geom_line(data = vaccine_rel_prev_sub,
+  #           colour = "#642B73", 
+  #           size = 0.8) +
+  # geom_hline(yintercept = 1, colour = "grey30", linetype = "dashed", size = 1) +
+  labs(x = "", 
+       y = "Relative Infection Prevalence", 
+       colour = "Immune\nDuration") +
+  facet_grid(cols = vars(factor(age_cohort, levels = age_names[1:5])), 
+             rows = vars(comp_exp), scales = "free") +
+  scale_y_continuous(trans = "log10"#, 
+                     #breaks = c(1e-2, 1, 1e2, 1e4, 1e6), 
+                     #limits = c(1e-2, 1e6)
+                     ) +
+  log_a_tic +
+  continuous_scale(
+    "color", "modified_palette",
+    modify_palette_by_target(plot_var = unique(.$dwan), 
+                             target = best_model_p_vec_vacc_eff["dwan"]),
+    guide = guide_colourbar(nbin = 100, 
+                            frame.colour = "black", 
+                            ticks.colour = "black", 
+                            title.position = "top", 
+                            direction = "horizontal") 
+  ) +
+  project_theme +
+  cap_axes()
+  
+  
+
+if(FALSE) {
 
 vacc_prev <- (
   vaccine_eff %.>% 
@@ -246,7 +378,7 @@ vacc_RR_plt <- (
   )
   
 
-
+}
 
 
 

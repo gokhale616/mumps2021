@@ -362,7 +362,7 @@ param_vals_vacc_effective <- (
 make_pomp_vacc_effective <- function(..., 
                                      start_t = 1800, 
                                      extrapolate_simulation = TRUE, 
-                                     extra_start_t = 1967, extra_end_t = 2018, temp_scale = 1, 
+                                     extra_start_t = 1968, extra_end_t = 2018, temp_scale = 1, 
                                      covar) {
   
   
