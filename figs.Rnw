@@ -130,7 +130,7 @@ plot(epi_summary_plt)
 
 <<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', out.width = outwidth[3]>>=
 
-plot(vacc_RR_plt)
+plot(vaccine_eff_panel_plt)
 
 @
 

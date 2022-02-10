@@ -67,7 +67,7 @@ abs_inc_plt <- (
 # y_max_inc <- max(mumps_incidence_rate_l$ac_inc_rate, na.rm = TRUE)
 
 
-anno_data <- tibble(label = c("Initial\nDecline", "First\nResurgence", "Second\nResurgence", "", ""),
+anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nEpidemic", "", ""),
                     label_2 = "Sustained\nTransmission",
                     x_2 = 2013,
                     x = c(1981, 1987, 2006, 2009, 2016), 

@@ -549,7 +549,7 @@ age_distribution_plot <- (
     geom_line(data = mean_age_data, 
               aes(x = year, y = age/100, linetype = stat),
               size = 1.0, colour = "grey30", alpha = 0.75) +
-    labs(x = "", y = "Observed v/s Expected \nIncidence Age Distribution", 
+    labs(x = "", y = "Incidence Age Distribution", 
          colour = "Age\nCohort", 
          pattern_fill = "Age\nCohort")+
     scale_y_continuous(labels = scales::percent, 
