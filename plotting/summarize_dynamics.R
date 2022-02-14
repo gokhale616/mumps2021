@@ -570,7 +570,7 @@ age_distribution_plot <- (
     guides(colour = guide_legend(title.position = "top", nrow = 2, 
                                  override.aes=list(fill = grey30_gradnt)), 
            linetype = guide_legend(title.position = "top", nrow = 2, 
-                                   override.aes = list(alpha = 1)))
+                                   override.aes = list(alpha = 1, size = 0.5)))
   
   
 )

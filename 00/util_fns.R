@@ -1,7 +1,7 @@
 # group of functions useful for hacking the colour bar if you require to add on a target
 ncolours <- seq(0, 1, length.out = 100)
 
-modify_palette_by_target <- function(colours = seq_gradient_pal("#dd3e54", "#6be585")(ncolours), 
+modify_palette_by_target <- function(colours = seq_gradient_pal("#6be585", "#dd3e54")(ncolours), 
                                      target, 
                                      plot_var, 
                                      replace_colour = "#642B73") {

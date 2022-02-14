@@ -1,6 +1,11 @@
 # requires 
-source("../00/src.R", chdir = TRUE)
-source("../plotting/prep_estm_tables.R", chdir = TRUE)
+# source("../00/src.R", chdir = TRUE)
+# source("../plotting/inc_plot.R", chdir = TRUE)
+# source("../plotting/prep_estm_tables.R", chdir = TRUE)
+# source("../plotting/fit_plot.R", chdir = TRUE)
+# source("../plotting/rel_fit_plot.R", chdir = TRUE)
+# source("../plotting/summarize_dynamics.R", chdir = TRUE)
+
 
 
 # prepare the vector of the values used to in this sim study
@@ -22,15 +27,16 @@ po_vacc_eff_with_booster <- (
   covar = mod_mumps_covariates_sigmoidal, 
   temp_scale = 1/1, 
   extra_start_t = 2019,
-  extra_end_t = 2100)
+  extra_end_t = 2300)
   )
 
-test_vacc_traj <- (
-  po_vacc_eff_with_booster  %.>%  
-    trajectory(., 
-               param = best_model_p_vec_vacc_eff, 
-               method = "ode23", format = "d") 
-)
+
+# test_vacc_traj <- (
+#   po_vacc_eff_with_booster  %.>%  
+#     trajectory(., 
+#                param = best_model_p_vec_vacc_eff, 
+#                method = "ode23", format = "d") 
+# )
 
 
 
@@ -152,7 +158,7 @@ vaccine_eff_4 <- (
 vaccine_eff_5 <- (
   vaccine_eff %.>% 
     filter(., 
-           age_cohort == age_names[5] & year > 2059 & comp_exp %in% c("PR", "H")
+           age_cohort == age_names[5] & year > 2059 & year < 2101 & comp_exp %in% c("PR", "H")
     ) %.>% 
     mutate(., year = year - 2025)
 )  
@@ -165,52 +171,64 @@ vaccine_eff_plot_df <- (
     bind_rows(., vaccine_eff_3) %.>% 
     bind_rows(., vaccine_eff_4) %.>% 
     bind_rows(., vaccine_eff_5) 
+  ) %.>% 
+  mutate(., pdwan = 1-exp(-18/dwan))
+
+
+  
+# subset from the vaccine eff data for background annotation
+rect_anno_data <- (
+  vaccine_eff_plot_df %.>%
+    mutate(., neonatal_dose = ifelse(age_cohort == age_names[1], "si", "nein!")) %.>% 
+    select(., age_cohort, neonatal_dose) %.>% 
+    distinct(.)
+    
+  ) 
+
+
+# subset from the vaccine eff for line annotation
+line_anno_data <- (
+  vaccine_eff_plot_df %.>% 
+    filter(., comp_exp == "PR") %.>% 
+    filter(., pdwan == 1-exp(-18/111)) %.>% 
+    select(., year, count, age_cohort)
 )
 
 
-  
-plot_vacc_eff <- function(vacc_eff_df, 
-                          ylab = "Relative Risk",
-                          xlab = "Years Since Immunization",
-                          breaks = c(1e-2, 1, 1e2, 1e4, 1e6), 
-                          limits = c(1e-2, 1e6), 
-                          xbr = seq(0,4,1), 
-                          ...) {
-  
-  # log_a_tic <- annotation_logticks(sides = "l")  
-  # log_a_tic$data <- tibble(x = NA, 
-  #                          age_cohort = age_names[1])
-  
-  # browser()
-  
-  
-  anno_data <- (
-    vacc_eff_df %.>% 
-      filter(., dwan == 111) %.>% 
-      select(., year, count, age_cohort)
-    )
-  
-  vacc_eff_df %.>% 
-    ggplot(., aes(x = year, y = count)) +
-    geom_line(size = 0.8, aes(colour = dwan, group = dwan)) +
-    geom_line(data = anno_data, aes(x = year, y = count), colour = "#642B73", size = 0.8) +
-    geom_hline(yintercept = 1, colour = "grey30", linetype = "dashed", size = 1) +
-    labs(x = xlab, 
-         y = ylab, 
-         colour = "Immune\nDuration (Years)") +
+# make the PR plot with annotations
+vaccine_eff_PR_plot <- (
+  vaccine_eff_plot_df %.>% 
+    filter(., comp_exp == "PR") %.>% 
+    ggplot(.) +
+    geom_rect(data = rect_anno_data,
+              aes(fill = neonatal_dose), alpha = 0.3, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
+    geom_line(aes(x = year, y = count, colour = pdwan, group = pdwan), size = 0.8) +
+    geom_line(data = line_anno_data, aes(x = year, y = count), 
+               colour = "#642B73", size = 0.8) +
+    geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
+    labs(x = "Years Since Last Dose", 
+         y = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))), 
+         colour = "Cumulative Fraction\nOf Immune Loss By Age 18", 
+         fill = "Dose Type") +
     scale_y_continuous(trans = "log10", 
-                       breaks = breaks, 
-                       limits = limits, 
+                       breaks = c(1e-1, 1, 1e1, 1e2), 
+                       limits = c(1e-1, 1.3e2), 
                        labels = label_scientific()
     ) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) +
+    scale_fill_manual(breaks = c("si", "nein!"), values = c("grey50", "black"), 
+                      labels = c("Neonatal", "Booster")) +
     annotation_logticks(sides = "l") +  
     facet_grid(cols = vars(age_cohort), scales  = "free_x") +
     continuous_scale(
       "color", "modified_palette",
-      modify_palette_by_target(plot_var = unique(.$dwan), 
-                               target = best_model_p_vec_vacc_eff["dwan"]),
-      breaks = c(25, 75, 125, 175),
+      modify_palette_by_target(plot_var = unique(.$pdwan), 
+                               target = 1-exp(-18/best_model_p_vec_vacc_eff["dwan"])),
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      limits = c(0.0, 1),
+      labels = scales::percent,
       guide = guide_colourbar(nbin = 100, 
+                              barheight = 1,
                               frame.colour = "black", 
                               ticks.colour = "black", 
                               title.position = "top", 
@@ -218,64 +236,100 @@ plot_vacc_eff <- function(vacc_eff_df,
     ) +
     project_theme +
     cap_axes() +
-    theme(...)
+    theme(axis.text.x=element_text(angle=90, vjust = 0.5)
+          ) +
+    guides(fill = guide_legend(nrow = 1, 
+                               title.position = "top", 
+                               override.aes = list(alpha = 1))
+           )
+  
+)
+
+
+
+# make incidence plot as a response to 
+vaccine_eff_Itp_plot <- (
+  vaccine_eff %.>% 
+    filter(., year == max(year) & comp_exp == "Itp") %.>%
+    mutate(., pdwan = 1-exp(-18/dwan)) %.>% 
+    ggplot(.) +
+    geom_area(aes(x = pdwan, y = count, fill = age_cohort), 
+              position="stack", stat="identity") +
+    geom_line(aes(x = pdwan, y = dwan*0.60), size = 1, colour = "grey30", 
+              linetype = "dotdash") +
+    labs(y = expression(atop(Equilibrium~Prevalence, per~10^5~(I(t)/N(t)))), 
+         fill = "Age Cohort", 
+         x = "Cumulative Fraction\nOf Immune Loss By Age 18") +
+    scale_y_continuous(breaks = c(0, 40, 80, 120), limits = c(0, 130), 
+                       sec.axis = sec_axis(trans =  ~./0.60, "Immune Duration (Years)")) +
+    scale_x_reverse(labels = scales::percent, 
+                       breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
+    scale_fill_brewer(palette = "Oranges", direction = -1) +
+    project_theme +
+    cap_axes(right = "both") +
+    guides(fill = guide_legend(nrow = 2, title.position = "top"))
+  )
+  
+
+
+# calculate the impact over various waning values 
+cal_var_impact <- function(count = 30, dwan_data = dwan_grid) {
+  # browser()
+  
+  dwan_val <- dwan_data[count,] %.>% unlist(.) %>% unname(.)
+  vec_int <- best_model_p_vec
+  vec_int["dwan"] <- dwan_val
+  
+  
+  R0 <- c(vec_int, params_for_R0) %.>% calculate_R0_mq(.)$reprodutive_number  
+  
+  Rp <- c(vec_int, params_for_Rp) %.>% calculate_R0_mq(.)$reprodutive_number
+  
+  impact <- 1-Rp/R0
+  
+  tibble(impact = impact, 
+         Rp = Rp,
+         dwan = dwan_val, 
+         pdwan = 1-exp(-18/dwan))
   
 }
 
 
-vaccine_eff_H_plot <- (
-    vaccine_eff_plot_df %.>% 
-    filter(., 
-           comp_exp == "H") %.>% 
-    plot_vacc_eff(., 
-                  ylab = expression(Relative~Risk~(lambda^w~(t)/lambda^s~(t))),
-                  xlab = "",
-                  breaks = c(1e-1, 1, 1e1, 1e2), 
-                  limits = c(1e-1, 1e2), 
-                  legend.position = "none", 
-                  axis.text.x=element_blank(),
-                  )
-  )
 
-vaccine_eff_PR_plot <- (
-  vaccine_eff_plot_df %.>% 
-    filter(., 
-           comp_exp == "PR") %.>% 
-    plot_vacc_eff(., 
-                  ylab = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))),
-                  breaks = c(1e-1, 1, 1e1, 1e2), 
-                  limits = c(1e-1, 1e2), 
-                  strip.text.x = element_blank(), 
-                  axis.text.x=element_text(angle=90, vjust = 0.5)
-                  )  +
-    scale_x_continuous(breaks = scales::pretty_breaks(n = 4))
-)
+var_vacc_imp <- map_dfr(1:nrow(dwan_grid), cal_var_impact)
 
-
-vaccine_eff_Itp_plot <- (
-  vaccine_eff %.>% 
-    filter(., year == max(year) & comp_exp == "Itp") %.>% 
-    ggplot(., aes(x = dwan, y = count, fill = age_cohort)) +
-    geom_area(position="stack", stat="identity") +
-    labs(y = expression(atop(Equilibrium~Prevalence, per~10^5~(I(t)/N(t)))), 
-         fill = "Age\nCohort", 
-         x = "Immune Duration") +
-    scale_fill_brewer(palette = "Oranges", direction = -1) +
+vaccine_imp_plot <- (
+  var_vacc_imp %.>% 
+    ggplot(., aes(x = pdwan)) +
+    geom_line(aes(y = impact, linetype = "impact"), size = 1.0, colour = "grey30") +
+    geom_line(aes(y = Rp/20, linetype = "Rp"), size = 1.0, colour = "grey30") +
+    labs(y = expression(Vaccine~Impact~(xi)), 
+         x = "Cumulative Fraction\nOf Immune Loss By Age 18") +
+    scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Vaccine~Reproductive~Number~(R[p]))),
+                       breaks = c(0, 0.25, 0.5, 0.75),
+                       limits = c(0,0.75),
+                       labels = scales::percent) +
+    scale_x_reverse(labels = scales::percent, breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
+    scale_linetype_manual(breaks = c("impact", "Rp"), 
+                          values = c(1, 2), 
+                          name = "Quantity", 
+                          labels = c(expression(xi), expression(R[p]))) +
     project_theme +
-    cap_axes() +
-    guides(fill = guide_legend(nrow = 3, title.position = "top"))
+    cap_axes(right = "both") +
+    guides(linetype = guide_legend(title.position = "top", 
+                                   nrow = 1, position = "none", 
+                                   override.aes = list(size = 0.5)))
   )
-  
-  
+
 
 
 vaccine_eff_panel_plt <- (
-  vaccine_eff_H_plot  + 
-    vaccine_eff_PR_plot +
+    vaccine_eff_PR_plot + 
+    vaccine_imp_plot +      
+    guide_area() +  
     vaccine_eff_Itp_plot +
-    guide_area() +
     plot_layout(
-      width = c(1, 0.6),
+      width = c(1, 0.6725),
       guides = "collect", 
       design = "
       AC
