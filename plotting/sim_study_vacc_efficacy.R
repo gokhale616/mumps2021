@@ -208,7 +208,7 @@ vaccine_eff_PR_plot <- (
     geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
     labs(x = "Years Since Last Dose", 
          y = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))), 
-         colour = "Cumulative Fraction\nOf Immune Loss\nBy Age 18", 
+         colour = "P(Immune Loss By Age 18)", 
          fill = "Dose Type") +
     scale_y_continuous(trans = "log10", 
                        breaks = c(1e-1, 1, 1e1, 1e2), 
@@ -225,10 +225,10 @@ vaccine_eff_PR_plot <- (
       modify_palette_by_target(plot_var = unique(.$pdwan), 
                                target = 1-exp(-18/best_model_p_vec_vacc_eff["dwan"])),
       breaks = c(0, 0.25, 0.5, 0.75, 1),
-      limits = c(0.0, 1),
-      labels = scales::percent,
+      limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
                               barheight = 1,
+                              barwidth = 9.5,
                               frame.colour = "black", 
                               ticks.colour = "black", 
                               title.position = "top", 
@@ -259,11 +259,10 @@ vaccine_eff_Itp_plot <- (
               linetype = "dotdash") +
     labs(y = expression(atop(Equilibrium~Prevalence, per~10^5~(I(t)/N(t)))), 
          fill = "Age Cohort", 
-         x = "Cumulative Fraction\nOf Immune Loss By Age 18") +
+         x = "P(Immune Loss By Age 18)") +
     scale_y_continuous(breaks = c(0, 40, 80, 120), limits = c(0, 130), 
                        sec.axis = sec_axis(trans =  ~./0.60, "Immune Duration (Years)")) +
-    scale_x_reverse(labels = scales::percent, 
-                       breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
+    scale_x_reverse(breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
     scale_fill_brewer(palette = "Oranges", direction = -1) +
     project_theme +
     cap_axes(right = "both") +
@@ -304,12 +303,12 @@ vaccine_imp_plot <- (
     geom_line(aes(y = impact, linetype = "impact"), size = 1.0, colour = "grey30") +
     geom_line(aes(y = Rp/20, linetype = "Rp"), size = 1.0, colour = "grey30") +
     labs(y = expression(Vaccine~Impact~(xi)), 
-         x = "Cumulative Fraction\nOf Immune Loss By Age 18") +
+         x = "P(Immune Loss By Age 18)") +
     scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Vaccine~Reproductive~Number~(R[p]))),
                        breaks = c(0, 0.25, 0.5, 0.75),
                        limits = c(0,0.75),
                        labels = scales::percent) +
-    scale_x_reverse(labels = scales::percent, breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
+    scale_x_reverse(breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
     scale_linetype_manual(breaks = c("impact", "Rp"), 
                           values = c(1, 2), 
                           name = "Quantity", 
