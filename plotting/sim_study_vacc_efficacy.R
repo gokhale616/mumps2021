@@ -208,7 +208,7 @@ vaccine_eff_PR_plot <- (
     geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
     labs(x = "Years Since Last Dose", 
          y = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))), 
-         colour = "Cumulative Fraction\nOf Immune Loss By Age 18", 
+         colour = "Cumulative Fraction\nOf Immune Loss\nBy Age 18", 
          fill = "Dose Type") +
     scale_y_continuous(trans = "log10", 
                        breaks = c(1e-1, 1, 1e1, 1e2), 
