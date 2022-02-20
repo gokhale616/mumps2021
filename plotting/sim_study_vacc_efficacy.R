@@ -39,9 +39,9 @@ po_vacc_eff_with_booster <- (
 # )
 
 
+pdwan_18 <- 1-exp(-18/best_model_p_vec_vacc_eff["dwan"]) %.>% unname(.)
 
-
-dwan_grid <- tibble(dwan = c(seq(1, 200, by = 1), best_model_p_vec_vacc_eff["dwan"])) %.>% arrange(.)
+dwan_grid <- tibble(dwan = c(seq(1, 200, by = 1), best_model_p_vec_vacc_eff["dwan"])) %.>% arrange(., dwan)
 
 
 vacc_eff_grid <- function(x = 11, dwan_data = dwan_grid, 
@@ -245,18 +245,32 @@ vaccine_eff_PR_plot <- (
   
 )
 
+vaccine_eff_data_for_plot <- (
+  vaccine_eff %.>% 
+  filter(., year == max(year) & comp_exp == "Itp") %.>%
+  mutate(., pdwan = 1-exp(-18/dwan))
+  ) 
 
+
+anno_point_vacc_eff_itp_data <- (
+  vaccine_eff_data_for_plot %.>% 
+    filter(., pdwan == pdwan_18)
+)
 
 # make incidence plot as a response to 
 vaccine_eff_Itp_plot <- (
-  vaccine_eff %.>% 
-    filter(., year == max(year) & comp_exp == "Itp") %.>%
-    mutate(., pdwan = 1-exp(-18/dwan)) %.>% 
+    vaccine_eff_data_for_plot %.>% 
     ggplot(.) +
     geom_area(aes(x = pdwan, y = count, fill = age_cohort), 
               position="stack", stat="identity") +
     geom_line(aes(x = pdwan, y = dwan*0.60), size = 1, colour = "grey30", 
               linetype = "dotdash") +
+    geom_segment(data = anno_point_vacc_eff_itp_data, 
+                 aes(x = pdwan, xend = pdwan, y = 0, yend = 33), 
+                 size = 0.4, colour = "#642B73", lineend = "round") +
+    geom_point(data = anno_point_vacc_eff_itp_data, 
+               aes(x = pdwan, y = dwan*0.60), 
+               size = 2, pch = 21, fill = "white", colour = "#642B73") +
     labs(y = expression(atop(Equilibrium~Prevalence, per~10^5~(I(t)/N(t)))), 
          fill = "Age Cohort", 
          x = "P(Immune Loss By Age 18)") +
@@ -297,11 +311,21 @@ cal_var_impact <- function(count = 30, dwan_data = dwan_grid) {
 
 var_vacc_imp <- map_dfr(1:nrow(dwan_grid), cal_var_impact)
 
+anno_point_var_vacc_data <- (
+  var_vacc_imp %.>% 
+    filter(., pdwan == pdwan_18)
+)
+  
+
 vaccine_imp_plot <- (
   var_vacc_imp %.>% 
     ggplot(., aes(x = pdwan)) +
     geom_line(aes(y = impact, linetype = "impact"), size = 1.0, colour = "grey30") +
     geom_line(aes(y = Rp/20, linetype = "Rp"), size = 1.0, colour = "grey30") +
+    geom_point(data = anno_point_var_vacc_data, aes(x = pdwan, y = impact), 
+               pch = 21, fill = "white", colour = "#642B73", size = 2) +
+    geom_point(data = anno_point_var_vacc_data, aes(x = pdwan, y = Rp/20), 
+               pch = 21, fill = "white", colour = "#642B73", size = 2) +
     labs(y = expression(Vaccine~Impact~(xi)), 
          x = "P(Immune Loss By Age 18)") +
     scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Vaccine~Reproductive~Number~(R[p]))),
@@ -335,8 +359,7 @@ vaccine_eff_panel_plt <- (
       BD
       " 
     ) +
-    plot_annotation(tag_levels = "A") #&
-    #theme(legend.position = "bottom") 
+    plot_annotation(tag_levels = "A")
   )
 
 

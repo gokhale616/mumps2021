@@ -96,7 +96,7 @@ lapply(script_var, function(x) {
 @
 
 
-<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[3]>>=
+<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[2]>>=
 
 plot(incidence_age_geog)
 
@@ -109,13 +109,13 @@ est_mle_kbl
 @
 
 
-<<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
+<<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[2]>>=
 
 plot(fit_plot_grid)
 
 @
 
-<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[3]>>=
+<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[2]>>=
 
 plot(compare_age_dstbn_plt)
 
@@ -128,7 +128,7 @@ plot(epi_summary_plt)
 
 @
 
-<<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', out.width = outwidth[3]>>=
+<<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', out.width = outwidth[2]>>=
 
 plot(vaccine_eff_panel_plt)
 

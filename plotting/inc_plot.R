@@ -68,14 +68,14 @@ abs_inc_plt <- (
 
 
 anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nEpidemic", "", ""),
-                    label_2 = "Sustained\nTransmission",
+                    label_2 = "Continued\nTransmission",
                     x_2 = 2013,
                     x = c(1981, 1987, 2006, 2009, 2016), 
                     y = 8.5, 
                     yend = 6)
 
 
-anno_data_2 <- tibble(label = "Sustained\nTransmission",
+anno_data_2 <- tibble(label = "Continued\nTransmission",
                       x = 2012, 
                       y = 8.5, 
                       yend = 6)
