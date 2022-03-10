@@ -1,10 +1,10 @@
 # requires 
-# source("../00/src.R", chdir = TRUE)
-# source("../plotting/inc_plot.R", chdir = TRUE)
-# source("../plotting/prep_estm_tables.R", chdir = TRUE)
-# source("../plotting/fit_plot.R", chdir = TRUE)
-# source("../plotting/rel_fit_plot.R", chdir = TRUE)
-# source("../plotting/summarize_dynamics.R", chdir = TRUE)
+# source("./00/src.R", chdir = TRUE)
+# source("./plotting/inc_plot.R", chdir = TRUE)
+# source("./plotting/prep_estm_tables.R", chdir = TRUE)
+# source("./plotting/fit_plot.R", chdir = TRUE)
+# source("./plotting/rel_fit_plot.R", chdir = TRUE)
+# source("./plotting/summarize_dynamics.R", chdir = TRUE)
 
 
 
@@ -204,7 +204,7 @@ vaccine_eff_PR_plot <- (
               aes(fill = neonatal_dose), alpha = 0.3, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
     geom_line(aes(x = year, y = count, colour = pdwan, group = pdwan), size = 0.8) +
     geom_line(data = line_anno_data, aes(x = year, y = count), 
-               colour = "#642B73", size = 0.8) +
+              colour = "#642B73", size = 0.8) +
     geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
     labs(x = "Years Since Last Dose", 
          y = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))), 
@@ -222,8 +222,7 @@ vaccine_eff_PR_plot <- (
     facet_grid(cols = vars(age_cohort), scales  = "free_x") +
     continuous_scale(
       "color", "modified_palette",
-      modify_palette_by_target(plot_var = unique(.$pdwan), 
-                               target = 1-exp(-18/best_model_p_vec_vacc_eff["dwan"])),
+      mod_palette(target = pdwan_18*c(0.95, 1.05), range = vaccine_eff_plot_df$pdwan %.>% range(.)),
       breaks = c(0, 0.25, 0.5, 0.75, 1),
       limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
