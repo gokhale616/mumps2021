@@ -31,16 +31,5 @@ mk_path <- function(x, dir='output/') paste0(dir,x)
 
 
 
-if(FALSE) {
-  
-  seq(0, 1, by = 0.1)
-  
-  10^seq(0, 1, by = 0.1)
-  
-  10^seq(-1,0, by = 0.1)
-  
-  10^seq(1, 2, by = 0.1)
-  
-}
   
   

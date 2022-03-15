@@ -1,5 +1,7 @@
 # treat incidence data for plotting
 
+n_size <- 12
+
 mumps_case_reports_l <- (
   mumps_case_reports %.>%
     gather(., key = "age_cohort", value = "cases", -c(year, total), factor_key = TRUE) %.>% 
@@ -54,10 +56,11 @@ abs_inc_plt <- (
     project_theme +
     # theme(axis.text.x = element_blank()) +
     cap_axes() +
-    theme(axis.title = element_text(size = 8.5), 
+    theme(text = element_text(size = unit(n_size, "pt")),
+          #axis.title = element_text(size = 8.5), 
           plot.margin = unit(rep(mar_val, 4), "cm"), 
           legend.position = c(0.65, 0.7),
-          legend.key.height = unit(10, "pt")
+          #legend.key.height = unit(10, "pt")
           ) +
     guides(colour = guide_legend(title.position = "left", 
                                  ncol = 3))
@@ -76,7 +79,7 @@ anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nEp
 
 
 anno_data_2 <- tibble(label = "Continued\nTransmission",
-                      x = 2012, 
+                      x = 2012.5, 
                       y = 8.5, 
                       yend = 6)
 
@@ -93,9 +96,9 @@ inc_rate_plt <- (
                  colour = "grey30") +
     geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 4) +
     geom_text(data = anno_data_2, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 3) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 4) +
     labs(y = expression(paste(Cases~Per~10^5, phantom(1000000))),
          x = "") +
     scale_x_continuous(#expand = c(0.000, 0.000), 
@@ -104,8 +107,10 @@ inc_rate_plt <- (
     project_theme +
     # theme(axis.text.x = element_blank()) +
     cap_axes() +
-    theme(axis.title = element_text(size = 8.5),
-          plot.margin = unit(rep(mar_val, 4), "cm")) 
+    theme(text = element_text(size = unit(n_size, "pt")), 
+          #axis.title = element_text(size = 8.5),
+          plot.margin = unit(rep(mar_val, 4), "cm")
+          ) 
 )
 
 
@@ -124,7 +129,8 @@ prop_inc_plt <- (
                      labels = scales::percent_format(accuracy = 1)) +  
   project_theme +
   cap_axes() + 
-  theme(axis.title = element_text(size = 8.5), 
+  theme(text = element_text(size = unit(n_size, "pt")),
+        # axis.title = element_text(size = 8.5), 
         plot.margin = unit(rep(mar_val, 4), "cm")) 
   )
 
@@ -168,9 +174,9 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
     geom_path(size = 0.06, colour = "grey30")+
     labs(x = "", y = "", 
          fill = expression(Cases~Per~10^5)) +
-    annotate(geom = "text", x = 0.4e6, y = 0.65e6, 
+    annotate(geom = "text", x = 0.4e6, y = 0.75e6, 
              label = mumps_geog$Year %.>% unique(.), 
-             parse = TRUE, size = 3)+
+             parse = TRUE, size = 4)+
     scale_fill_gradient(low = "#3a7bd5", high = "#FF4E50", na.value = NA,
                         breaks = breaks, 
                         limits = c(0, 10))+
@@ -178,9 +184,10 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
     theme(axis.text = element_blank(), 
           axis.ticks = element_blank(), 
           axis.line = element_blank(),
-          legend.position = c(0.72, 0.1), 
-          legend.title = element_text(size=9),
-          legend.text = element_text(size=8), 
+          legend.position = c(0.75, 0.04), 
+          #legend.title = element_text(size=9),
+          #legend.text = element_text(size=8), 
+          text = element_text(size = unit(12, "pt")),
           panel.grid = element_blank(), 
           plot.margin = unit(rep(mar_val, 4), "cm")) +
     guides(fill = guide_colorbar(frame.colour = "black", 

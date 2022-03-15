@@ -96,7 +96,7 @@ lapply(script_var, function(x) {
 @
 
 
-<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[3]>>=
+<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[1]>>=
 
 plot(incidence_age_geog)
 

@@ -63,6 +63,7 @@ fit_plot <- (
     scale_x_continuous(breaks = gen_x_breaks, expand = c(0, 0)) +
     project_theme +
     cap_axes() +
+    theme(text = unit(n_size, "pt")) +
     guides(colour = guide_legend(title.position = "top", ncol = 2, order = 1), 
            fill = guide_legend(title.position = "top", ncol = 1, order = 2, 
                                override.aes = list(alpha = 1)))  
@@ -130,7 +131,9 @@ Rsq_fit_plot <- (
     scale_colour_manual(values = model_col, 
                         labels = c("Within\nsample", "Out of\nsample"), 
                         name = "Log-linear\nModel Fit") +
-    project_theme + 
+    project_theme +
+    theme(text = element_text(size = unit(12, "pt"))
+          ) +
     cap_axes() +
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
