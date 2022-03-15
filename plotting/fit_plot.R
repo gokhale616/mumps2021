@@ -63,10 +63,11 @@ fit_plot <- (
     scale_x_continuous(breaks = gen_x_breaks, expand = c(0, 0)) +
     project_theme +
     cap_axes() +
-    theme(text = unit(n_size, "pt")) +
-    guides(colour = guide_legend(title.position = "top", ncol = 2, order = 1), 
+    guides(colour = guide_legend(title.position = "top", ncol = 1, order = 1), 
            fill = guide_legend(title.position = "top", ncol = 1, order = 2, 
-                               override.aes = list(alpha = 1)))  
+                               override.aes = list(alpha = 1))) +
+    theme(text = element_text(size = unit(n_size, "pt")), 
+          axis.text.x = element_text(angle = 90, vjust = 0.5))
   )
   
 
@@ -112,15 +113,17 @@ Rsq_fit_plot <- (
     geom_smooth(aes(x = `0.5`, y = `0.5_sim`, colour = sample, fill = year), method = "lm", se = FALSE) +
     facet_grid(rows = vars(age_class), 
                scales = "fixed") +
-    geom_text(data = Rsq_data, aes(x = 0.5, y = 3.5, label = paste0("R^2 == ", 
-                                                                   round(`in-sample`, 0) %.>% 
-                                                                     as.character(.), "*\`%\`")), 
-              parse = TRUE, 
+    geom_text(data = Rsq_data, aes(x = 0.95, y = 3.65, label = paste0("R^2 == ",
+                                                                   round(`in-sample`, 0) %.>%
+                                                                     as.character(.), "*\`%\`")),
+              size = 6,
+              parse = TRUE,
               colour = model_col[1]) +
-    geom_text(data = Rsq_data, aes(x = 0.5, y = 2.3, label = paste0("R^2 == ", 
-                                                                  round(`out-sample`, 0) %.>% 
-                                                                    as.character(.), "*\`%\`")), 
-              parse = TRUE, 
+    geom_text(data = Rsq_data, aes(x = 0.95, y = 2.7, label = paste0("R^2 == ",
+                                                                  round(`out-sample`, 0) %.>%
+                                                                    as.character(.), "*\`%\`")),
+              size = 6,
+              parse = TRUE,
               colour = model_col[2]) +
     labs(x = expression(log[10](Observed~Cases)), 
          y = expression(log[10](Median~Simulated~Cases)), 
@@ -132,18 +135,19 @@ Rsq_fit_plot <- (
                         labels = c("Within\nsample", "Out of\nsample"), 
                         name = "Log-linear\nModel Fit") +
     project_theme +
-    theme(text = element_text(size = unit(12, "pt"))
-          ) +
     cap_axes() +
     guides(fill = guide_colorbar(frame.colour = "black", 
                                  ticks.colour = "black", 
                                  title.position = "top", 
                                  direction = "horizontal"),
-           colour = guide_legend(title.position = "top", ncol = 1))
+           colour = guide_legend(title.position = "top", ncol = 1)) +
+    theme(text = element_text(size = unit(n_size, "pt")), 
+          axis.text.x = element_text(angle = 90, vjust = 0.5)) 
   )
 
 
-fit_plot_grid <- plot_grid(fit_plot, Rsq_fit_plot, labels = c("A", "B"), align = "h")
+fit_plot_grid <- plot_grid(fit_plot, Rsq_fit_plot, labels = c("A", "B"), align = "h", 
+                           label_size = grid_lab_size)
 
 # mixed effects model on the right panel
 # gamma with infectious period and wanning duration

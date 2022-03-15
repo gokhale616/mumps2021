@@ -207,7 +207,7 @@ vaccine_eff_PR_plot <- (
               colour = "#642B73", size = 0.8) +
     geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
     labs(x = "Years Since Last Dose", 
-         y = expression(Relative~Prevalence~(I^w~(t)/I^s~(t))), 
+         y = "Relative Prevalence", 
          colour = "P(Immune Loss By Age 18)", 
          fill = "Dose Type") +
     scale_y_continuous(trans = "log10", 
@@ -226,7 +226,7 @@ vaccine_eff_PR_plot <- (
       breaks = c(0, 0.25, 0.5, 0.75, 1),
       limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
-                              barheight = 1,
+                              barheight = unit(7, "pt"),
                               barwidth = 9.5,
                               frame.colour = "black", 
                               ticks.colour = "black", 
@@ -235,7 +235,8 @@ vaccine_eff_PR_plot <- (
     ) +
     project_theme +
     cap_axes() +
-    theme(axis.text.x=element_text(angle=90, vjust = 0.5)
+    theme(axis.text.x=element_text(angle=90, vjust = 0.5),
+          legend.key.size = unit(7, 'pt')  
           ) +
     guides(fill = guide_legend(nrow = 1, 
                                title.position = "top", 
@@ -270,16 +271,17 @@ vaccine_eff_Itp_plot <- (
     geom_point(data = anno_point_vacc_eff_itp_data, 
                aes(x = pdwan, y = dwan*0.60), 
                size = 2, pch = 21, fill = "white", colour = "#642B73") +
-    labs(y = expression(atop(Equilibrium~Prevalence, per~10^5~(I(t)/N(t)))), 
+    labs(y = expression(Equilibrium~Prevalence~per~10^5), 
          fill = "Age Cohort", 
          x = "P(Immune Loss By Age 18)") +
     scale_y_continuous(breaks = c(0, 40, 80, 120), limits = c(0, 130), 
-                       sec.axis = sec_axis(trans =  ~./0.60, "Immune Duration (Years)")) +
+                       sec.axis = sec_axis(trans =  ~./0.60, expression(Immune~Duration~(Years)))) +
     scale_x_reverse(breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
     scale_fill_brewer(palette = "Oranges", direction = -1) +
     project_theme +
     cap_axes(right = "both") +
-    guides(fill = guide_legend(nrow = 2, title.position = "top"))
+    guides(fill = guide_legend(nrow = 2, title.position = "top")) +
+    theme(legend.key.size = unit(7, 'pt'))  
   )
   
 
@@ -325,9 +327,9 @@ vaccine_imp_plot <- (
                pch = 21, fill = "white", colour = "#642B73", size = 2) +
     geom_point(data = anno_point_var_vacc_data, aes(x = pdwan, y = Rp/20), 
                pch = 21, fill = "white", colour = "#642B73", size = 2) +
-    labs(y = expression(Vaccine~Impact~(xi)), 
+    labs(y = expression(Vaccine~Impact~(xi)~phantom(10)), 
          x = "P(Immune Loss By Age 18)") +
-    scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Vaccine~Reproductive~Number~(R[p]))),
+    scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Reproductive~Number~(R[p]))),
                        breaks = c(0, 0.25, 0.5, 0.75),
                        limits = c(0,0.75),
                        labels = scales::percent) +
@@ -351,14 +353,16 @@ vaccine_eff_panel_plt <- (
     guide_area() +  
     vaccine_eff_Itp_plot +
     plot_layout(
-      width = c(1, 0.6725),
+      width = c(1, 0.6),
+      heights = c(1, 0.8),
       guides = "collect", 
       design = "
       AC
       BD
       " 
     ) +
-    plot_annotation(tag_levels = "A")
+    plot_annotation(tag_levels = "A")&
+      theme(plot.tag = element_text(size = grid_lab_size, face = "bold"))
   )
 
 

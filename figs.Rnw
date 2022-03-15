@@ -96,39 +96,39 @@ lapply(script_var, function(x) {
 @
 
 
-<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', out.width = outwidth[1]>>=
+<<inc_data_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capInc', fig.height = 10, out.width = outwidth[1], fig.width=7>>=
 
 plot(incidence_age_geog)
 
 @
 
-<<fit_table,  results = "asis", warning = FALSE, echo=FALSE, out.width = outwidth[3], out.extra = ''>>=
+<<fit_table,  results = "asis", warning = FALSE, echo=FALSE, out.width = outwidth[3], out.extra = '', fig.width=7>>=
 
 est_mle_kbl
 
 @
 
 
-<<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', out.width = outwidth[3]>>=
+<<fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capFitplot', fig.height = 10, out.width = outwidth[1], fig.width=7>>=
 
 plot(fit_plot_grid)
 
 @
 
-<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', out.width = outwidth[3]>>=
+<<KLdiv_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capKLdiv', fig.height = 10, out.width = outwidth[1], fig.width=7>>=
 
 plot(compare_age_dstbn_plt)
 
 @
 
 
-<<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3]>>=
+<<summary_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capSumplot', out.width = outwidth[3], fig.width=7>>=
 
 plot(epi_summary_plt)
 
 @
 
-<<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', out.width = outwidth[3]>>=
+<<vacc_RR_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccEffplot', fig.height = 5, out.width = outwidth[3], fig.width=7>>=
 
 plot(vaccine_eff_panel_plt)
 

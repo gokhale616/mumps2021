@@ -79,6 +79,11 @@ mar_val <- 0.001
 
 cap_axes <- function(gap = 1, ...) {coord_capped_cart(bottom='both', left = "none", gap = gap, ...)} 
 
+
+# plotting text size 
+n_size <- 16
+grid_lab_size <- 16
+
 project_theme <- (theme_bw(base_size = 11) +
                   theme(strip.background = element_blank(),
                         panel.border = element_blank(), 

@@ -1,7 +1,5 @@
 # treat incidence data for plotting
 
-n_size <- 12
-
 mumps_case_reports_l <- (
   mumps_case_reports %.>%
     gather(., key = "age_cohort", value = "cases", -c(year, total), factor_key = TRUE) %.>% 
@@ -43,8 +41,6 @@ abs_inc_plt <- (
     ggplot(.,
            aes(x = year, y = sqrt_cases)) +
     geom_line(aes(colour = age_cohort), size = 0.8, alpha = 0.95) +
-    # geom_area(aes(colour = age_cohort, fill = age_cohort), 
-    #           position = position_dodge(), alpha = 0.3, size = 0.9) +
     labs(y = expression(paste(sqrt(Cases), phantom(100))),
          x = "", colour = "Age\nCohort") +
     scale_x_continuous(#expand = c(0.000, 0.000),
@@ -79,7 +75,7 @@ anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nEp
 
 
 anno_data_2 <- tibble(label = "Continued\nTransmission",
-                      x = 2012.5, 
+                      x = 2013, 
                       y = 8.5, 
                       yend = 6)
 
@@ -92,13 +88,13 @@ inc_rate_plt <- (
     geom_area(stat = "identity", alpha = 0.9, fill = "#FF4E50", colour = "grey30") +
     geom_segment(data = anno_data, 
                  aes(x = x, xend = x, y = y, yend = yend), 
-                 arrow = arrow(length = unit(0.09, "npc")),
+                 arrow = arrow(length = unit(0.06, "npc")),
                  colour = "grey30") +
     geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 4) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 4, fontface = "bold") +
     geom_text(data = anno_data_2, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 4) +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 4, fontface = "bold") +
     labs(y = expression(paste(Cases~Per~10^5, phantom(1000000))),
          x = "") +
     scale_x_continuous(#expand = c(0.000, 0.000), 
@@ -120,7 +116,7 @@ prop_inc_plt <- (
          aes(x = year, y = cases, fill = age_cohort)) +
   geom_area(stat = "identity", position = "fill") +
   labs(x = "Year", 
-       y = expression(paste(Percent~Total, phantom(10000000))),
+       y = expression(paste(Percent~Total, phantom(10000))),
        fill = "Age\nCohort") +
   scale_fill_manual(values = age_cols) +
   scale_x_continuous(#expand = c(0, 0), 
@@ -144,7 +140,7 @@ incidence_plt <- (
             abs_inc_plt, 
             prop_inc_plt,
             nrow = 3, labels = c("A", "B", "C"),
-            # rel_heights = c(1, 1), 
+            label_size = grid_lab_size,
             align = "hv", axis = "b")
   ) 
 
@@ -176,7 +172,7 @@ map_mumps <- function(mumps_geog, fill_var = Incidence,
          fill = expression(Cases~Per~10^5)) +
     annotate(geom = "text", x = 0.4e6, y = 0.75e6, 
              label = mumps_geog$Year %.>% unique(.), 
-             parse = TRUE, size = 4)+
+             parse = TRUE, size = 6, fontface = "bold")+
     scale_fill_gradient(low = "#3a7bd5", high = "#FF4E50", na.value = NA,
                         breaks = breaks, 
                         limits = c(0, 10))+
@@ -245,13 +241,14 @@ map_2006_12_plt <-  mumps_demog_geog_annual_2006_12 %.>%
 
 
 map_grid_plt <- plot_grid(map_1985_91_plt, map_2006_12_plt, 
+                          label_size = grid_lab_size,
                           labels = c("D", "E"))
 
 #incidence_w_legend_plt
 
 # put all of the figure 1
 incidence_age_geog <- plot_grid(incidence_plt, map_grid_plt, 
-                                nrow = 2, rel_heights = c(1, 0.5))
+                                nrow = 2, rel_heights = c(1, 0.375))
 
 
 

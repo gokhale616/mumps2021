@@ -88,13 +88,13 @@ immune_distbn_plot <- (
     geom_label(data = anno_segment, 
               aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
                   x = x_c, y = y_c, fill = y_c), 
-              nudge_x = 17, nudge_y = 0.065, colour = "white", size = 1.25) +
+              nudge_x = 15, nudge_y = 0.075, colour = "white", size = 2.0) +
     annotate(geom = "text", y = 1, x = 72, 
              label= "Critical Vaccination Level",
              colour = "grey30", size = 2.5) +
     labs(x = "Time Since Immunization\n(Years)", 
          y = "Percent Immune\nPost Vaccination") +
-    scale_y_continuous(limits = c(0, 1), breaks = seq(round(0, 1), 1, by = 0.25), 
+    scale_y_continuous(limits = c(0, 1.15), breaks = seq(round(0, 1), 1, by = 0.25), 
                        labels = scales::percent) +
     scale_x_continuous(breaks = seq(0, 100, by = 25)) +
     scale_colour_gradient(low = "grey30", high = "#6be585", 
@@ -351,6 +351,8 @@ epi_summary_plt <- (
     Reff_plot + Vs_plot + 
     prevalence_plot +
     plot_layout(
+      heights = c(1, 0.75, 0.75),
+      widths = c(1, 0.75),
       guides = "collect",
       design = "
     AD
@@ -361,8 +363,8 @@ epi_summary_plt <- (
     plot_annotation(tag_levels = "A") &
     theme(legend.position = "bottom", 
           legend.key.size = unit(0.75, "lines"), 
-          legend.text = element_text(size = 10), 
-          legend.title = element_text(size = 10))
+          plot.tag = element_text(size = grid_lab_size, face = "bold")
+          )
 )
 
 
@@ -566,11 +568,11 @@ age_distribution_plot <- (
     project_theme +
     theme(legend.position = "top") +
     cap_axes(right = "both") +
-    theme() +
     guides(colour = guide_legend(title.position = "top", nrow = 2, 
                                  override.aes=list(fill = grey30_gradnt)), 
            linetype = guide_legend(title.position = "top", nrow = 2, 
-                                   override.aes = list(alpha = 1, size = 0.5)))
+                                   override.aes = list(alpha = 1, size = 0.5))) +
+    theme(text = element_text(size = unit(n_size, "pt"))) 
   
   
 )
@@ -675,8 +677,9 @@ KL_divergence_plot <- (
                       name = "Prediction\nEpoch") +
     project_theme +
     coord_capped_cart(bottom='both', left = "both",  right='both') +
-    theme(legend.position = "top") +
-    guides(colour = guide_legend(title.position = "top", nrow = 2))
+    guides(colour = guide_legend(title.position = "top", nrow = 2)) +
+    theme(legend.position = "top", 
+          text = element_text(size = unit(n_size, "pt")))
   
 )
 
@@ -692,7 +695,8 @@ compare_age_dstbn_plt <- (
     "
     ) + 
     plot_annotation(tag_levels = "A") &
-    theme(legend.position='bottom') 
+    theme(legend.position='bottom', 
+          plot.tag = element_text(size = grid_lab_size, face = "bold")) 
 )
 
   
