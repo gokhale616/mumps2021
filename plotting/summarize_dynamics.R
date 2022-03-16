@@ -86,16 +86,17 @@ immune_distbn_plot <- (
     geom_point(data = anno_segment, aes(x = x_c, y = y_c, colour = y_c), shape = 21, fill = "white", 
                size = 3) +
     geom_label(data = anno_segment, 
-              aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
+              #aes(label = paste0("(", round(x_c, 1), " yrs, " , round(y_c, 2)*100, "%)"), 
+              aes(label = paste0(round(y_c, 2)*100, "%"), 
                   x = x_c, y = y_c, fill = y_c), 
-              nudge_x = 15, nudge_y = 0.075, colour = "white", size = 2.0) +
-    annotate(geom = "text", y = 1, x = 72, 
-             label= "Critical Vaccination Level",
-             colour = "grey30", size = 2.5) +
+              nudge_x = 18, nudge_y = 0.04, colour = "white", size = 2.0) +
+    # annotate(geom = "text", y = .98, x = 73, 
+    #          label= "Critical Vaccination Level",
+    #          colour = "grey30", size = 2.5) +
     labs(x = "Time Since Immunization\n(Years)", 
-         y = "Percent Immune\nPost Vaccination") +
-    scale_y_continuous(limits = c(0, 1.15), breaks = seq(round(0, 1), 1, by = 0.25), 
-                       labels = scales::percent) +
+         y = expression(paste("Immune Post Vaccination (%)",phantom(100000)))) +
+    scale_y_continuous(limits = c(0, 1.4), breaks = seq(round(0, 1), 1, by = 0.25), 
+                       labels = function(x) scales::percent(x, suffix = "")) +
     scale_x_continuous(breaks = seq(0, 100, by = 25)) +
     scale_colour_gradient(low = "grey30", high = "#6be585", 
                           limits = c(0, 1), 
@@ -177,7 +178,7 @@ Vs_plot <- (
     ggplot(.) +
     geom_line(aes(x = year, y = count, 
                   colour = age_cohort), size = 0.8) +
-    labs(y = expression(Immunity~Lost~Per~10^5), x = "", 
+    labs(y = expression(Immunity~Lost~Per~10^5), x = "Year", 
          color = "Age\nCohort") +
     scale_y_continuous(labels = scales::scientific, 
                        limits = c(0, 1.5e1), 
@@ -207,10 +208,10 @@ V_prop_plot <- (
              colour = "#6be585", linetype = "dashed", size = 0.9) +
     annotate(geom = "text", 
              label = "Critical Vaccination Level",
-             y = critic_lev_vacc+0.065, x = 1983, 
+             y = critic_lev_vacc+0.065, x = 1992, 
              colour = "grey30", size = 2.5) +
-    labs(x = "", y = "Percent Effectively   \nVaccinated    ") +
-    scale_y_continuous(labels = scales::percent, 
+    labs(x = "", y = "Vaccinated (%)") +
+    scale_y_continuous(labels = function(x) scales::percent(x, suffix = ""), 
                        limits = c(0, 1), 
                        breaks = seq(0, 1,by = 0.2)) +
     scale_x_continuous(breaks = year_break_x) +
@@ -268,10 +269,10 @@ Susc_plot <- (
     mutate(., count = ifelse(count > 1, 1, count)) %.>% 
     ggplot(., aes(x = year)) +
     geom_line(aes(y = count, colour = age_cohort), size = 0.8) +
-    labs(y = "Percent Susceptible", 
+    labs(y = "Susceptible (%)", 
          x = "Year") +
     scale_x_continuous(breaks = year_break_x) +
-    scale_y_continuous(labels = scales::percent) +
+    scale_y_continuous(labels = function(x) scales::percent(x, suffix = "")) +
     scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
     project_theme +
     cap_axes()
@@ -330,8 +331,8 @@ Reff_plot <- (
                         labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"), 
                         name = "Epidemic\nSignature") +
     scale_y_continuous(sec.axis = sec_axis(~./2,
-                                           labels = scales::percent,
-                                           name = "Vaccine\nCoverage")) +
+                                           labels = function(x) scales::percent(x, suffix = ""),
+                                           name = "Vaccine\nCoverage (%)")) +
     scale_x_continuous(breaks = year_break_x) +
     scale_fill_manual(name = "Dose\nType", 
                       values = c("grey50", "black"), 
@@ -346,24 +347,22 @@ Reff_plot <- (
 
 
 epi_summary_plt <- (
-  immune_distbn_plot + 
-    V_prop_plot + Susc_plot +
-    Reff_plot + Vs_plot + 
-    prevalence_plot +
+  immune_distbn_plot + V_prop_plot + Reff_plot +
+    Susc_plot + Vs_plot + prevalence_plot +
     plot_layout(
-      heights = c(1, 0.75, 0.75),
-      widths = c(1, 0.75),
+      #heights = c(1, 0.75, 0.75),
+      #widths = c(1, 0.75),
       guides = "collect",
       design = "
-    AD
-    BE
-    CF
+    ABC
+    DEF
     "
     ) + 
     plot_annotation(tag_levels = "A") &
     theme(legend.position = "bottom", 
           legend.key.size = unit(0.75, "lines"), 
-          plot.tag = element_text(size = grid_lab_size, face = "bold")
+          plot.tag = element_text(size = unit(10, "pt"), face = "bold"), 
+          text = element_text(size = unit(9, "pt"))
           )
 )
 

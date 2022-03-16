@@ -226,7 +226,7 @@ vaccine_eff_PR_plot <- (
       breaks = c(0, 0.25, 0.5, 0.75, 1),
       limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
-                              barheight = unit(7, "pt"),
+                              barheight = unit(10, "pt"),
                               barwidth = 9.5,
                               frame.colour = "black", 
                               ticks.colour = "black", 
@@ -236,7 +236,7 @@ vaccine_eff_PR_plot <- (
     project_theme +
     cap_axes() +
     theme(axis.text.x=element_text(angle=90, vjust = 0.5),
-          legend.key.size = unit(7, 'pt')  
+          legend.key.size = unit(10, 'pt')  
           ) +
     guides(fill = guide_legend(nrow = 1, 
                                title.position = "top", 
@@ -281,7 +281,7 @@ vaccine_eff_Itp_plot <- (
     project_theme +
     cap_axes(right = "both") +
     guides(fill = guide_legend(nrow = 2, title.position = "top")) +
-    theme(legend.key.size = unit(7, 'pt'))  
+    theme(legend.key.size = unit(10, 'pt'))  
   )
   
 
@@ -342,7 +342,7 @@ vaccine_imp_plot <- (
     cap_axes(right = "both") +
     guides(linetype = guide_legend(title.position = "top", 
                                    nrow = 1, position = "none", 
-                                   override.aes = list(size = 0.5)))
+                                   override.aes = list(size = 0.5))) 
   )
 
 
@@ -362,7 +362,10 @@ vaccine_eff_panel_plt <- (
       " 
     ) +
     plot_annotation(tag_levels = "A")&
-      theme(plot.tag = element_text(size = grid_lab_size, face = "bold"))
+      theme(plot.tag = element_text(size = 10, face = "bold"), 
+            text = element_text(size = unit(9, "pt"))#, 
+            #plot.margin = unit(c(1,1,1,1), "pt")
+            )
   )
 
 
