@@ -213,7 +213,7 @@ vaccine_eff_PR_plot <- (
     scale_y_continuous(trans = "log10", 
                        breaks = c(1e-1, 1, 1e1, 1e2), 
                        limits = c(1e-1, 1.3e2), 
-                       labels = label_scientific()
+                       labels = trans_format("log10", math_format(10^.x))
     ) +
     scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) +
     scale_fill_manual(breaks = c("si", "nein!"), values = c("grey50", "black"), 
