@@ -1,8 +1,8 @@
-
+# "#8A2387", "#F27121", "#642B73"
 # this function replaces the point estimaate with a different color
-mod_palette <- function(colours = seq_gradient_pal("#6be585", "#dd3e54")(c(seq(0, 1, length.out = 100))), 
+mod_palette <- function(colours = seq_gradient_pal("#8A2387", "#F27121")(c(seq(0, 1, length.out = 100))), 
                         target, range, values = NULL,
-                        replace_colour = "#642B73") {
+                        replace_colour = "#45a247") {
   
   # browser()
   norm_target <- (target - range[1]) / diff(range)

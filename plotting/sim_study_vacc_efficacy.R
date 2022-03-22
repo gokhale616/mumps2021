@@ -204,7 +204,7 @@ vaccine_eff_PR_plot <- (
               aes(fill = neonatal_dose), alpha = 0.3, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
     geom_line(aes(x = year, y = count, colour = pdwan, group = pdwan), size = 0.8) +
     geom_line(data = line_anno_data, aes(x = year, y = count), 
-              colour = "#642B73", size = 0.8) +
+              colour = "#45a247", size = 0.8) +
     geom_hline(yintercept = 1, colour = "grey30", linetype = "dotted", size = 0.8) +
     labs(x = "Years Since Last Dose", 
          y = "Relative Prevalence", 
@@ -267,10 +267,10 @@ vaccine_eff_Itp_plot <- (
               linetype = "dotdash") +
     geom_segment(data = anno_point_vacc_eff_itp_data, 
                  aes(x = pdwan, xend = pdwan, y = 0, yend = 33), 
-                 size = 0.4, colour = "#642B73", lineend = "round") +
+                 size = 0.4, colour = "#45a247", lineend = "round") +
     geom_point(data = anno_point_vacc_eff_itp_data, 
                aes(x = pdwan, y = dwan*0.60), 
-               size = 2, pch = 21, fill = "white", colour = "#642B73") +
+               size = 2, pch = 21, fill = "white", colour = "#45a247") +
     labs(y = expression(Equilibrium~Prevalence~per~10^5), 
          fill = "Age Cohort", 
          x = "P(Immune Loss By Age 18)") +
@@ -324,15 +324,15 @@ vaccine_imp_plot <- (
     geom_line(aes(y = impact, linetype = "impact"), size = 1.0, colour = "grey30") +
     geom_line(aes(y = Rp/20, linetype = "Rp"), size = 1.0, colour = "grey30") +
     geom_point(data = anno_point_var_vacc_data, aes(x = pdwan, y = impact), 
-               pch = 21, fill = "white", colour = "#642B73", size = 2) +
+               pch = 21, fill = "white", colour = "#45a247", size = 2) +
     geom_point(data = anno_point_var_vacc_data, aes(x = pdwan, y = Rp/20), 
-               pch = 21, fill = "white", colour = "#642B73", size = 2) +
-    labs(y = expression(Vaccine~Impact~(xi)~phantom(10)), 
+               pch = 21, fill = "white", colour = "#45a247", size = 2) +
+    labs(y = expression(paste("Vaccine Impact (", xi, ", %)",~phantom(10))), 
          x = "P(Immune Loss By Age 18)") +
     scale_y_continuous(sec.axis = sec_axis(trans = ~.*20, expression(Reproductive~Number~(R[p]))),
                        breaks = c(0, 0.25, 0.5, 0.75),
                        limits = c(0,0.75),
-                       labels = scales::percent) +
+                       labels = function(x) scales::percent(x, suffix = "")) +
     scale_x_reverse(breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
     scale_linetype_manual(breaks = c("impact", "Rp"), 
                           values = c(1, 2), 

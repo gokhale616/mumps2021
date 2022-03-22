@@ -180,8 +180,8 @@ Vs_plot <- (
                   colour = age_cohort), size = 0.8) +
     labs(y = expression(Immunity~Lost~Per~10^5), x = "Year", 
          color = "Age\nCohort") +
-    scale_y_continuous(labels = scales::scientific, 
-                       limits = c(0, 1.5e1), 
+    scale_y_continuous(#labels = scales::scientific, 
+                       limits = c(0, 1.5e1)#, 
                        #breaks = seq(0, 3e4,by = 1e4)
                        ) +
     scale_x_continuous(breaks = year_break_x) +
@@ -289,6 +289,7 @@ prevalence_plot <- (
   scale_x_continuous(breaks = year_break_x) +
   scale_y_continuous(trans = "log10", breaks = c(1e-3, 1e-2, 1e-1, 1e0, 
                                                  1e1, 1e2, 1e3), 
+                     labels = trans_format("log10", math_format(10^.x)),
                      limits = c(1e-3, 1e3)) +
   annotation_logticks(sides = "l")  +
   scale_colour_brewer(palette = "Oranges", direction = -1, guide = "none") +
@@ -550,10 +551,10 @@ age_distribution_plot <- (
     geom_line(data = mean_age_data, 
               aes(x = year, y = age/100, linetype = stat),
               size = 1.0, colour = "grey30", alpha = 0.75) +
-    labs(x = "", y = "Incidence Age Distribution", 
+    labs(x = "", y = "Incidence Age Distribution (%)", 
          colour = "Age\nCohort", 
          pattern_fill = "Age\nCohort")+
-    scale_y_continuous(labels = scales::percent, 
+    scale_y_continuous(labels = function(x) scales::percent(x, suffix = ""), 
                        sec.axis = sec_axis(~.*100, breaks = seq(0, 100, 25), 
                                            name = "Age (Years)")) +
     scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
