@@ -183,12 +183,12 @@ vseir_skel_vacc_effective <- Csnippet("
           /* ============================ */
           
           //double uv_grads_Ss = LV(i-1)*(1-(1-alpha)*p2)*Ss(i-1);
-          //double uv_grads_Sw = LV(i-1)*(1-(1-alpha)*p2)*Sw(i-1);
+          double uv_grads_Sw = LV(i-1)*(1-(1-alpha)*p2)*Sw(i-1);
           double    uv_grads = LV(i-1)*(1-(1-alpha)*p2)*St(i-1);
           double     v_grads = LV(i-1)*(1-alpha)*p2*St(i-1);
           
           DSs(i) =  uv_grads  - (lambda1 + LV(i) - MU_AGE(i))*Ss(i);               
-          DSw(i) =  delta*V(i) + LV(i-1)*Sw(i-1) - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);               
+          DSw(i) =  delta*V(i) + uv_grads_Sw - (lambda1 + LV(i) - MU_AGE(i))*Sw(i);               
           DSt(i) =  uv_grads + delta*V(i) - (lambda1 + LV(i) - MU_AGE(i))*St(i); 
           
           DEs(i) = LV(i-1)*Es(i-1) + lambda1*Ss(i) - (sigma + LV(i) - MU_AGE(i))*Es(i); 
