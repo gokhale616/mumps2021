@@ -66,10 +66,11 @@ abs_inc_plt <- (
 # y_max_inc <- max(mumps_incidence_rate_l$ac_inc_rate, na.rm = TRUE)
 
 
-anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nEpidemic", "", ""),
+anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nDecline", "", "Second\nEpidemic", "", ""),
                     label_2 = "Continued\nTransmission",
                     x_2 = 2013,
-                    x = c(1981, 1987, 2006, 2009, 2016), 
+                    x_lab = c(1981, 1987, 1998, 2000, 2006, 2009, 2016), 
+                    x = c(1981, 1987, 1993, 2003, 2006, 2009, 2016), 
                     y = 8.5, 
                     yend = 6)
 
@@ -91,8 +92,9 @@ inc_rate_plt <- (
                  arrow = arrow(length = unit(0.06, "npc")),
                  colour = "grey30") +
     geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
+    geom_segment(aes(x = 1993, xend = 2003, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 4, fontface = "bold") +
+              aes(label = label, x = x_lab, y = 12), colour = "grey30", size = 4, fontface = "bold") +
     geom_text(data = anno_data_2, 
               aes(label = label, x = x, y = 12), colour = "grey30", size = 4, fontface = "bold") +
     labs(y = expression(paste(Cases~Per~10^5, phantom(1000000))),

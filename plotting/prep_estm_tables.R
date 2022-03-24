@@ -75,7 +75,7 @@ mk_result_df <- function(c = 1, res = result_list) {
            hypothesis = hypo_covar, 
            p_intro    = p_intro,
            vacc_covariate = vacc) %.>% 
-    select(., -c(loglik, npar))
+    select(., -npar)
   
 }
 
@@ -86,8 +86,8 @@ all_result_df <- (
            d_AIC = AIC - min(AIC)) %.>% 
     mutate(., 
            best_fit_covar = ifelse(AIC == min(AIC), 1, 0)) %.>% 
-    ungroup(.) %.>% 
-    select(., -AIC)
+    ungroup(.) #%.>% 
+    #select(., -AIC)
 )
 
 
@@ -117,6 +117,8 @@ table_hypo_compare <- (
     spread(., key = hypothesis, value = Estimate) %.>% 
      mutate(., 
             Quantity = case_when(Quantity == "d_AIC"~"$\\Delta AIC$",
+                                 Quantity == "AIC"~"$AIC$",
+                                 Quantity == "loglik"~"$log\\big(\\mathcal{L}(\\Theta)\\big)$",
                                  Quantity == "R0"~"$R_0$",
                                  Quantity == "Rp"~"$R_p$",
                                  Quantity == "impact"~"$\\xi$",
@@ -131,7 +133,7 @@ table_hypo_compare <- (
       mutate(., `Parameter/Quantity` = Quantity) %.>% 
       select(., -Quantity) %.>% 
       select(., c(5, 2, 4, 3, 1)) %.>% 
-      slice(., c(2, 7, 8, 5, 1, 9, 3, 4, 6, 10, 11))
+      slice(., c(3, 1, 7, 9, 10, 6, 2, 11, 4, 5, 12, 13))
 )
 
 

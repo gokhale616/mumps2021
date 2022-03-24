@@ -222,7 +222,7 @@ vaccine_eff_PR_plot <- (
     facet_grid(cols = vars(age_cohort), scales  = "free_x") +
     continuous_scale(
       "color", "modified_palette",
-      mod_palette(target = pdwan_18*c(0.95, 1.05), range = vaccine_eff_plot_df$pdwan %.>% range(.)),
+      mod_palette(target = (pdwan_18+0.085)*c(0.91, 1.01), range = vaccine_eff_plot_df$pdwan %.>% range(.)),
       breaks = c(0, 0.25, 0.5, 0.75, 1),
       limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
