@@ -39,7 +39,7 @@ po_vacc_eff_with_booster <- (
 # )
 
 
-pdwan_18 <- 1-exp(-18/best_model_p_vec_vacc_eff["dwan"]) %.>% unname(.)
+pdwan_18 <- 1-exp(-14/best_model_p_vec_vacc_eff["dwan"]) %.>% unname(.)
 
 dwan_grid <- tibble(dwan = c(seq(1, 200, by = 1), best_model_p_vec_vacc_eff["dwan"])) %.>% arrange(., dwan)
 
@@ -172,7 +172,7 @@ vaccine_eff_plot_df <- (
     bind_rows(., vaccine_eff_4) %.>% 
     bind_rows(., vaccine_eff_5) 
   ) %.>% 
-  mutate(., pdwan = 1-exp(-18/dwan))
+  mutate(., pdwan = 1-exp(-14/dwan))
 
 
   
@@ -190,7 +190,7 @@ rect_anno_data <- (
 line_anno_data <- (
   vaccine_eff_plot_df %.>% 
     filter(., comp_exp == "PR") %.>% 
-    filter(., pdwan == 1-exp(-18/111)) %.>% 
+    filter(., pdwan == 1-exp(-14/111)) %.>% 
     select(., year, count, age_cohort)
 )
 
@@ -222,7 +222,7 @@ vaccine_eff_PR_plot <- (
     facet_grid(cols = vars(age_cohort), scales  = "free_x") +
     continuous_scale(
       "color", "modified_palette",
-      mod_palette(target = (pdwan_18+0.085)*c(0.91, 1.01), range = vaccine_eff_plot_df$pdwan %.>% range(.)),
+      mod_palette(target = (pdwan_18+0.06)*c(0.91, 1.01), range = vaccine_eff_plot_df$pdwan %.>% range(.)),
       breaks = c(0, 0.25, 0.5, 0.75, 1),
       limits = c(0, 1),
       guide = guide_colourbar(nbin = 100, 
@@ -239,8 +239,7 @@ vaccine_eff_PR_plot <- (
           legend.key.size = unit(10, 'pt')  
           ) +
     guides(fill = guide_legend(nrow = 1, 
-                               title.position = "top", 
-                               override.aes = list(alpha = 1))
+                               title.position = "top")
            )
   
 )
@@ -248,7 +247,7 @@ vaccine_eff_PR_plot <- (
 vaccine_eff_data_for_plot <- (
   vaccine_eff %.>% 
   filter(., year == max(year) & comp_exp == "Itp") %.>%
-  mutate(., pdwan = 1-exp(-18/dwan))
+  mutate(., pdwan = 1-exp(-14/dwan))
   ) 
 
 
@@ -304,7 +303,7 @@ cal_var_impact <- function(count = 30, dwan_data = dwan_grid) {
   tibble(impact = impact, 
          Rp = Rp,
          dwan = dwan_val, 
-         pdwan = 1-exp(-18/dwan))
+         pdwan = 1-exp(-14/dwan))
   
 }
 

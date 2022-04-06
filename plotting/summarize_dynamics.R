@@ -341,8 +341,7 @@ Reff_plot <- (
     project_theme +
     coord_capped_cart(bottom='both', left = "both",  right='both') +
     guides(colour = guide_legend(nrow = 2), 
-           fill = guide_legend(nrow = 2, 
-                               override.aes = list(alpha = 1)))
+           fill = guide_legend(nrow = 2))
 )
 
 
