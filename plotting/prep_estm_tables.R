@@ -26,7 +26,7 @@ result_list <- (
 # hard coding some parameter values for use downstream within estimation of R0s and Rps
 # calculate the reproductive numbers 
 params_for_R0 <- c(N = 100e6, nu = 1/80, p = 0, ad = age_class_duration)
-params_for_Rp <- c(N = 100e6, nu = 1/80, p = 1, ad = age_class_duration)
+params_for_Rp <- c(N = 100e6, nu = 1/80, p = 0.917, ad = age_class_duration)
 
 
 mk_result_df <- function(c = 1, res = result_list) {
@@ -332,7 +332,7 @@ CI_kbl <- (
       digits = 4, 
       linesep = "",
       booktabs = T, 
-      format = "html", 
+      format = "latex", 
       caption = "Model specific 95% Bootstraped Confidence Intervals", 
       escape = FALSE) %.>% 
   kable_styling(.,
