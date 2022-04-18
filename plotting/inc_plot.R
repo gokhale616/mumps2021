@@ -69,14 +69,14 @@ abs_inc_plt <- (
 anno_data <- tibble(label = c("Initial\nDecline", "First\nEpidemic", "Second\nDecline", "", "Second\nEpidemic", "", ""),
                     label_2 = "Continued\nTransmission",
                     x_2 = 2013,
-                    x_lab = c(1981, 1987, 1998, 2000, 2006, 2009, 2016), 
-                    x = c(1981, 1987, 1993, 2003, 2006, 2009, 2016), 
+                    x_lab = c(1980, 1987, 1998, 2000, 2006, 2011, 2016), 
+                    x = c(1980, 1987, 1993, 2003, 2006, 2011, 2018), 
                     y = 8.5, 
                     yend = 6)
 
 
 anno_data_2 <- tibble(label = "Continued\nTransmission",
-                      x = 2013, 
+                      x = 2015, 
                       y = 8.5, 
                       yend = 6)
 
@@ -91,22 +91,19 @@ inc_rate_plt <- (
                  aes(x = x, xend = x, y = y, yend = yend), 
                  arrow = arrow(length = unit(0.06, "npc")),
                  colour = "grey30") +
-    geom_segment(aes(x = 2008.95, xend = 2016.05, y = 8.49, yend = 8.49), colour = "grey30") +
+    geom_segment(aes(x = 2010.95, xend = 2018.05, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_segment(aes(x = 1993, xend = 2003, y = 8.49, yend = 8.49), colour = "grey30") +
     geom_text(data = anno_data, 
-              aes(label = label, x = x_lab, y = 12), colour = "grey30", size = 4, fontface = "bold") +
+              aes(label = label, x = x_lab, y = 12), colour = "grey30", size = 5, fontface = "bold") +
     geom_text(data = anno_data_2, 
-              aes(label = label, x = x, y = 12), colour = "grey30", size = 4, fontface = "bold") +
+              aes(label = label, x = x, y = 12), colour = "grey30", size = 5, fontface = "bold") +
     labs(y = expression(paste(Cases~Per~10^5, phantom(1000000))),
          x = "") +
-    scale_x_continuous(#expand = c(0.000, 0.000), 
-      breaks = gen_x_breaks) + 
+    scale_x_continuous(breaks = gen_x_breaks) + 
     scale_y_continuous(breaks = c(0, 3, 6, 9, 12), limits = c(0, 15)) +
     project_theme +
-    # theme(axis.text.x = element_blank()) +
     cap_axes() +
     theme(text = element_text(size = unit(n_size, "pt")), 
-          #axis.title = element_text(size = 8.5),
           plot.margin = unit(rep(mar_val, 4), "cm")
           ) 
 )

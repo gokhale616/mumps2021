@@ -67,7 +67,8 @@ fit_plot <- (
            fill = guide_legend(title.position = "top", ncol = 1, order = 2, 
                                override.aes = list(alpha = 1))) +
     theme(text = element_text(size = unit(n_size, "pt")), 
-          axis.text.x = element_text(angle = 90, vjust = 0.5))
+          axis.text.x = element_text(angle = 90, vjust = 0.5), 
+          panel.spacing = unit(0.8, "lines"))
   )
   
 
@@ -113,7 +114,7 @@ Rsq_fit_plot <- (
     geom_smooth(aes(x = `0.5`, y = `0.5_sim`, colour = sample, fill = year), method = "lm", se = FALSE) +
     facet_grid(rows = vars(age_class), 
                scales = "fixed") +
-    geom_text(data = Rsq_data, aes(x = 0.95, y = 3.65, label = paste0("R^2 == ",
+    geom_text(data = Rsq_data, aes(x = 0.95, y = 3.75, label = paste0("R^2 == ",
                                                                    round(`in-sample`, 0) %.>%
                                                                      as.character(.), "*\`%\`")),
               size = 6,
@@ -128,7 +129,7 @@ Rsq_fit_plot <- (
     labs(x = expression(log[10](Observed~Cases)), 
          y = expression(log[10](Median~Simulated~Cases)), 
          fill = "Year") +
-    scale_x_continuous(breaks  = c(0, 1, 2, 3, 4), limits = c(0,4)) +
+    scale_x_continuous(breaks  = c(0, 1, 2, 3, 4), limits = c(0,4.5)) +
     scale_fill_gradient(low = "white", high = "grey30", 
                         limits = c(1977, 2018), breaks = c(1977, 1997, 2018)) +
     scale_colour_manual(values = model_col, 
@@ -142,7 +143,9 @@ Rsq_fit_plot <- (
                                  direction = "horizontal"),
            colour = guide_legend(title.position = "top", ncol = 1)) +
     theme(text = element_text(size = unit(n_size, "pt")), 
-          axis.text.x = element_text(angle = 90, vjust = 0.5)) 
+          axis.text.x = element_text(angle = 90, vjust = 0.5), 
+          panel.spacing = unit(0.8, "lines")
+          ) 
   )
 
 

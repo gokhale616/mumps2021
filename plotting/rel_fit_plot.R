@@ -88,12 +88,12 @@ sim_all_models <- map_dfr(1:nrow(sim_from_these_tibble),
                             
                           })
 
-hypo_factor_order <- c("No Loss", "Waning (Exponential)", "Waning (Erlang, N = 3)", "Leaky")
+hypo_factor_order <- c("No Loss", "Waning (Exponential)", "Waning (Erlang, x = 3)", "Leaky")
 
 
 sim_all_models %<>% 
   mutate(., hypothesis = case_when(hypothesis == "waning"~ "Waning (Exponential)", 
-                                   hypothesis == "gwaning" ~ "Waning (Erlang, N = 3)",
+                                   hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
                                    hypothesis == "leaky2" ~ "Leaky", 
                                    hypothesis == "noloss" ~ "No Loss") %.>% 
            factor(., levels = hypo_factor_order)
@@ -106,7 +106,7 @@ anno_d_AIC <- (
     select(., hypothesis, d_AIC) %.>% 
     mutate(., 
            hypothesis = case_when(hypothesis == "waning"~ "Waning (Exponential)", 
-                                  hypothesis == "gwaning" ~ "Waning (Erlang, N = 3)",
+                                  hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
                                   hypothesis == "leaky2" ~ "Leaky", 
                                   hypothesis == "noloss" ~ "No Loss") %.>% 
              factor(., levels = hypo_factor_order),
@@ -145,11 +145,11 @@ rel_fit_plt <- (
          fill = "Prediction\nIntervals") +
     scale_colour_manual(values = c("Observed" = "grey30", 
                                    "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                   "Waning (Erlang, N = 3)" = "#003973", 
+                                   "Waning (Erlang, x = 3)" = "#003973", 
                                    "Leaky" = "#FF416C"), 
                         breaks = c("Observed", .$hypothesis %.>% levels(.))) +
     scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                 "Waning (Erlang, N = 3)" = "#003973", 
+                                 "Waning (Erlang, x = 3)" = "#003973", 
                                  "Leaky" = "#FF416C")) +
     project_theme +
     cap_axes() +

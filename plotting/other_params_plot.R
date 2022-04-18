@@ -32,10 +32,10 @@ aux_params <- (
                                 aux_param == "psi" ~ "psi") %.>% as_factor(.), 
            hypothesis =  case_when(hypothesis == "noloss" ~ "No Loss", 
                                    hypothesis == "waning" ~ "Waning\n(Exponential)", 
-                                   hypothesis == "gwaning" ~ "Waning\n(Erlang, N = 3)", 
+                                   hypothesis == "gwaning" ~ "Waning\n(Erlang, x = 3)", 
                                    hypothesis == "leaky2" ~ "Leaky") %.>% 
              factor(., levels = c("No Loss", "Waning\n(Exponential)", 
-                                  "Waning\n(Erlang, N = 3)", "Leaky"))) %.>% 
+                                  "Waning\n(Erlang, x = 3)", "Leaky"))) %.>% 
     select(., -param)
   )
 
