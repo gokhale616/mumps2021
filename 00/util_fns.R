@@ -97,6 +97,7 @@ sim_obs_model <- function(po_obj, params, times,
                           nsim, method = "ode23", 
                           summarise_obs_process = TRUE, 
                           root_transform = TRUE, 
+                          give_sys_soln = FALSE,
                           quantile_prob = c(0.025, 0.5, 0.975), 
                           quantile_prob_names = c("0.025", "0.5", "0.975")) {
     
@@ -105,6 +106,7 @@ sim_obs_model <- function(po_obj, params, times,
     # solve the ode system
     soln_array <- po_obj %.>% 
       trajectory(., params = params, method = method, format = "array") 
+    
     
     # simulate the obs process - this is an 3D array 
     obs_soln_array <- po_obj %.>%
@@ -171,8 +173,45 @@ sim_obs_model <- function(po_obj, params, times,
         fin_result <- result_df_l
       
     }
+    
+    
+    
+    if(give_sys_soln == TRUE) {
+      # treat and add soln data to make life more wholesome 
+      soln_data <- (
+        soln_array %.>%
+          do.call(rbind, lapply(1:1, function(x) {t(soln_array[,x,])})) %.>%
+          as_tibble(.) %.>% 
+          mutate(., 
+                 `.id` = 1,
+                 year = time(po_obj)) %.>% 
+          select(., year, `.id`, starts_with("C")) %.>%
+          prep_as_plot_trajectory(., init_year = 1975) %.>%  
+          # adding a dummy age class of unstructured true cases
+          bind_rows(., 
+                    tibble(year = time(po_obj), 
+                           comp_exp = "C", 
+                           age_cohort = age_names_u[6], 
+                           count = NA
+                           )
+                    ) %.>%
+          arrange(., year) %.>% 
+          transmute(., 
+                    year = year, 
+                    age_class = age_cohort, 
+                    sys_soln = ifelse(year == 1976, NA, count))
+        )
+    
+      fin_fin_result <- right_join(fin_result, soln_data, by = c("year", "age_class"))
+    } else {
       
-    fin_result
+      fin_fin_result <- fin_result
+      
+    }
+    
+      
+    fin_fin_result
+    
   
 }
  

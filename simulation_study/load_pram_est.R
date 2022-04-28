@@ -38,7 +38,7 @@ mk_result_df <- function(c = 1, res = result_list) {
   
   if(length(extra_params) == 3) {
     hypo_covar <- extra_params[1]
-    p_intro    <- extra_params[2] %.>% as.numeric(.)
+    p_intro    <- (extra_params[2] %.>% as.numeric(.))-1
     vacc       <- extra_params[3]
   } else {
     hypo_covar <- extra_params[1]
@@ -75,7 +75,7 @@ mk_result_df <- function(c = 1, res = result_list) {
            hypothesis = hypo_covar, 
            p_intro    = p_intro,
            vacc_covariate = vacc) %.>% 
-    select(., -c(loglik, npar))
+    select(., -c(npar))
   
 }
 
@@ -86,6 +86,5 @@ all_result_df <- (
            d_AIC = AIC - min(AIC)) %.>% 
     mutate(., 
            best_fit_covar = ifelse(AIC == min(AIC), 1, 0)) %.>% 
-    ungroup(.) %.>% 
-    select(., -AIC)
+    ungroup(.) 
 )

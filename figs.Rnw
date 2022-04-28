@@ -169,6 +169,13 @@ plot(rel_fit_plt)
 @
 
 
+<<rel_case_ditn_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[2]>>=
+
+plot(rel_case_distn_plt)
+
+@
+
+
 <<aux_param_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capAuxParamplot', out.width = outwidth[3]>>=
 
 plot(aux_para_plot)
