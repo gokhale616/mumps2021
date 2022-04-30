@@ -23,12 +23,14 @@ result_list <- (
   )
 )
 
+#mumps_covariates %>% filter(., year > 2008) %.>% select(., p2) %.>% unlist(.) %.>% mean(.)
+#mumps_covariates %>% filter(., year > 2008) %.>% select(., p1) %.>% unlist(.) %.>% mean(.)
 # hard coding some parameter values for use downstream within estimation of R0s and Rps
 # calculate the reproductive numbers 
-params_for_R0 <- c(N = 100e6, nu = 1/80, p = 0, ad = age_class_duration)
-params_for_Rp <- c(N = 100e6, nu = 1/80, p = 0.917, ad = age_class_duration)
+params_for_R0 <- c(N = 100e6, nu = 1/80, p1 = 0, p2 = 0, ad = age_class_duration)
+params_for_Rp <- c(N = 100e6, nu = 1/80, p1 = 0.917, p2 = 0.916, ad = age_class_duration)
 
-
+# this is a convenience function that brings all the the results to gether for a table
 mk_result_df <- function(c = 1, res = result_list) {
   # to look into the function at a specific iteration
   # if (c == 20) {browser()}
@@ -38,7 +40,7 @@ mk_result_df <- function(c = 1, res = result_list) {
   
   if(length(extra_params) == 3) {
     hypo_covar <- extra_params[1]
-    p_intro    <- extra_params[2] %.>% as.numeric(.)
+    p_intro    <- extra_params[2] %.>% as.numeric(.)-1
     vacc       <- extra_params[3]
   } else {
     hypo_covar <- extra_params[1]
@@ -46,9 +48,11 @@ mk_result_df <- function(c = 1, res = result_list) {
     vacc       <- extra_params[2]
   }
   
+  # browser()
+  
   if(hypo_covar == "gwaning") {
-    R0 <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_R0) %.>% 
-      calculate_R0_mq(.)$reprodutive_number 
+    R0 <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_R0) %.>%
+      calculate_R0_mq(.)$reprodutive_number
     
     Rp <- c(res[[c]]$DEobj$optim$bestmem %.>% sim_p_vals(.), params_for_Rp) %.>% 
       calculate_R0_mq(.)$reprodutive_number   
@@ -61,6 +65,7 @@ mk_result_df <- function(c = 1, res = result_list) {
   }
   
   
+  # browser()
   # collate results in a dataframe
   res[[c]]$DEobj$optim$bestmem %.>% 
     as.list(.) %.>% 

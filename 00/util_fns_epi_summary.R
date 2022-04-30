@@ -13,74 +13,12 @@ quick_select <- function(p_vect_data, pattern) {
 }
 
 
-# this functions calculates the pre-requisites for the next generation operator analysis - exponential waning model
+# this functions calculates the pre-requisites for the next generation operator analysis - 
+# exponential waning model - NEW VERSION CONATAINS 2 VACCINE DOSES
 gather_R0_prereqs <- function(p_vals) {
   
   with(as.list(p_vals), {
-  
-  # definitions for convenience
-  Births <- (nu*N)  
-  delta <- (1/dwan)  
-  
-  p_vals_as_data <- (
-    p_vals %.>% 
-    as.list(.) %.>% 
-    as_tibble(.))
-  
-  # age specific poi given contact
-  q_mult <- (
-    p_vals_as_data %.>% 
-    quick_select(., pattern = "q_age")
-    )
-  
-  
-  # convert age duration to aging rates
-  omega_mult <- 1/(
-    p_vals_as_data %.>% 
-    quick_select(., pattern = "ad") 
-  ) %.>% setNames(., nm = sprintf("omega_%d", 1:5))
-  
-  # These variables are useful in calculating the 
-  # equilibria near the disease free states 
-  # (omega_i + delta)
-  omega_mult_delta <- (omega_mult + delta)
-  # omega_{i-1}
-  omega_mult_1 <- c(1, omega_mult[1:4])
-  # \prod_{k = 1}^i \frac{omega_{i-1}}{(omega_i + delta)}
-  omega_mult_delta_cum_prod <- cumprod(omega_mult_1/omega_mult_delta)
-  # \sum_{l = 1}^k \prod_{k = 1}^i \frac{omega_{i-1}}{(omega_i + delta)}
-  omega_mult_delta_cum_prod_sum <- cumsum(omega_mult_delta_cum_prod)
-  
-  # Three state variables at their disease free equilibrium
-  S_de  <- (1-(1-alpha)*p)*Births/omega_mult %.>% setNames(., nm = sprintf("S_de%d", 1:5))
-  V_de  <- (1-alpha)*p*Births*omega_mult_delta_cum_prod %.>% setNames(., nm = sprintf("V_de%d", 1:5))
-  Sv_de <- (1-alpha)*p*Births*(delta/omega_mult)*omega_mult_delta_cum_prod_sum %.>% 
-    setNames(., nm = sprintf("Sv_de%d", 1:5))
-  
-  
-  # Contact matrix
-  C_mat <- (
-    p_vals_as_data %.>% 
-      quick_select(., pattern = "Cv") %.>% 
-      matrix(., nrow = 5)
-  )
-
-  list(q_vec = q_mult, omega_vec = omega_mult, 
-       S_de = S_de, V_de = V_de, Sv_de = Sv_de, 
-       N_vec = S_de + V_de + Sv_de,
-       C_mat = C_mat, delta = delta 
-       )
-  
-  })
-  
-}
-
-
-# this functions calculates the pre-requisites for the next generation operator analysis - gamma waning model
-gather_R0_prereqs_gamma <- function(p_vals) {
-  
-  with(as.list(p_vals), {
-    
+    # browser()
     # definitions for convenience
     Births <- (nu*N)  
     delta <- (1/dwan)  
@@ -105,31 +43,39 @@ gather_R0_prereqs_gamma <- function(p_vals) {
     
     # These variables are useful in calculating the 
     # equilibria near the disease free states 
-    # (omega_i + 3*delta)
-    omega_mult_3delta <- (omega_mult + 3*delta)
+    # (omega_i + delta)
+    omega_mult_delta <- (omega_mult + delta)
     # omega_{i-1}
     omega_mult_1 <- c(1, omega_mult[1:4])
     
-    # \prod_{k = 1}^i \frac{omega_{i-1}}{(omega_i + 3*delta)}
-    omega_mult_3delta_cum_prod <- cumprod(omega_mult_1/omega_mult_3delta)
     
-    # \prod_{k = 1}^i \frac{omega_{i-1}}{(omega_i + 3*delta)^2}
-    omega_mult_3delta_square_cum_prod <- cumprod(omega_mult_1/(omega_mult_3delta)^2)
+    # calculate the equilibria for the state variables 
+    ev1 <- (1-alpha)*p1
+    ev2 <- (1-alpha)*p2
     
-    # \sum_{l = 1}^k \prod_{k = 1}^i \frac{omega_{i-1}}{(omega_i + delta)^2}
-    omega_mult_3delta_square_cum_prod_sum <- cumsum(omega_mult_3delta_square_cum_prod)
+    # set three empty vectors to fill with the endemic equilibria 
+    S_de <- rep(NA, 5) %.>% setNames(., nm = sprintf("S_de%d", 1:5))
+    V_de <- rep(NA, 5) %.>% setNames(., nm = sprintf("V_de%d", 1:5))
+    Sv_de <- rep(NA, 5) %.>% setNames(., nm = sprintf("Sv_de%d", 1:5))
     
-    # Five state variables at their disease free equilibrium
-    S_de  <- (1-(1-alpha)*p)*Births/omega_mult %.>% setNames(., nm = sprintf("S_de%d", 1:5))
-    V1_de <- (1-alpha)*p*Births*omega_mult_3delta_cum_prod %.>% setNames(., nm = sprintf("V1_de%d", 1:5))
-    V2_de <- 3*delta*(1-alpha)*p*Births*omega_mult_3delta_cum_prod %.>% 
-      setNames(., nm = sprintf("V2_de%d", 1:5)) 
-    V3_de <- (3*delta)^2*(1-alpha)*p*Births*omega_mult_3delta_square_cum_prod %.>% 
-      setNames(., nm = sprintf("V3_de%d", 1:5))
+    # fill in the values ------
+    # [0,5)
+    S_de[1]  <- (1-ev1)*Births/omega_mult[1]
+    V_de[1]  <- ev1*Births/omega_mult_1[1]
+    Sv_de[1] <- (delta/omega_mult[1])*V_de[1]
+    # [5,15)
+    S_de[2]  <- (1-ev2)*omega_mult[1]/omega_mult[2]*S_de[1] 
+    V_de[2]  <- ev2*omega_mult_1[1]/omega_mult_delta[2]*S_de[1]
+    Sv_de[2] <- (delta*V_de[2] + omega_mult[1]*Sv_de[1])/omega_mult[2]
     
-    Sv_de <- (3*delta/omega_mult)*(1-alpha)*p*Births*omega_mult_3delta_square_cum_prod_sum %.>% 
-      setNames(., nm = sprintf("Sv_de%d", 1:5))
-    
+    # [15, 25), [25, 40), >40
+    for(i in 3:5) {
+      
+      S_de[i]  <- omega_mult[i-1]/omega_mult[i]*S_de[i-1]
+      V_de[i]  <- omega_mult[i-1]/omega_mult_delta[i]*V_de[i-1]
+      Sv_de[i] <- (delta*V_de[i] + omega_mult[i-1]*Sv_de[i-1])/omega_mult[i]  
+      
+    }
     
     # Contact matrix
     C_mat <- (
@@ -139,9 +85,8 @@ gather_R0_prereqs_gamma <- function(p_vals) {
     )
     
     list(q_vec = q_mult, omega_vec = omega_mult, 
-         S_de = S_de, V1_de = V1_de, V2_de = V2_de, V3_de = V3_de, 
-         Sv_de = Sv_de, 
-         N_vec = S_de + V1_de + V2_de + V3_de + Sv_de,
+         S_de = S_de, V_de = V_de, Sv_de = Sv_de, 
+         N_vec = S_de + V_de + Sv_de,
          C_mat = C_mat, delta = delta 
     )
     
@@ -235,7 +180,7 @@ calculate_R0_mq <- function(p_vals) {
     R0 <- max(eigen(K_mat)$values)
     
     other_output <- eigen(K_mat) 
-    
+    # browser()
     list(reprodutive_number = R0,
          F_mat = F_mat, V_mat = V_mat, K_mat = K_mat, 
          other_output = other_output)
@@ -246,89 +191,6 @@ calculate_R0_mq <- function(p_vals) {
 }
 
 
-calculate_R0_mq_gamma <- function(p_vals) {
-  
-  with(as.list(p_vals), {
-    # browser()
-    
-    # generate the pre-reqs for further analysis 
-    R0_prereq <- gather_R0_prereqs_gamma(p_vals = p_vals)
-    
-    # equilibrium states 
-    N   <- R0_prereq$N_vec
-    S   <- R0_prereq$S_de
-    V1  <- R0_prereq$V1_de
-    V2  <- R0_prereq$V2_de
-    V3  <- R0_prereq$V3_de
-    Sv  <- R0_prereq$Sv_de
-    
-    # aging rates
-    omega <- R0_prereq$omega_vec
-    # poi 
-    q <- R0_prereq$q_vec
-    # waning rate
-    delta <- R0_prereq$delta
-    
-    #contact matrix
-    Cmat <- R0_prereq$C_mat
-    
-    # Define emplty matrices of F and V to calculate the the NextGen Matrix  
-    NA_mat <- matrix(NA, nrow = nrow(C), ncol = ncol(C)) 
-    zero_mat <- matrix(0, nrow = nrow(C), ncol = ncol(C))
-    
-    
-    # Intialize 
-    F_mat_nz <- NA_mat
-    
-    # populate the F_mat  
-    for(i in seq_along(q)) {
-      for(j in seq_along(q)) {
-        F_mat_nz[i,j] <- q[i]*Cmat[i,j]*(S[i] + Sv[i] + epsilon2*(V1[i]+V2[i]+V3[i]))/N[j]
-      }
-    }
-    
-    # Calculate the non-zero block of the F_mat matrix
-    # Define the F matrix
-    F_mat = rbind(cbind(zero_mat, F_mat_nz), cbind(zero_mat, zero_mat))
-    
-    # Initialize the block matrices of the V matrix, (explain what hey are later) 
-    Vm1 <- NA_mat 
-    Vm2 <- zero_mat
-    Vm3 <- NA_mat
-    Vm4 <- NA_mat
-    
-    for(i in seq_along(q)) {
-      for(j in seq_along(q)) {
-        if(i == 1) {
-          Vm1[i,j] <-  (omega[i] + sigma)*dirac_delta(i,j)
-          Vm3[i,j] <- -sigma*dirac_delta(i,j)
-          Vm4[i,j] <-  (omega[i] + gamma)*dirac_delta(i,j)  
-        } else {
-          Vm1[i,j] <-  (omega[i] - omega[i-1] + sigma)*dirac_delta(i,j)
-          Vm3[i,j] <- -sigma*dirac_delta(i,j)
-          Vm4[i,j] <-  (omega[i] - omega[i-1] + gamma)*dirac_delta(i,j)  
-        }
-      }
-    }
-    
-    V_mat = rbind(cbind(Vm1, Vm2), cbind(Vm3, Vm4))
-    
-    # browser()
-    # calculate the next generation matrix
-    K_mat <- F_mat%*%solve(V_mat)
-    
-    R0 <- max(eigen(K_mat)$values)
-    
-    other_output <- eigen(K_mat) 
-    
-    list(reprodutive_number = R0,
-         F_mat = F_mat, V_mat = V_mat, K_mat = K_mat, 
-         other_output = other_output)
-    
-  })
-  
-  
-}
 
 
 # this function calculates the effective R0 for this system

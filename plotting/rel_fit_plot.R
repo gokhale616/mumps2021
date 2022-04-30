@@ -180,21 +180,22 @@ all_model_soln_data_w_covs <- (
            `dmeas_unknown` = dnorm(`obs_unknown`,  mean = m_u, sd = (sqrt(v_u)+1e-18), log = TRUE), 
            `dmeas_total`   = `dmeas_[0,5)` + `dmeas_[5,15)` + `dmeas_[15,25)` + `dmeas_[25,40)` + 
              `dmeas_>40` + `dmeas_unknown`) %.>%
-    select(., year, hypothesis, starts_with("dmeas")) %.>% 
+    select(., year, hypothesis, starts_with("dmeas")) #%.>% 
     #group_by(., hypothesis) %.>% 
-    transmute(., 
-              year = year, 
-              hypothesis = hypothesis, 
-              `loglik_[0,5)`   = cumsum(coalesce(`dmeas_[0,5)`, 0)), 
-              `loglik_[5,15)`  = cumsum(coalesce(`dmeas_[5,15)`, 0)),
-              `loglik_[15,25)` = cumsum(coalesce(`dmeas_[15,25)`, 0)),
-              `loglik_[25,40)` = cumsum(coalesce(`dmeas_[25,40)`, 0)),
-              `loglik_>40`     = cumsum(coalesce(`dmeas_>40`, 0)),
-              `loglik_unknown` = cumsum(coalesce(`dmeas_unknown`, 0)),
-              `loglik`         = cumsum(coalesce(`dmeas_total`, 0))
-              ) %.>% 
-    ungroup(.) %.>% 
-    mutate_all(., .funs = function(x) ifelse(x == 0, NA, x))
+    # transmute(., 
+    #           year = year, 
+    #           hypothesis = hypothesis, 
+    #           `loglik_[0,5)`   = cumsum(coalesce(`dmeas_[0,5)`, 0)), 
+    #           `loglik_[5,15)`  = cumsum(coalesce(`dmeas_[5,15)`, 0)),
+    #           `loglik_[15,25)` = cumsum(coalesce(`dmeas_[15,25)`, 0)),
+    #           `loglik_[25,40)` = cumsum(coalesce(`dmeas_[25,40)`, 0)),
+    #           `loglik_>40`     = cumsum(coalesce(`dmeas_>40`, 0)),
+    #           `loglik_unknown` = cumsum(coalesce(`dmeas_unknown`, 0)),
+    #           `loglik`         = cumsum(coalesce(`dmeas_total`, 0))
+    #           
+    #           ) %.>% 
+    # ungroup(.) %.>% 
+    # mutate_all(., .funs = function(x) ifelse(x == 0, NA, x))
            
     
   ) 
@@ -203,17 +204,19 @@ all_model_soln_data_w_covs <- (
 
 age_mod_cond_loglik <- (
   all_model_soln_data_w_covs %.>%
-  select(., -loglik) %.>% 
+  select(., -dmeas_total) %.>% 
   gather(., key = "age_class", value = "cond_loglik", -c(year, hypothesis)) %.>% 
   mutate(., 
-         age_class = factor(age_class %.>% str_sub(., start = 8), 
+         age_class = factor(age_class %.>% str_sub(., start = 7), 
                             levels = age_names_u), 
          hypothesis = case_when(hypothesis == "waning" ~ "Waning (Exponential)", 
                                 hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
                                 hypothesis == "leaky2" ~ "Leaky", 
                                 hypothesis == "noloss" ~ "No Loss") %.>% 
            factor(., levels = hypo_factor_order)
-         )
+         ) %.>% 
+    group_by(., hypothesis, age_class) %.>% 
+    ungroup(.)
   )
     
 
@@ -263,7 +266,7 @@ in_sample_obs_data <- (
     drop_na(.)
   )
 
-# ratio for he scondary 
+# ratio for the secondary axis
 sim_max <- sim_all_models$`0.90` %.>% max(., na.rm = TRUE)
 cond_loglik_max <- -age_mod_cond_loglik$cond_loglik %.>% max(., na.rm = TRUE)
 
@@ -275,31 +278,30 @@ rel_fit_plt <- (
     mutate(., 
            hypothesis = as_factor(hypothesis)) %.>% 
     ggplot(.) +
-    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed"), 
+    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed Cases"), 
               size = 1) +
-    geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
+    #geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
     geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
     geom_text(data = anno_d_AIC, aes(x = 1995, y = 175, label = paste0("Delta~AIC == ", 
                                                                        round(d_AIC, 2) %.>% 
                                                                          as.character(.))), 
               parse = TRUE) +
-    geom_line(data = age_mod_cond_loglik, 
-              aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), 
-              linetype = "dashed", size = 0.8) + 
+    geom_line(data = age_mod_cond_loglik %.>% na.omit(.), 
+              aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), size = 0.8) + 
     facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
     labs(x = "Year", 
          y = expression(sqrt(Cases)), 
-         colour = "Case\nTrajectory", 
+         colour = "Case Trajectory/\nLog Density", 
          fill = "Prediction\nIntervals") +
     scale_y_continuous(sec.axis = sec_axis(~.*sec_axis_ratio, 
-                                           name = expression(-Sigma~log(P(D[t]~`|`~Y[t-1],...,Y[1])))
+                                           name = expression(-log(P(D[t]~`|`~M[t])))
                                            )
                        )+
-    scale_colour_manual(values = c("Observed" = "grey30", 
+    scale_colour_manual(values = c("Observed Cases" = "grey30", 
                                    "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
                                    "Waning (Erlang, x = 3)" = "#003973", 
                                    "Leaky" = "#FF416C"), 
-                        breaks = c("Observed", .$hypothesis %.>% levels(.))) +
+                        breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
     scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
                                  "Waning (Erlang, x = 3)" = "#003973", 
                                  "Leaky" = "#FF416C")) +
