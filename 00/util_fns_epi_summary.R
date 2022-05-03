@@ -61,10 +61,10 @@ gather_R0_prereqs <- function(p_vals) {
     # fill in the values ------
     # [0,5)
     S_de[1]  <- (1-ev1)*Births/omega_mult[1]
-    V_de[1]  <- ev1*Births/omega_mult_1[1]
+    V_de[1]  <- ev1*Births/omega_mult_delta[1]
     Sv_de[1] <- (delta/omega_mult[1])*V_de[1]
     # [5,15)
-    S_de[2]  <- (1-ev2)*omega_mult[1]/omega_mult[2]*(S_de[1]+ Sv_de[1])
+    S_de[2]  <- (1-ev2)*omega_mult[1]/omega_mult[2]*(S_de[1])
     V_de[2]  <- omega_mult_1[1]/omega_mult_delta[2]*(ev2*(S_de[1]+Sv_de[1]) + V_de[1])
     Sv_de[2] <- (delta*V_de[2] + omega_mult[1]*(1-ev2)*Sv_de[1])/omega_mult[2]
     
