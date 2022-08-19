@@ -361,12 +361,87 @@ rel_case_distn_plt <- (
   
   
 
+if(FALSE){
+# relative fits to the data for the ppt
+rel_fit_plt_ppt <- (
+  sim_all_models %.>% 
+    mutate(., 
+           hypothesis = as_factor(hypothesis)) %.>% 
+    ggplot(.) +
+    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed Cases"), 
+              size = 1) +
+    #geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
+    geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
+    geom_text(data = anno_d_AIC, aes(x = 1995, y = 175, label = paste0("Delta~AIC == ", 
+                                                                       round(d_AIC, 2) %.>% 
+                                                                         as.character(.))), 
+              parse = TRUE) +
+    #geom_line(data = age_mod_cond_loglik %.>% na.omit(.), 
+    #          aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), size = 0.8) + 
+    facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
+    labs(x = "Year", 
+         y = expression(sqrt(Cases)), 
+         colour = "Case Trajectory/\nLog Density", 
+         fill = "Prediction\nIntervals") +
+    #scale_y_continuous(sec.axis = sec_axis(~.*sec_axis_ratio, 
+    #                                       name = expression(-log(P(D[t]~`|`~M[t])))
+    #)
+    #)+
+    scale_colour_manual(values = c("Observed Cases" = "grey30", 
+                                   "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
+                                   "Waning (Erlang, x = 3)" = "#003973", 
+                                   "Leaky" = "#FF416C"), 
+                        breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
+    scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
+                                 "Waning (Erlang, x = 3)" = "#003973", 
+                                 "Leaky" = "#FF416C")) +
+    project_theme +
+    cap_axes(right = "both") +
+    guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
+           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
+)
 
 
+use_these_mods <- sim_all_models %.>% select(., hypothesis) %.>% unlist(.) %.>% unique(.)[c(2, 3)]
 
-
-
-
+# relative fits to the data - for the ppt 
+rel_fit_plt_ppt_two_mods <- (
+  sim_all_models %.>% 
+    mutate(., 
+           hypothesis = as_factor(hypothesis)) %.>% 
+    filter(., hypothesis %in% use_these_mods) %.>% 
+    ggplot(.) +
+    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed Cases"), 
+              size = 1) +
+    #geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
+    geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
+    geom_text(data = anno_d_AIC %.>% filter(., hypothesis %in% use_these_mods), 
+              aes(x = 1995, y = 175, label = paste0("Delta~AIC == ", round(d_AIC, 2) %.>% 
+                                                                         as.character(.))), 
+              parse = TRUE) +
+    geom_line(data = age_mod_cond_loglik %.>% na.omit(.) %.>% filter(., hypothesis %in% use_these_mods), 
+              aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), size = 0.8) + 
+    facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
+    labs(x = "Year", 
+         y = expression(sqrt(Cases)), 
+         colour = "Case Trajectory/\nLog Density", 
+         fill = "Prediction\nIntervals") +
+    scale_y_continuous(sec.axis = sec_axis(~.*sec_axis_ratio, 
+                                           name = expression(-log(P(D[t]~`|`~M[t])))
+    )
+    )+
+    scale_colour_manual(values = c("Observed Cases" = "grey30", 
+                                   "Waning (Exponential)" = "#11998e", 
+                                   "Leaky" = "#FF416C"), 
+                        breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
+    scale_fill_manual(values = c("Waning (Exponential)" = "#11998e", 
+                                 "Leaky" = "#FF416C")) +
+    project_theme +
+    cap_axes(right = "both") +
+    guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
+           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
+)
+}
 
   
   

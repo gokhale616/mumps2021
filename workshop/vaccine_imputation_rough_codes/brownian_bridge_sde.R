@@ -1,5 +1,7 @@
 source("../../00/src.R", chdir = TRUE)
 
+library(zoo)
+
 bb_stoc_stop <- Csnippet(
   "
   // make normal random draws for the Brownian bridge
@@ -59,7 +61,7 @@ state_names <- c("B", "r")
 
 rp_names <- c("k", "T", "b", "sigma_wn", "hack")
 
-rp_vals <- c(k = 0.2, `T` = 20, b = 0.85, sigma_wn = 365.25/100, hack = 0.45)
+rp_vals <- c(k = 0.2, `T` = 20, b = 0.85, sigma_wn = 365.25/30, hack = 0.45)
 
 
 bb_po <- (
@@ -77,7 +79,7 @@ bb_po <- (
   )
 
 
-loop_over <- seq(0, 5, by = 0.1)
+loop_over <- c(0.15, 0.35, 0.65, 1, 2.0, 3, 6)#seq(0.00, 5, length.out = 4)
 
 k_vals <- map_dfr(1:length(loop_over), 
                   function(c, k_vec = loop_over){
@@ -103,9 +105,9 @@ k_vals <- map_dfr(1:length(loop_over),
 
 k_vals_c <- k_vals %.>% 
   mutate(., bridge_curvature = case_when(
-    k < 1 ~ "convex", 
-    k > 1 ~ "concave", 
-    TRUE ~ "linear")
+    k < 1 ~ "Convex", 
+    k > 1 ~ "Concave", 
+    TRUE ~ "Linear")
     )
 
 
@@ -116,19 +118,46 @@ bb_traj <- k_vals_c %.>%
   filter(., state_var %in%c("year", "p"))
 
 
+
+bb_roll_median <- (
+  bb_traj %.>% 
+    select(., year, k, state_value) %.>%   
+    group_by(., k) %.>%   
+    summarize(.,
+              med_year_value = rollmedian(year, k = 53),
+              med_state_value = rollmedian(state_value, k = 53)*100) %.>% 
+    ungroup(.) %.>% 
+    filter(., 
+           med_year_value >= 0)
+    )
+  
+
 bb_traj %.>% 
-  ggplot(.,
-         aes(x = year, y = state_value, 
-             colour = bridge_curvature, group = k)) +
-  geom_line(size = 0.3) +
-  labs(x = "Year", 
-       y = "State value", 
-       colour = "Bridge\nCurvature") +
-  facet_wrap(.~state_var, scales = "free") +
-  scale_y_continuous(breaks = seq(0, 0.85, by = .17))+
-  scale_color_viridis_d() +
+  filter(., year >= 0) %.>% 
+  ggplot(.) +
+  geom_line(aes(x = year, y = state_value*100, 
+                colour = bridge_curvature, group = k), size = 0.5) +
+  geom_line(data = bb_roll_median, 
+            aes(x = med_year_value, y = med_state_value, group = k, 
+                linetype = "Annual"),
+            colour = "#71B280", 
+            size = 0.8)+
+  labs(y = "Vaccine coverage (%)", 
+       x = "Year", 
+       colour = "Bridge\nCurvature", 
+       linetype = "Simulated\nTrajectory") +
+  #facet_wrap(.~state_var, scales = "free") +
+  scale_y_continuous(breaks = seq(0, 85, by = 17), limits = c(0, 85))+
+  scale_color_viridis_d(option = "F") +
+  scale_linetype_manual(values = c("Weekly" = "solid", "Annual" = "dashed")) +
   project_theme +
-  cap_axes
+  cap_axes() +
+  guides(colour = guide_legend(title.position = "left", 
+                               nrow = 2), 
+         linetype = guide_legend(title.position = "left", 
+                                 nrow = 2, 
+                                 override.aes = list(colour = "black", 
+                                                     size = 0.5)))
 
 
 

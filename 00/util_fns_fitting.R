@@ -67,6 +67,15 @@ DE_traj_match <- function(param_constraints,
                     est = names(param_constraints$lower), 
                     params = params, fail.value = 1e20, 
                     ode_control = ode_control)
+    ) 
+  } else if(waning_distribution == "gamma_n2") {
+    pomp_objfun <- (
+      make_gamma_n_2_pomp(...) %.>% 
+        traj_objfun(.,
+                    est = names(param_constraints$lower),
+                    params = params, fail.value = 1e20,
+                    ode_control = ode_control)
+      
     )  
   } else {
       stop("Invalid waning rate distribution: use 'exp' or 'gamma'")

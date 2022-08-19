@@ -2,7 +2,7 @@
 # defining the model snippets for pomp -----------------------------------------------------------------------
 
 ##### deterministic skeleton - for estimation #####
-vseir_skel_est_gamma <- Csnippet("
+vseir_skel_est_gamma_n_2 <- Csnippet("
     // define  the 
     double delta = 1/dwan; 
 
@@ -23,8 +23,7 @@ vseir_skel_est_gamma <- Csnippet("
     const double *I2local = E2local+n;
     const double *V1local = I2local+n;
     const double *V2local = V1local+n;
-    const double *V3local = V2local+n;
-    const double *Clocal  = V3local+n;
+    const double *Clocal  = V2local+n;
     
     double *DSlocal  = &DS_1;
     double *DE1local = DSlocal+n;
@@ -33,8 +32,7 @@ vseir_skel_est_gamma <- Csnippet("
     double *DI2local = DE2local+n;
     double *DV1local = DI2local+n;
     double *DV2local = DV1local+n;
-    double *DV3local = DV2local+n;
-    double *DClocal  = DV3local+n;
+    double *DClocal  = DV2local+n;
     
     #define CM(J,K) Cvlocal[(J)+n*(K)]
     #define LV(K) lvlocal[(K)]
@@ -52,7 +50,6 @@ vseir_skel_est_gamma <- Csnippet("
     #define I2(K) I2local[(K)]
     #define V1(K) V1local[(K)]
     #define V2(K) V2local[(K)]
-    #define V3(K) V3local[(K)]
     #define C(K) Clocal[(K)]
     
     #define DS(K) DSlocal[(K)]
@@ -62,7 +59,6 @@ vseir_skel_est_gamma <- Csnippet("
     #define DI2(K) DI2local[(K)]
     #define DV1(K) DV1local[(K)]
     #define DV2(K) DV2local[(K)]
-    #define DV3(K) DV3local[(K)]
     #define DC(K)  DClocal[(K)]
     
     /* ===================================================================== */
@@ -131,15 +127,14 @@ vseir_skel_est_gamma <- Csnippet("
         double uv_births = (1-(1-alpha)*p1)*Births;
         double  v_births = (1-alpha)*p1*Births;
         
-        DS(i)  = uv_births + 3*delta*V3(i) - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);
-        DE1(i) = lambda1*(S(i) + epsilon1*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i);   
+        DS(i)  = uv_births + 2*delta*V2(i) - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);
+        DE1(i) = lambda1*(S(i) + epsilon1*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i);   
         DI1(i) = sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
-        DE2(i) = lambda2*(S(i) + epsilon2*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
+        DE2(i) = lambda2*(S(i) + epsilon2*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
         DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         
-        DV1(i) = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V1(i);
-        DV2(i) = 3*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V2(i);
-        DV3(i) = 3*delta*V2(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V3(i);
+        DV1(i) = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V1(i);
+        DV2(i) = 3*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V2(i);
       
       } else if (i == 1) {
         
@@ -162,15 +157,14 @@ vseir_skel_est_gamma <- Csnippet("
           double uv_grads = LV(i-1)*(1-(1-alpha)*p2)*S(i-1);
           double  v_grads = LV(i-1)*(1-alpha)*p2*S(i-1);
           
-          DS(i)  = uv_grads + 3*delta*V3(i) - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);               
-          DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
+          DS(i)  = uv_grads + 2*delta*V2(i) - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);               
+          DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
-          DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
+          DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
           
-          DV1(i) = v_grads + LV(i-1)*V1(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V1(i);
-          DV2(i) = LV(i-1)*V2(i-1) + 3*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V2(i);
-          DV3(i) = LV(i-1)*V3(i-1) + 3*delta*V2(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V3(i);
+          DV1(i) = v_grads + LV(i-1)*V1(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V1(i);
+          DV2(i) = LV(i-1)*V2(i-1) + 2*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V2(i);
       
       } else {
         
@@ -188,14 +182,13 @@ vseir_skel_est_gamma <- Csnippet("
           /* balance transition equations */
           /* ============================ */
           
-          DS(i)  = LV(i-1)*S(i-1)  + 3*delta*V3(i)    - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);             
-          DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
+          DS(i)  = LV(i-1)*S(i-1)  + 2*delta*V2(i)    - (lambda1 + lambda2 + LV(i) - MU_AGE(i))*S(i);             
+          DE1(i) = LV(i-1)*E1(i-1) + lambda1*(S(i) + epsilon1*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E1(i); 
           DI1(i) = LV(i-1)*I1(i-1) + sigma*E1(i) - (gamma + LV(i) - MU_AGE(i))*I1(i);
-          DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*(V1(i)+V2(i)+V3(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
+          DE2(i) = LV(i-1)*E2(i-1) + lambda2*(S(i) + epsilon2*(V1(i)+V2(i))) - (sigma + LV(i) - MU_AGE(i))*E2(i);
           DI2(i) = LV(i-1)*I2(i-1) + sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
-          DV1(i) = LV(i-1)*V1(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V1(i);
-          DV2(i) = LV(i-1)*V2(i-1) + 3*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V2(i);
-          DV3(i) = LV(i-1)*V3(i-1) + 3*delta*V2(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 3*delta + LV(i) - MU_AGE(i))*V3(i);
+          DV1(i) = LV(i-1)*V1(i-1) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V1(i);
+          DV2(i) = LV(i-1)*V2(i-1) + 2*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V2(i);
           
       }
       
@@ -208,7 +201,7 @@ vseir_skel_est_gamma <- Csnippet("
 
 
 ##### initial value distribution - for estimation #####
-vseir_init_est_gamma <- Csnippet("
+vseir_init_est_gamma_n_2 <- Csnippet("
   double *S = &S_1;
   double *E1 = &E1_1;
   double *I1 = &I1_1;
@@ -216,7 +209,6 @@ vseir_init_est_gamma <- Csnippet("
   double *I2 = &I2_1;
   double *V1 = &V1_1;
   double *V2 = &V2_1;
-  double *V3 = &V3_1;
   
   double *C = &C_1;
   
@@ -233,7 +225,6 @@ vseir_init_est_gamma <- Csnippet("
     
     V1[i]  = 0;
     V2[i]  = 0;
-    V3[i]  = 0;
     
     C[i]  = 0;
   }
@@ -241,11 +232,11 @@ vseir_init_est_gamma <- Csnippet("
 
 
 ##### parameter names ######
-state_names_est_gamma <- c(sprintf("S_%d",1:5), 
-                           sprintf("E1_%d",1:5), sprintf("I1_%d",1:5),
-                           sprintf("E2_%d",1:5), sprintf("I2_%d",1:5),
-                           sprintf("V1_%d",1:5), sprintf("V2_%d",1:5), sprintf("V3_%d",1:5), 
-                           sprintf("C_%d", 1:5))
+state_names_est_gamma_n_2 <- c(sprintf("S_%d",1:5), 
+                               sprintf("E1_%d",1:5), sprintf("I1_%d",1:5),
+                               sprintf("E2_%d",1:5), sprintf("I2_%d",1:5),
+                               sprintf("V1_%d",1:5), sprintf("V2_%d",1:5), 
+                               sprintf("C_%d", 1:5))
 
 
 
@@ -255,14 +246,14 @@ state_names_est_gamma <- c(sprintf("S_%d",1:5),
 # When extrapolating the simulation, default scale of simulation has been set to annual (temp_scale = 1)
 # This can of course be changed as required by passing arguments
 
-make_gamma_pomp <- function(..., 
+make_gamma_n_2_pomp <- function(..., 
                             start_t = 1800, 
                             extrapolate_simulation = FALSE, dt = 1/365.25,  
                             extra_start_t = 1900, extra_end_t = 2100, temp_scale = 1, 
                             covar, 
                             incidence_data = mumps_case_reports) {
   
-  message("Assuming gamma (n = 3) distributed waning rate.")
+  message("Assuming gamma (n = 2) distributed waning rate.")
   
   # changing the column names and subsetting to read into pomp
   mumps_inc_data <- (
@@ -289,8 +280,8 @@ make_gamma_pomp <- function(...,
       arrange(., year) %.>% 
       pomp(., 
            times = "year", t0 = start_t, 
-           skeleton = vectorfield(vseir_skel_est_gamma),
-           rinit = vseir_init_est_gamma,
+           skeleton = vectorfield(vseir_skel_est_gamma_n_2),
+           rinit = vseir_init_est_gamma_n_2,
            rmeasure = vseir_rmeas,
            dmeasure = vseir_dmeas,
            accumvars = c(sprintf("C_%d", 1:5)),
@@ -298,7 +289,7 @@ make_gamma_pomp <- function(...,
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 
                           sprintf("p%d", 1:2), "Births", "eta_a"),
-           statenames = state_names_est_gamma,
+           statenames = state_names_est_gamma_n_2,
            paramnames = param_names_est, ...)
       ) 
   
@@ -309,8 +300,8 @@ make_gamma_pomp <- function(...,
       mumps_inc_data %.>%
       pomp(., 
            times = "year", t0 = start_t, 
-           skeleton = vectorfield(vseir_skel_est_gamma),
-           rinit = vseir_init_est_gamma,
+           skeleton = vectorfield(vseir_skel_est_gamma_n_2),
+           rinit = vseir_init_est_gamma_n_2,
            rmeasure = vseir_rmeas,
            dmeasure = vseir_dmeas,
            accumvars = sprintf("C_%d", 1:5),
@@ -318,7 +309,7 @@ make_gamma_pomp <- function(...,
            covarnames = c(sprintf("N_%d", 1:5), sprintf("MU_%d", 1:5), 
                           sprintf("IN_%d", 1:5), sprintf("OUT_%d", 1:5), 
                           sprintf("p%d", 1:2), "Births", "eta_a"),
-           statenames = state_names_est_gamma,
+           statenames = state_names_est_gamma_n_2,
            paramnames = param_names_est, ...)
       ) 
     
