@@ -134,7 +134,7 @@ vseir_skel_est_gamma_n_2 <- Csnippet("
         DI2(i) = sigma*E2(i) - (gamma + LV(i) - MU_AGE(i))*I2(i) + iota_v[i];
         
         DV1(i) = v_births - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V1(i);
-        DV2(i) = 3*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V2(i);
+        DV2(i) = 2*delta*V1(i) - (epsilon1*lambda1 + epsilon2*lambda2 + 2*delta + LV(i) - MU_AGE(i))*V2(i);
       
       } else if (i == 1) {
         
