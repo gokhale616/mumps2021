@@ -13,7 +13,7 @@ lib_dep <- c("tidyverse", "furrr", "pbmcapply",
              "usmap",
              "readxl", "socialmixr", "ggthemes", 
              "DEoptim", "doParallel", "doRNG", "xtable", "scales",
-             "nloptr", 
+             "nloptr", "slider",
              "lemon", "wesanderson", "patchwork",
              "lubridate", "kableExtra")
 

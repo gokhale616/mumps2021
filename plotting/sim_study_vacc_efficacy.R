@@ -244,37 +244,53 @@ vaccine_eff_PR_plot <- (
   
 )
 
+# this function calculates the survivorship adjusted average duration of the immunity 
+avg_imm_dur_s <- function(dwan) {
+  dwan - (80*exp(-80/dwan))/(1-exp((-80/dwan)))
+}
+
+
 vaccine_eff_data_for_plot <- (
   vaccine_eff %.>% 
   filter(., year == max(year) & comp_exp == "Itp") %.>%
-  mutate(., pdwan = 1-exp(-14/dwan))
+  mutate(., 
+         pdwan = 1-exp(-14/dwan), 
+         adjusted_dwan = avg_imm_dur_s(dwan))
   ) 
 
 
 anno_point_vacc_eff_itp_data <- (
   vaccine_eff_data_for_plot %.>% 
-    filter(., pdwan == pdwan_18)
+    filter(., pdwan == pdwan_18) %.>% 
+    slice(., 1) %.>% 
+    select(., dwan, pdwan) %.>%
+    mutate(., adjusted_dwan = avg_imm_dur_s(dwan))
 )
+
+y_scale_ratio <- 3
+  
+
 
 # make incidence plot as a response to 
 vaccine_eff_Itp_plot <- (
     vaccine_eff_data_for_plot %.>% 
     ggplot(.) +
-    geom_area(aes(x = pdwan, y = count, fill = age_cohort), 
+    geom_area(aes(x = pdwan, y = count, fill = age_cohort),
               position="stack", stat="identity") +
-    geom_line(aes(x = pdwan, y = dwan*0.60), size = 1, colour = "grey30", 
+    geom_line(aes(x = pdwan, y = adjusted_dwan*y_scale_ratio), size = 1, colour = "grey30", 
               linetype = "dotdash") +
-    geom_segment(data = anno_point_vacc_eff_itp_data, 
-                 aes(x = pdwan, xend = pdwan, y = 0, yend = 33), 
+    geom_segment(data = anno_point_vacc_eff_itp_data,
+                 aes(x = pdwan, xend = pdwan, y = 0, yend = 33),
                  size = 0.4, colour = "#45a247", lineend = "round") +
-    geom_point(data = anno_point_vacc_eff_itp_data, 
-               aes(x = pdwan, y = dwan*0.60), 
+    geom_point(data = anno_point_vacc_eff_itp_data %.>% slice(., 1), 
+               aes(x = pdwan, y = adjusted_dwan*y_scale_ratio), 
                size = 2, pch = 21, fill = "white", colour = "#45a247") +
-    labs(y = expression(Equilibrium~Prevalence~per~10^5), 
+    labs(y = expression(atop(Equilibrium, Prevalence~per~10^5)), 
          fill = "Age Cohort", 
          x = "P(Immune Loss By Age 18)") +
-    scale_y_continuous(breaks = c(0, 40, 80, 120), limits = c(0, 130), 
-                       sec.axis = sec_axis(trans =  ~./0.60, expression(Immune~Duration~(Years)))) +
+    scale_y_continuous(breaks = c(0, 30, 60, 90, 120), limits = c(0, 130), 
+                       sec.axis = sec_axis(trans =  ~./y_scale_ratio, 
+                                           expression(atop(Survival~Adjusted,Immune~Duration~(Years))))) +
     scale_x_reverse(breaks = seq(0.1,1, by = 0.3), limits = c(1, 0.06)) +
     scale_fill_brewer(palette = "Oranges", direction = -1) +
     project_theme +
@@ -306,7 +322,6 @@ cal_var_impact <- function(count = 30, dwan_data = dwan_grid) {
          pdwan = 1-exp(-14/dwan))
   
 }
-
 
 
 var_vacc_imp <- map_dfr(1:nrow(dwan_grid), cal_var_impact)
@@ -368,6 +383,6 @@ vaccine_eff_panel_plt <- (
   )
 
 
-
+1-exp(-14/avg_imm_dur_s(37357.47))
 
 

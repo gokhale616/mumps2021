@@ -33,20 +33,22 @@ mumps_incidence_rate_l <- (
 
 
 
-y_max_abs <- max(mumps_case_reports_l$sqrt_total, na.rm = TRUE)
+# y_max_abs <- max(mumps_case_reports_l$sqrt_total, na.rm = TRUE)
 
 abs_inc_plt <- (
   mumps_case_reports_l %.>%
     drop_na(.) %.>% 
     ggplot(.,
-           aes(x = year, y = sqrt_cases)) +
+           aes(x = year, y = cases)) +
     geom_line(aes(colour = age_cohort), size = 0.8, alpha = 0.95) +
-    labs(y = expression(paste(sqrt(Cases), phantom(100))),
+    labs(y = expression(Cases+1, phantom(100)),
          x = "", colour = "Age\nCohort") +
-    scale_x_continuous(#expand = c(0.000, 0.000),
-                       breaks = gen_x_breaks) +
-    scale_y_continuous(#expand = c(0.0, 0),
-                       breaks = (y_max_abs*c(0, 0.25, 0.5, 0.75, 1)) %.>% floor(.)) +
+    scale_x_continuous(
+      breaks = gen_x_breaks) +
+    scale_y_continuous(trans = "log10", 
+                       labels = trans_format("log10", math_format(10^.x)), 
+                       limits = c(1, 1e5), 
+                       breaks = c(1e0, 1e1, 1e2, 1e3, 1e4, 1e5)) +
     scale_colour_manual(values = age_cols) +
     scale_fill_manual(values = age_cols) +
     project_theme +
@@ -55,12 +57,13 @@ abs_inc_plt <- (
     theme(text = element_text(size = unit(n_size, "pt")),
           #axis.title = element_text(size = 8.5), 
           plot.margin = unit(rep(mar_val, 4), "cm"), 
-          legend.position = c(0.65, 0.7),
+          legend.position = c(0.67, 0.83),
           #legend.key.height = unit(10, "pt")
-          ) +
+    ) +
+    annotation_logticks(sides = "l")  +
     guides(colour = guide_legend(title.position = "left", 
-                                 ncol = 3))
-  )
+                                 ncol = 4))
+)
 
 
 # y_max_inc <- max(mumps_incidence_rate_l$ac_inc_rate, na.rm = TRUE)
@@ -252,13 +255,36 @@ incidence_age_geog <- plot_grid(incidence_plt, map_grid_plt,
 
 
 if(FALSE) {
-incidence_line_plt <- mumps_case_reports_l %.>% 
-  ggplot(., aes(x = year, y = sqrt_cases)) +
-  geom_line(size = 0.8) +
-  labs(y = expression(sqrt(Cases)), 
-       x = "Year") +
-  facet_grid(rows = vars(age_cohort), scales = "free_y") +
-  project_theme
+#y_max_abs <- max(mumps_case_reports_l$total, na.rm = TRUE)  
+  
+  abs_inc_plt <- (
+    mumps_case_reports_l %.>%
+      drop_na(.) %.>% 
+      ggplot(.,
+             aes(x = year, y = cases)) +
+      geom_line(aes(colour = age_cohort), size = 0.8, alpha = 0.95) +
+      labs(y = expression(Cases, phantom(100)),
+           x = "", colour = "Age\nCohort") +
+      scale_x_continuous(#expand = c(0.000, 0.000),
+        breaks = gen_x_breaks) +
+      scale_y_continuous(trans = "log10",
+        #breaks = (y_max_abs*c(0, 0.25, 0.5, 0.75, 1)) %.>% floor(.)
+        ) +
+      scale_colour_manual(values = age_cols) +
+      scale_fill_manual(values = age_cols) +
+      project_theme +
+      # theme(axis.text.x = element_blank()) +
+      cap_axes() +
+      theme(text = element_text(size = unit(n_size, "pt")),
+            #axis.title = element_text(size = 8.5), 
+            plot.margin = unit(rep(mar_val, 4), "cm"), 
+            legend.position = c(0.65, 0.7),
+            #legend.key.height = unit(10, "pt")
+      ) +
+      guides(colour = guide_legend(title.position = "left", 
+                                   ncol = 3))
+  )
+
 }
 
 

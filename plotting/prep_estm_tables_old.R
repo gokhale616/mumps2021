@@ -2,7 +2,7 @@
 mle_result_path <- "../result_data/mle"
 
 list.files(path = mle_result_path, 
-           full.names = TRUE)[-29] %.>% 
+           full.names = TRUE)[-25] %.>% 
   lapply(., load,  envir = .GlobalEnv)
 
 
@@ -15,8 +15,6 @@ result_list <- (
   list(
     mle_gamma_waning_slow_is, mle_gamma_waning_sigmoid_is, 
     mle_gamma_waning_rapid_is, mle_gamma_waning_constant_is,
-    mle_gamma_n_2_waning_slow_is, mle_gamma_n_2_waning_sigmoid_is, 
-    mle_gamma_n_2_waning_rapid_is, mle_gamma_n_2_waning_constant_is,
     mle_waning_slow_is, mle_waning_sigmoid_is, mle_waning_rapid_is, mle_waning_constant_is,
     mle_leaky2_2_slow_is, mle_leaky2_2_sigmoid_is, mle_leaky2_2_rapid_is, mle_leaky2_2_constant_is,
     mle_leaky2_3_slow_is, mle_leaky2_3_sigmoid_is, mle_leaky2_3_rapid_is, mle_leaky2_3_constant_is,
@@ -90,7 +88,6 @@ mk_result_df <- function(c = 1, res = result_list) {
 all_result_df <- (
   map_dfr(1:length(result_list), mk_result_df) %.>% 
     mutate(., 
-           d_loglik = loglik - min(loglik),
            d_AIC = AIC - min(AIC)) %.>% 
     mutate(., 
            best_fit_covar = ifelse(AIC == min(AIC), 1, 0)) %.>% 
@@ -111,12 +108,11 @@ table_hypo_compare <- (
     mutate(., 
            p_intro = ifelse(p_intro == 3, "[15, 25)", p_intro),
            sigma = 365.25/sigma, 
-           hypothesis = case_when(hypothesis == "waning" ~ "Waning (Exponential)", 
-                                  hypothesis == "gwaning2" ~ "Waning (Erlang, n = 2)",  
-                                  hypothesis == "gwaning" ~ "Waning (Erlang, n = 3)",
+           hypothesis = case_when(hypothesis == "waning" ~  "Waning (Exponential)", 
+                                  hypothesis == "gwaning" ~  "Waning (Erlang, n = 3)", 
                                   hypothesis == "leaky2" ~  "Leaky", 
                                   hypothesis == "noloss" ~  "No Loss")) %.>% 
-    mutate_if(., is.numeric, function(x){round(x, digits = 2)}) %.>%   
+    mutate_if(., is.numeric, function(x){round(x, digits = 3)}) %.>%   
     mutate(., 
            vacc_covariate = str_to_title(vacc_covariate),
            hypothesis = str_to_title(hypothesis)) %.>% 
@@ -124,35 +120,55 @@ table_hypo_compare <- (
            key = "Quantity", value = "Estimate", 
            -c(hypothesis)) %.>% 
     spread(., key = hypothesis, value = Estimate) %.>% 
-    mutate(., 
-           Quantity = case_when(Quantity == "d_AIC"~"$\\Delta AIC$",
-                                Quantity == "AIC"~"$AIC$",
-                                Quantity == "d_loglik"~"$\\Delta log\\big(\\mathcal{L}(\\Theta)\\big)$",
-                                Quantity == "loglik"~"$log\\big(\\mathcal{L}(\\Theta)\\big)$",
-                                Quantity == "R0"~"$R_0$",
-                                Quantity == "Rp"~"$R_p$",
-                                Quantity == "impact"~"$\\xi$",
-                                Quantity == "beta1"~"$\\beta_1$", 
-                                Quantity == "sigma"~"$\\sigma^{-1}$ (Days)", 
-                                Quantity == "dwan"~ "$\\delta^{-1}$ (Years)",  
-                                Quantity == "epsilon2"~ "$\\epsilon$", 
-                                Quantity == "p_intro"~ "$p_{intro}$ (Age cohort)", 
-                                Quantity == "t_intro"~ "$t_{intro}$", 
-                                Quantity == "vacc_covariate"~ "Booster shape"
-                                )
-           ) %.>% 
+     mutate(., 
+            Quantity = case_when(Quantity == "d_AIC"~"$\\Delta AIC$",
+                                 Quantity == "AIC"~"$AIC$",
+                                 Quantity == "loglik"~"$log\\big(\\mathcal{L}(\\Theta)\\big)$",
+                                 Quantity == "R0"~"$R_0$",
+                                 Quantity == "Rp"~"$R_p$",
+                                 Quantity == "impact"~"$\\xi$",
+                                 Quantity == "beta1"~"$\\beta_1$", 
+                                 Quantity == "sigma"~"$\\sigma^{-1}$ (Days)", 
+                                 Quantity == "dwan"~ "$\\delta^{-1}$ (Years)",  
+                                 Quantity == "epsilon2"~ "$\\epsilon$", 
+                                 Quantity == "p_intro"~ "$p_{intro}$ (Age cohort)", 
+                                 Quantity == "t_intro"~ "$t_{intro}$", 
+                                 Quantity == "vacc_covariate"~ "Booster shape"
+                                 )) %.>% 
       mutate(., `Parameter/Quantity` = Quantity) %.>% 
       select(., -Quantity) %.>% 
-      select(., c(6, 2, 5, 3, 4, 1)) %.>% 
-      slice(., c(3, 4, 10, 11, 7, 2, 12, 5, 6, 13, 14))
+      select(., c(5, 2, 4, 3, 1)) %.>% 
+      slice(., c(3, 1, 7, 9, 10, 6, 2, 11, 4, 5, 12, 13))
 )
+
+
+make_table <- function(table_data) {
+  browser()
+  table_data %.>% 
+    kbl(., 
+        align = "c", 
+        digits = 4, 
+        booktabs = T, 
+        format = "latex", 
+        #caption = "Model specific parameter estimates and derived quantitities were obtained by maximizing the likelihood function", 
+        caption = "blah",
+        escape = FALSE) %.>% 
+    kable_styling(.,
+                  position='left', full_width = F,
+                  #latex_options=c('striped', 'hold_position', "scale_down"))%.>%
+                  latex_options=c('hold_position'))%.>%
+    add_header_above(., 
+                     bold = TRUE, 
+                     c(" " = 1, "Model" = 4)) #%.>% 
+    #landscape(.)
+}
 
 
 est_mle_kbl <- (
   table_hypo_compare %.>% 
   kbl(., 
       align = "c", 
-      digits = 3, 
+      digits = 4, 
       linesep = "",
       booktabs = T, 
       format = "latex", 
@@ -163,7 +179,7 @@ est_mle_kbl <- (
                  latex_options=c('striped', 'HOLD_position', "scale_down")) %.>%
   add_header_above(., 
                    bold = TRUE, 
-                   c(" " = 1, "Model" = 5))
+                   c(" " = 1, "Model" = 4))
   )
 
 
@@ -182,8 +198,7 @@ all_hypo_bootstrap_res <- (
   leaky2_bootstrap_res %.>% 
     bind_rows(., 
               waning_bootstrap_res) %.>% 
-    bind_rows(., gwaning_bootstrap_res) %.>%
-    bind_rows(., gwaning2_bootstrap_res) %.>%
+    bind_rows(., gwaning_bootstrap_res) %.>% 
     bind_rows(., noloss_bootstrap_res) %.>% 
     mutate_at(., 
               .vars = vars(starts_with("q_age_"), starts_with("rho_age_"), beta1, epsilon2), .funs = invlogit) %.>% 
@@ -191,7 +206,7 @@ all_hypo_bootstrap_res <- (
                               sigma, dwan, t_intro), .funs = exp) %.>% 
     # some modifications to avoid default conflicts downstream
     mutate(., 
-           dwan     = ifelse(hypo_name %in% c("waning", "gwaning", "gwaning2"), dwan, Inf), 
+           dwan     = ifelse(hypo_name %in% c("waning", "gwaning"), dwan, Inf), 
            epsilon2  = ifelse(hypo_name == "leaky2", epsilon2, 0), 
            t_intro  = ifelse(hypo_name == "leaky2", t_intro, 3000), 
            p_intro  = ifelse(hypo_name == "leaky2", 3, 6),
@@ -204,7 +219,7 @@ all_hypo_bootstrap_res <- (
 if(paste0(CI_result_path, "/all_hypo_bootstrap_res_quants.rds") == FALSE) {
   message("Preparing bootstrapped derived quatitites! Takes 40secs on 8cores")
   
-  plan(multiprocess, workers = (detectCores()-4)) 
+  plan(multiprocess)
   
   all_hypo_bootstrap_res_quants <- (
     future_map_dfr(1:nrow(all_hypo_bootstrap_res), function(x) {
@@ -289,9 +304,9 @@ all_hypo_CI_main <- (
                                "sigma", "dwan", "epsilon2", "p_intro", "t_intro")) %.>% 
     pivot_wider(., id_cols = Parameter, names_from = hypo_name, values_from = c("0.025", "0.975")) %.>%
     slice(., 6, 7, 4, 2, 3, 1, 8) %.>% 
-    select(., 1, 5, 10, 6, 11, 3, 8, 2, 7,4, 9) %.>% 
+    select(., 1, 4, 8, 5, 9, 2, 6, 3, 7) %.>% 
     mutate(.,
-           #`0.025_waning` = ifelse(Parameter == "dwan", 111.4, `0.025_waning`),
+           `0.025_waning` = ifelse(Parameter == "dwan", 111.4, `0.025_waning`),
            Parameter = case_when(Parameter == "R0"~"$R_0$",
                                     Parameter == "Rp"~"$R_p$",
                                     Parameter == "impact"~"$\\xi$",
@@ -305,17 +320,11 @@ all_hypo_CI_main <- (
               `2.5%1` = `0.025_noloss`, 
               `97.5%1` = `0.975_noloss`, 
               `2.5%2` = `0.025_waning`, 
-              `97.5%2` = `0.975_waning`,
-              `2.5%3` = `0.025_gwaning2`, 
-              `97.5%3` = `0.975_gwaning2`,
-              `2.5%4` = `0.025_gwaning`, 
-              `97.5%4` = `0.975_gwaning`,
-              `2.5%5` = `0.025_leaky2`, 
-              `97.5%5` = `0.975_leaky2`) %.>% 
-    mutate_at(.,
-              .vars = vars(c(starts_with("2.5"), starts_with("97.5"))),
-              .funs = function(x){round(x, 2)}
-              ) 
+              `97.5%2` = `0.975_waning`, 
+              `2.5%3` = `0.025_gwaning`, 
+              `97.5%3` = `0.975_gwaning`, 
+              `2.5%4` = `0.025_leaky2`, 
+              `97.5%4` = `0.975_leaky2`)
     
     
   )
@@ -328,7 +337,7 @@ CI_kbl <- (
       digits = 4, 
       linesep = "",
       booktabs = T, 
-      format = "html", 
+      format = "latex", 
       caption = "Model specific 95% Bootstraped Confidence Intervals", 
       escape = FALSE) %.>% 
   kable_styling(.,
@@ -336,8 +345,7 @@ CI_kbl <- (
                 latex_options=c('striped', 'HOLD_position', "scale_down")) %.>%
   add_header_above(., 
                    c(" " = 1, "No Loss" = 2, 
-                     "Waning (Exponential)" = 2, "Waning (Erlang, N = 2)" = 2, 
-                     "Waning (Erlang, N = 3)" = 2, "Leaky" = 2))
+                     "Waning (Exponential)" = 2, "Waning (Erlang, N = 3)" = 2, "Leaky" = 2))
 )
 
 

@@ -10,9 +10,9 @@ source("../prep_inc_data.R", chdir = TRUE)
 # load the param constraints to extract the parameter namaes
 source("../param_constraints.R", chdir = TRUE)
 
-# some minor setttings
+# some minor settings for the optimizer hyper parameter
 bs_n_cores <- detectCores()
-bs_nsim <- 1e3
+bs_nsim <- 5000
 optim_maxit <- 1e5
 optim_reltol <- 1e-5
 
@@ -24,7 +24,7 @@ RNGkind("L'Ecuyer-CMRG")
 mle_result_path <- "../../result_data/mle"
 
 list.files(path = mle_result_path, 
-           full.names = TRUE)[-25] %.>% 
+           full.names = TRUE)[-29] %.>% 
   lapply(., load,  envir = .GlobalEnv)
 
 
@@ -35,6 +35,8 @@ mle_waning_constant_is$Hypothesis <- "waning_constant"
 # form a single list of all of the result objects to loop over later
 result_list <- (
   list(
+    mle_gamma_n_2_waning_slow_is, mle_gamma_n_2_waning_sigmoid_is, 
+    mle_gamma_n_2_waning_rapid_is, mle_gamma_n_2_waning_constant_is,
     mle_gamma_waning_slow_is, mle_gamma_waning_sigmoid_is, 
     mle_gamma_waning_rapid_is, mle_gamma_waning_constant_is,
     mle_waning_slow_is, mle_waning_sigmoid_is, mle_waning_rapid_is, mle_waning_constant_is,
@@ -101,12 +103,16 @@ best_mle_df <- (
 
 # produce pomp pomp objects based on covar and type wanig distribution
 make_appropriate_pomp <- function(covar_name, hypo_name, 
-                                  incidence_data = in_sample_mumps_case_reports) {
+                                  incidence_data) {
+  # generate the appropriate pomp  object 
   # generate the appropriate pomp  object 
   if(covar_name == "constant") {
     if (hypo_name == "gwaning") {
       mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_constant, 
                                 incidence_data = incidence_data)
+    } else if (hypo_name == "gwaning2") {
+      mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_constant, 
+                                    incidence_data = incidence_data) 
     } else {
       mod_po <- make_pomp(covar = mod_mumps_covariates_constant, 
                           incidence_data = incidence_data)
@@ -115,6 +121,9 @@ make_appropriate_pomp <- function(covar_name, hypo_name,
     if (hypo_name == "gwaning") {
       mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_rapid, 
                                 incidence_data = incidence_data)
+    } else if (hypo_name == "gwaning2") {
+      mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_rapid, 
+                                    incidence_data = incidence_data)
     } else {
       mod_po <- make_pomp(covar = mod_mumps_covariates_rapid, 
                           incidence_data = incidence_data)
@@ -123,6 +132,9 @@ make_appropriate_pomp <- function(covar_name, hypo_name,
     if (hypo_name == "gwaning") {
       mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_sigmoidal, 
                                 incidence_data = incidence_data)
+    } else if (hypo_name == "gwaning2") {
+      mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_sigmoidal, 
+                                    incidence_data = incidence_data)  
     } else {
       mod_po <- make_pomp(covar = mod_mumps_covariates_sigmoidal, 
                           incidence_data = incidence_data)
@@ -131,6 +143,9 @@ make_appropriate_pomp <- function(covar_name, hypo_name,
     if (hypo_name == "gwaning") {
       mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_slow, 
                                 incidence_data = incidence_data)
+    } else if (hypo_name == "gwaning2") {
+      mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_slow, 
+                                    incidence_data = incidence_data)  
     } else {
       mod_po <- make_pomp(covar = mod_mumps_covariates_slow, 
                           incidence_data = incidence_data)
@@ -155,7 +170,8 @@ sim_traj_at_mle <- (
     covar_name <- sliced_res %.>% select(., vacc_covariate) %.>% unlist(.)
     
     
-    mod_po <- make_appropriate_pomp(covar_name = covar_name, hypo_name = hypo_name)
+    mod_po <- make_appropriate_pomp(covar_name = covar_name, hypo_name = hypo_name, 
+                                    incidence_data = in_sample_mumps_case_reports)
     
     
     # produce a vector of parameters to simulate from
@@ -181,12 +197,22 @@ sim_traj_at_mle <- (
   )
   
   
+# sim_traj_at_mle %.>%
+#   filter(., hypothesis == "gwaning2") %.>%
+#   gather(., key = "age", value = "cases", -c(year, `.id`, hypothesis, covar)) %.>%
+#   ggplot(., aes(x = year, y = cases, group = `.id`)) +
+#   geom_line()+
+#   facet_grid(rows = vars(age), scales = "free_y")
+  
+
+
 # setting the parameter names to estimate   
 param_to_est <- (
   list(
     leaky2 = param_range_leaky2$lower %.>% names(.),
     waning = param_range_waning$lower %.>% names(.),
     gwaning = param_range_waning$lower %.>% names(.),
+    gwaning2 = param_range_waning$lower %.>% names(.),
     noloss = hypo_ind_params$lower %.>% names(.))
   )
   
@@ -209,14 +235,14 @@ optim_wrpr <- function(par, fn) {
   
 }
 
+##############################################################################################################
+################ Following are series functions to execute trajectory matching protocols #####################
+##############################################################################################################
+
 # hypothesis independent parameters to be transformed
 indi_log_trans_param <- c(sprintf("psi_%s", c(1:5, "u")), "sigma")
 indi_logit_trans_param <-  c(sprintf("rho_age_%s", c(1:5, "u")), sprintf("q_age_%s", c(1:5)), "beta1")
 
-
-##############################################################################################################
-################ Following are series functions to execute trajectory matching protocols #####################
-##############################################################################################################
 
 ###### write a traj match protocol function for the noloss model ######
 trajmatch_protocol <- function(x, hypo_name, covar_name, 
@@ -226,15 +252,12 @@ trajmatch_protocol <- function(x, hypo_name, covar_name,
   # pick the i^{th} trajectory
   simulated_inc_data <- (
     sim_traj_at_mle %.>% 
-      filter(., `.id` == x & hypothesis == "noloss") %.>% 
+      filter(., `.id` == x & hypothesis == hypo_name) %.>% 
       select(., -c(`.id`, hypothesis, covar))
   )
   
-  # pick the right the parameter names to be estimated 
   param_to_est_int <- param_to_est[[hypo_name]]
   
-  
-  # make the pomp object for waning model 
   obj_fun <- (
     make_appropriate_pomp(covar_name = covar_name, 
                           hypo_name = hypo_name, 
@@ -279,4 +302,12 @@ trajmatch_protocol <- function(x, hypo_name, covar_name,
 
 CI_res_data_path <- "../../result_data/CI/"
 CI_res_path_fn <- function(fn) { paste0(CI_res_data_path, fn)}
+
+
+
+# new seed used for leaky2
+#set.seed(886747981)
+
+
+
 

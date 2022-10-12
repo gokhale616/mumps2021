@@ -247,13 +247,74 @@ if(dir.exists(path_dir) == FALSE) {
   
   save(summarized_traj, file = paste0(path_dir, "/summarized_traj.rds"))
   
+  # select the waning model lower and upper confidence bounds
+  
+  # assigning the q names for convenience
+  q_names <- sprintf("q_age_%d", 1:5)
+  # reassign the best param vec in order to simulate from the R0 confidence interval  
+  best_model_p_vec_lower <- best_model_p_vec_upper <- best_model_p_vec
+  
+  # summarize and extract confidence intervals on q
+  q_age_conf <- (
+    all_hypo_bootstrap_res_quants_l %.>% 
+      transmute(., 
+                hypo_name = hypo_name, 
+                Parameter = parameter, 
+                est_val = est_val) %.>% 
+      group_by(., hypo_name, Parameter) %.>%
+      summarise(., 
+                qs = quantile(est_val, c(0.025, 0.975), na.rm = TRUE), 
+                prob = c("0.025", "0.975"), 
+                .groups = 'drop') %.>% 
+      filter(., hypo_name == "waning" & Parameter %in% q_names) %.>% 
+      select(., -hypo_name) %.>% 
+      spread(., key = Parameter, value = qs)
+  )
+  
+  # assign the lower and upper bounds for q values in the param vectors for simulation
+  best_model_p_vec_lower[q_names] <- (
+    q_age_conf %.>% filter(., prob == "0.025") %.>% select(., q_names) %.>% unlist(.)
+    )
+  
+  best_model_p_vec_upper[q_names] <- (
+    q_age_conf %.>% filter(., prob == "0.975") %.>% select(., q_names) %.>% unlist(.)
+  )
+  
+  # generate summary measures for for compartments - with lower conf on q
+  summarized_traj_lower <- (
+    summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
+                           p_vals = c(best_model_p_vec_lower,
+                           params_for_Rp)) %.>% 
+    select(., `.id`, year, 
+           starts_with("Ss_"), starts_with("Sp_"), 
+           starts_with("Is_"), starts_with("Cs_"), Is, Reff)
+    )
+  
+  
+  save(summarized_traj_lower, file = paste0(path_dir, "/summarized_traj_lower.rds"))
+  
+  # generate summary measures for for compartments - with upper conf on q
+  summarized_traj_upper <- (
+    summarize_epidemiology(traj_cov_data = comp_traj_w_cov,
+                           p_vals = c(best_model_p_vec_upper,
+                                      params_for_Rp)) %.>% 
+      select(., `.id`, year, 
+             starts_with("Ss_"), starts_with("Sp_"), 
+             starts_with("Is_"), starts_with("Cs_"), Is, Reff)
+  )
+  
+  
+  save(summarized_traj_upper, file = paste0(path_dir, "/summarized_traj_upper.rds"))
+  
+  
 } else {
   message("Directory 'epi_summary' already exists, moving on!")
 }
 
 
 load(paste0(path_dir, "/summarized_traj.rds"))
-
+load(paste0(path_dir, "/summarized_traj_lower.rds"))
+load(paste0(path_dir, "/summarized_traj_upper.rds"))
 
 Is_anno_data <- (
   summarized_traj %.>% 
@@ -312,7 +373,18 @@ vacc_plot_data <- (
     gather(., key = "dose", value = "coverage", -year)
   )
 
-
+Reff_conf_data <- (
+  summarized_traj_lower %.>% 
+    transmute(., 
+              year = year, 
+              Reff_lower = Reff) %.>% 
+    right_join(., 
+               summarized_traj_upper %.>% 
+                 transmute(., 
+                           year = year, 
+                           Reff_upper = Reff), 
+               by = "year")
+  )
 
 Reff_plot <- (
   summarized_traj %.>% 
@@ -322,18 +394,23 @@ Reff_plot <- (
                               Reff < 1 ~ "nein!")
     ) %.>% 
     ggplot(.) +
+    geom_ribbon(data = Reff_conf_data, 
+                aes(x = year, ymin = Reff_lower, ymax = Reff_upper), 
+                alpha = 0.5, 
+                fill = "#f64f59") +
+    geom_line(aes(x = year, y = Reff), colour = "#f64f59") +
     geom_bar(data = vacc_plot_data, 
              aes(x = year, y = coverage*2, fill = dose), 
              position="dodge", stat="identity", 
              alpha = 0.5) +
-    geom_line(aes(x = year, y = Reff, colour = gt1, group = 1), size = 0.8) +
+    geom_hline(yintercept = 1, linetype = "dashed", colour = "darkseagreen4", size = 0.8)+
     labs(x = "", y = "Effective Reproductive    \nNumber    ") +
-    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
-                        labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"), 
-                        name = "Epidemic\nSignature") +
+    # scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
+    #                     labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"), 
+    #                     name = "Epidemic\nSignature") +
     scale_y_continuous(sec.axis = sec_axis(~./2,
                                            labels = function(x) scales::percent(x, suffix = ""),
-                                           name = "Vaccine\nCoverage (%)")) +
+                                           name = "     Vaccine\n      Coverage (%)")) +
     scale_x_continuous(breaks = year_break_x) +
     scale_fill_manual(name = "Dose\nType", 
                       values = c("grey50", "black"), 
@@ -538,6 +615,28 @@ oos_fill_gradnt <- c(model_col[1], "#FE8C00", "#FCA030", "#F9B561","#F7C991", "#
 
 grey30_gradnt <- c("grey30", "#6E6E6E", "#8F8F8F", "#B0B0B0", "#D1D1D1")
 
+
+mean_age_plot <- (
+  mean_age_data %.>% 
+    ggplot(., aes(x = year, y = age, linetype = stat)) +
+    geom_line(size = 1., colour = "grey30") +
+    labs(x = "", 
+         y = "Age (Years)") +
+    scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
+    scale_linetype_manual(values = c(1, 2), labels = c("Expected", "Observed"), 
+                          name = "Mean Age Of\nFirst Infection") +
+    project_theme +
+    cap_axes(right = "both") +
+    guides(colour = guide_legend(title.position = "top", nrow = 2, 
+                                 override.aes=list(fill = grey30_gradnt)), 
+           linetype = guide_legend(title.position = "top", nrow = 2, 
+                                   override.aes = list(alpha = 1, size = 0.5))) +
+    theme(text = element_text(size = unit(n_size, "pt")), 
+          legend.position = "top")
+  ) 
+  
+
+
 age_distribution_plot <- (
   expctd_age_incidence %.>% 
     filter(., year > 1977-20/52 & year < 2018+20/52) %.>% 
@@ -547,23 +646,24 @@ age_distribution_plot <- (
     geom_bar(data = obs_age_incidence, 
              aes(x = year, y = inc, colour = age_cohort), 
              stat = "identity", position = position_fill(reverse = TRUE), fill = NA, size = 0.8, width =0.75) +
-    geom_line(data = mean_age_data, 
-              aes(x = year, y = age/100, linetype = stat),
-              size = 1.0, colour = "grey30", alpha = 0.75) +
-    labs(x = "", y = "Incidence Age Distribution (%)", 
+    # geom_line(data = mean_age_data, 
+    #           aes(x = year, y = age/100, linetype = stat),
+    #           size = 1.0, colour = "grey30", alpha = 0.75) +
+    labs(x = "", y = "Incidence Age\nDistribution (%)", 
          colour = "Age\nCohort", 
          pattern_fill = "Age\nCohort")+
     scale_y_continuous(labels = function(x) scales::percent(x, suffix = ""), 
-                       sec.axis = sec_axis(~.*100, breaks = seq(0, 100, 25), 
-                                           name = "Age (Years)")) +
+                       # sec.axis = sec_axis(~.*100, breaks = seq(0, 100, 25), 
+                       #                     name = "Age (Years)")
+                       ) +
     scale_x_continuous(breaks = c(1977,1984, 1991, 1998, 2005, 2012, 2018)) +
     scale_fill_manual(values = c(wis_fill_gradnt, oos_fill_gradnt), 
                       breaks = c(paste0(age_names, "_", "ja"), 
                                  paste0(age_names, "_", "nein")),
                       guide = "none") +    
     scale_colour_brewer(palette = "Purples", direction = -1) +
-    scale_linetype_manual(values = c(1, 2), labels = c("Expected", "Observed"), 
-                          name = "Mean Age Of\nFirst Infection") +
+    # scale_linetype_manual(values = c(1, 2), labels = c("Expected", "Observed"), 
+    #                       name = "Mean Age Of\nFirst Infection") +
     project_theme +
     theme(legend.position = "top") +
     cap_axes(right = "both") +
@@ -685,12 +785,14 @@ KL_divergence_plot <- (
 
 
 compare_age_dstbn_plt <- (
-  age_distribution_plot + KL_divergence_plot + 
+  mean_age_plot + age_distribution_plot + KL_divergence_plot + 
     plot_layout(
+      heights = c(0.5, 1, 1),
       guides = "collect",
       design = "
     A
     B
+    C
     "
     ) + 
     plot_annotation(tag_levels = "A") &

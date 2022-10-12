@@ -40,6 +40,9 @@ sim_all_models_pre <- (
                               if (hypo_name == "gwaning") {
                                 mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_constant, 
                                                           incidence_data = in_sample_mumps_case_reports)
+                              } else if (hypo_name == "gwaning2") {
+                                mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_constant, 
+                                                              incidence_data = in_sample_mumps_case_reports) 
                               } else {
                                   mod_po <- make_pomp(covar = mod_mumps_covariates_constant, 
                                                       incidence_data = in_sample_mumps_case_reports)
@@ -48,6 +51,9 @@ sim_all_models_pre <- (
                               if (hypo_name == "gwaning") {
                                 mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_rapid, 
                                                           incidence_data = in_sample_mumps_case_reports)
+                              } else if (hypo_name == "gwaning2") {
+                                mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_rapid, 
+                                                              incidence_data = in_sample_mumps_case_reports)
                               } else {
                                   mod_po <- make_pomp(covar = mod_mumps_covariates_rapid, 
                                                       incidence_data = in_sample_mumps_case_reports)
@@ -56,6 +62,9 @@ sim_all_models_pre <- (
                               if (hypo_name == "gwaning") {
                                 mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_sigmoidal, 
                                                           incidence_data = in_sample_mumps_case_reports)
+                              } else if (hypo_name == "gwaning2") {
+                                mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_sigmoidal, 
+                                                              incidence_data = in_sample_mumps_case_reports)  
                               } else {
                                   mod_po <- make_pomp(covar = mod_mumps_covariates_sigmoidal, 
                                                       incidence_data = in_sample_mumps_case_reports)
@@ -64,6 +73,9 @@ sim_all_models_pre <- (
                               if (hypo_name == "gwaning") {
                                 mod_po <- make_gamma_pomp(covar = mod_mumps_covariates_slow, 
                                                           incidence_data = in_sample_mumps_case_reports)
+                              } else if (hypo_name == "gwaning2") {
+                                mod_po <- make_gamma_n_2_pomp(covar = mod_mumps_covariates_slow, 
+                                                              incidence_data = in_sample_mumps_case_reports)  
                               } else {
                                   mod_po <- make_pomp(covar = mod_mumps_covariates_slow, 
                                                       incidence_data = in_sample_mumps_case_reports)
@@ -92,7 +104,8 @@ sim_all_models_pre <- (
                           })
 )
 
-hypo_factor_order <- c("No Loss", "Waning (Exponential)", "Waning (Erlang, x = 3)", "Leaky")
+hypo_factor_order <- c("No Loss", "Waning\n(Exponential)", "Waning\n(Erlang, x = 2)", 
+                       "Waning\n(Erlang, x = 3)", "Leaky")
 
 # add time-wise log-likelihood function to get a better idea of goodness of fit   
 
@@ -103,9 +116,9 @@ covs_for_dmeasure <- (
   mod_mumps_covariates_constant %.>% 
     filter(., year %in% time_in_sample_data) %.>%
     select(., year, eta_a) %.>% 
-    slice(., rep(1:n(), 4)) %.>% 
+    slice(., rep(1:n(), 5)) %.>% 
     mutate(., 
-           hypothesis = rep(c("noloss", "leaky2", "waning", "gwaning"), 
+           hypothesis = rep(c("noloss", "leaky2", "waning", "gwaning2", "gwaning"), 
                             each = length(time_in_sample_data))
            ) %.>% 
     right_join(., 
@@ -138,9 +151,9 @@ case_covs_for_dmeasure <- (
     gather(., key = "age_class", value = "cases", -year) %.>% 
     mutate(., age_class = paste0("obs_", age_class)) %.>% 
     spread(., key = age_class, value = cases) %.>% 
-    slice(., rep(1:n(), 4)) %.>% 
+    slice(., rep(1:n(), 5)) %.>% 
     mutate(., 
-           hypothesis = rep(c("noloss", "leaky2", "waning", "gwaning"), 
+           hypothesis = rep(c("noloss", "leaky2", "waning", "gwaning", "gwaning2"), 
                                each = length(time_in_sample_data)))
   )
 
@@ -209,8 +222,9 @@ age_mod_cond_loglik <- (
   mutate(., 
          age_class = factor(age_class %.>% str_sub(., start = 7), 
                             levels = age_names_u), 
-         hypothesis = case_when(hypothesis == "waning" ~ "Waning (Exponential)", 
-                                hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
+         hypothesis = case_when(hypothesis == "waning" ~ "Waning\n(Exponential)", 
+                                hypothesis == "gwaning2" ~ "Waning\n(Erlang, x = 2)",
+                                hypothesis == "gwaning" ~ "Waning\n(Erlang, x = 3)",
                                 hypothesis == "leaky2" ~ "Leaky", 
                                 hypothesis == "noloss" ~ "No Loss") %.>% 
            factor(., levels = hypo_factor_order)
@@ -220,21 +234,22 @@ age_mod_cond_loglik <- (
   )
     
 
- 
+if(FALSE){
 age_mod_cond_loglik %.>%
   ggplot(., aes(x = year, y = cond_loglik)) +
     geom_line() +
     facet_grid(rows = vars(age_class), cols = vars(hypothesis), scales = "free_y") +
     cap_axes()+
     project_theme
-
+} 
 
   
 
 sim_all_models <- (
   sim_all_models_pre %>%
-    mutate(., hypothesis = case_when(hypothesis == "waning" ~ "Waning (Exponential)", 
-                                     hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
+    mutate(., hypothesis = case_when(hypothesis == "waning" ~ "Waning\n(Exponential)", 
+                                     hypothesis == "gwaning2" ~ "Waning\n(Erlang, x = 2)",
+                                     hypothesis == "gwaning" ~ "Waning\n(Erlang, x = 3)",
                                      hypothesis == "leaky2" ~ "Leaky", 
                                      hypothesis == "noloss" ~ "No Loss") %.>% 
              factor(., levels = hypo_factor_order)
@@ -247,8 +262,9 @@ anno_d_AIC <- (
   sim_from_these_tibble %.>% 
     select(., hypothesis, d_AIC) %.>% 
     mutate(., 
-           hypothesis = case_when(hypothesis == "waning"~ "Waning (Exponential)", 
-                                  hypothesis == "gwaning" ~ "Waning (Erlang, x = 3)",
+           hypothesis = case_when(hypothesis == "waning"~ "Waning\n(Exponential)", 
+                                  hypothesis == "gwaning2" ~ "Waning\n(Erlang, x = 2)",
+                                  hypothesis == "gwaning" ~ "Waning\n(Erlang, x = 3)",
                                   hypothesis == "leaky2" ~ "Leaky", 
                                   hypothesis == "noloss" ~ "No Loss") %.>% 
              factor(., levels = hypo_factor_order),
@@ -298,17 +314,20 @@ rel_fit_plt <- (
                                            )
                        )+
     scale_colour_manual(values = c("Observed Cases" = "grey30", 
-                                   "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                   "Waning (Erlang, x = 3)" = "#003973", 
+                                   "No Loss" = "#654ea3", "Waning\n(Exponential)" = "#11998e", 
+                                   "Waning\n(Erlang, x = 2)" = "blue", 
+                                   "Waning\n(Erlang, x = 3)" = "#003973", 
                                    "Leaky" = "#FF416C"), 
                         breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
-    scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                 "Waning (Erlang, x = 3)" = "#003973", 
+    scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning\n(Exponential)" = "#11998e", 
+                                 "Waning\n(Erlang, x = 2)" = "blue", 
+                                 "Waning\n(Erlang, x = 3)" = "#003973", 
                                  "Leaky" = "#FF416C")) +
     project_theme +
     cap_axes(right = "both") +
     guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
-           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
+           colour = guide_legend(nrow = 3, title.position = "top", order = 1)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   )
 
 
@@ -343,114 +362,28 @@ rel_case_distn_plt <- (
            stat = "identity", alpha = 0.5) +
   geom_point(aes(x = age_class, y = prop_obs_cases, colour = "Data")) +
   geom_line(aes(x = age_class, y = prop_obs_cases, group = hypothesis, colour = "Data")) +
-  scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                               "Waning (Erlang, x = 3)" = "#003973", 
+  scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning\n(Exponential)" = "#11998e", 
+                               "Waning\n(Erlang, x = 2)" = "blue", 
+                               "Waning\n(Erlang, x = 3)" = "#003973", 
                                "Leaky" = "#FF416C")
                     ) +
   scale_colour_manual(values = c("Data" = "grey30")) +
   scale_y_continuous(labels = function(x) scales::percent(x, suffix = "")) +
-  facet_wrap(.~hypothesis, scales = "fixed") +
+  facet_wrap(.~hypothesis, ncol = 2, scales = "fixed") +
   labs(x = "Age Class", 
        y = "Case Volume (%)",
        fill = "Hypothesis", 
        colour = "")+
   project_theme +
-  cap_axes()
+  cap_axes()+
+  theme(legend.position = c(0.80, 0.1), 
+        ) +
+  guides(fill = guide_legend(title.position = "top", 
+                             nrow = 3, 
+                             order = 1), 
+         colour = guide_legend(order = 2))  
   )
   
   
   
-
-if(FALSE){
-# relative fits to the data for the ppt
-rel_fit_plt_ppt <- (
-  sim_all_models %.>% 
-    mutate(., 
-           hypothesis = as_factor(hypothesis)) %.>% 
-    ggplot(.) +
-    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed Cases"), 
-              size = 1) +
-    #geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
-    geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
-    geom_text(data = anno_d_AIC, aes(x = 1995, y = 175, label = paste0("Delta~AIC == ", 
-                                                                       round(d_AIC, 2) %.>% 
-                                                                         as.character(.))), 
-              parse = TRUE) +
-    #geom_line(data = age_mod_cond_loglik %.>% na.omit(.), 
-    #          aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), size = 0.8) + 
-    facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
-    labs(x = "Year", 
-         y = expression(sqrt(Cases)), 
-         colour = "Case Trajectory/\nLog Density", 
-         fill = "Prediction\nIntervals") +
-    #scale_y_continuous(sec.axis = sec_axis(~.*sec_axis_ratio, 
-    #                                       name = expression(-log(P(D[t]~`|`~M[t])))
-    #)
-    #)+
-    scale_colour_manual(values = c("Observed Cases" = "grey30", 
-                                   "No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                   "Waning (Erlang, x = 3)" = "#003973", 
-                                   "Leaky" = "#FF416C"), 
-                        breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
-    scale_fill_manual(values = c("No Loss" = "#654ea3", "Waning (Exponential)" = "#11998e", 
-                                 "Waning (Erlang, x = 3)" = "#003973", 
-                                 "Leaky" = "#FF416C")) +
-    project_theme +
-    cap_axes(right = "both") +
-    guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
-           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
-)
-
-
-use_these_mods <- sim_all_models %.>% select(., hypothesis) %.>% unlist(.) %.>% unique(.)[c(2, 3)]
-
-# relative fits to the data - for the ppt 
-rel_fit_plt_ppt_two_mods <- (
-  sim_all_models %.>% 
-    mutate(., 
-           hypothesis = as_factor(hypothesis)) %.>% 
-    filter(., hypothesis %in% use_these_mods) %.>% 
-    ggplot(.) +
-    geom_line(data = in_sample_obs_data, aes(x = year, y = `0.5`, colour = "Observed Cases"), 
-              size = 1) +
-    #geom_line(aes(x = year, y = `0.5`, colour = hypothesis), size = 0.8) +
-    geom_ribbon(aes(x = year, ymin = `0.1`, ymax = `0.90`, fill = hypothesis), alpha = 0.6) +
-    geom_text(data = anno_d_AIC %.>% filter(., hypothesis %in% use_these_mods), 
-              aes(x = 1995, y = 175, label = paste0("Delta~AIC == ", round(d_AIC, 2) %.>% 
-                                                                         as.character(.))), 
-              parse = TRUE) +
-    geom_line(data = age_mod_cond_loglik %.>% na.omit(.) %.>% filter(., hypothesis %in% use_these_mods), 
-              aes(x = year, y = -cond_loglik/sec_axis_ratio, colour = hypothesis), size = 0.8) + 
-    facet_grid(factor(age_class, levels = age_names_u)~hypothesis, scales = "fixed") +
-    labs(x = "Year", 
-         y = expression(sqrt(Cases)), 
-         colour = "Case Trajectory/\nLog Density", 
-         fill = "Prediction\nIntervals") +
-    scale_y_continuous(sec.axis = sec_axis(~.*sec_axis_ratio, 
-                                           name = expression(-log(P(D[t]~`|`~M[t])))
-    )
-    )+
-    scale_colour_manual(values = c("Observed Cases" = "grey30", 
-                                   "Waning (Exponential)" = "#11998e", 
-                                   "Leaky" = "#FF416C"), 
-                        breaks = c("Observed Cases", .$hypothesis %.>% levels(.))) +
-    scale_fill_manual(values = c("Waning (Exponential)" = "#11998e", 
-                                 "Leaky" = "#FF416C")) +
-    project_theme +
-    cap_axes(right = "both") +
-    guides(fill = guide_legend(nrow = 3, title.position = "top", order = 2), 
-           colour = guide_legend(nrow = 3, title.position = "top", order = 1))  
-)
-}
-
-  
-  
-  
-
-
-
-
-
-
-
 

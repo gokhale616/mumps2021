@@ -85,7 +85,9 @@ script_var <- c("inc_plot.R",
                 "rel_fit_plot.R",
                 "other_params_plot.R",
                 "covariate_plot.R",
-                "imputed_vacc_plot.R")
+                "imputed_vacc_plot.R", 
+                "pof_plot.R", 
+                "vacc_compare_plot.R")
 
 
 # plot load
@@ -161,6 +163,12 @@ plot(contact_plt)
 
 @
 
+<<Rsq_roll_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRollRsqplot', out.width = outwidth[3]>>=
+
+plot(Rsq_roll_plot)
+
+@
+
 
 <<rel_fit_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[3]>>=
 
@@ -169,7 +177,8 @@ plot(rel_fit_plt)
 @
 
 
-<<rel_case_ditn_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelFitplot', out.width = outwidth[2]>>=
+
+<<rel_case_ditn_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capRelageFitplot', out.width = outwidth[2]>>=
 
 plot(rel_case_distn_plt)
 
@@ -182,5 +191,25 @@ plot(aux_para_plot)
 
 @
 
+
+<<proof_of_concept_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capProofOfConceptplot', out.width = outwidth[3]>>=
+
+plot(proof_of_concept_plt)
+
+@
+
+
+<<proof_of_concept_table,  results = "asis", warning = FALSE, echo=FALSE, out.width = outwidth[3], out.extra = '', fig.width=7>>=
+
+pof_param_ests_kbl
+
+@
+
+
+<<vacc_compare_plot, warning = FALSE, echo = FALSE, fig.cap = '\\capVaccCompareplot', out.width = outwidth[2]>>=
+
+plot(vacc_ests_compare_plt)
+
+@
 
 \end{document}

@@ -1,13 +1,18 @@
+# if cider nodes are needed ues thes commands 
+#SBATCH --partition=batch                     # Partition (queue) name
+#SBATCH -q cider_qos                          # This gives access to the cider nodes
+#SBATCH --time=168:00:00                      # Time limit hrs:min:sec
+
 # This function prepares the .sh scripts for submitting estimation scripts to the cluster
 create_sh <- function(pattern = "hypo") {
   paste0("#!/bin/bash\n
 #SBATCH --job-name=", pattern, "              # Job name
-#SBATCH --partition=rohani_p                 # Partition (queue) name
-#SBATCH --nodes=1                            # Number of nodes
-#SBATCH --ntasks=24                          # Number of cores	
-#SBATCH --mem=16gb                            # Job memory request
-#SBATCH --time=240:00:00                      # Time limit hrs:min:sec
-#SBATCH --output=", pattern, ".%j.out          # Standard output log
+#SBATCH --partition=rohani_p                  # Partition (queue) name
+#SBATCH --nodes=1                             # Number of nodes
+#SBATCH --ntasks=64                           # Number of cores	
+#SBATCH --mem=120gb                           # Job memory request
+#SBATCH --time=360:00:00                      # Time limit hrs:min:sec
+#SBATCH --output=", pattern, ".%j.out         # Standard output log
 #SBATCH --error=", pattern, ".%j.err          # Standard error log          
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=dg34432@uga.edu   # Where to send mail	
@@ -30,7 +35,7 @@ write_sh <- function(pattern = "hypo" , path) {
 
 # name all the hypotheses - heterogenous mixing hypothesis
 
-n_hypotheses <- c("noloss", "waning", "gwaning", "leaky2")
+n_hypotheses <- c("noloss", "waning", "gwaning", "gwaning2", "leaky2")
 
 lapply(n_hypotheses, function(x){write_sh(pattern = x, path = "./")})
 

@@ -130,24 +130,23 @@
 
 \caption{\label{tab:loading_chunk}Model specific parameter estimates and derived quantitities were obtained by maximizing the likelihood function}
 \resizebox{\linewidth}{!}{
-\begin{tabular}[t]{ccccc}
+\begin{tabular}[t]{cccccc}
 \toprule
-\multicolumn{1}{c}{\textbf{ }} & \multicolumn{4}{c}{\textbf{Model}} \\
-\cmidrule(l{3pt}r{3pt}){2-5}
-Parameter/Quantity & No Loss & Waning (Exponential) & Waning (Erlang, N = 3) & Leaky\\
+\multicolumn{1}{c}{\textbf{ }} & \multicolumn{5}{c}{\textbf{Model}} \\
+\cmidrule(l{3pt}r{3pt}){2-6}
+Parameter/Quantity & No Loss & Waning (Exponential) & Waning (Erlang, N = 2) & Waning (Erlang, N = 3) & Leaky\\
 \midrule
-\cellcolor{gray!6}{$\Delta AIC$} & \cellcolor{gray!6}{207.288} & \cellcolor{gray!6}{0} & \cellcolor{gray!6}{26.853} & \cellcolor{gray!6}{10.87}\\
-$AIC$ & 3006.822 & 2799.534 & 2826.387 & 2810.404\\
-\cellcolor{gray!6}{$log\big(\mathcal{L}(\Theta)\big)$} & \cellcolor{gray!6}{-1484.411} & \cellcolor{gray!6}{-1379.767} & \cellcolor{gray!6}{-1393.194} & \cellcolor{gray!6}{-1384.202}\\
-$R_0$ & 42.414 & 13.992 & 31.371 & 22.199\\
-\cellcolor{gray!6}{$R_p$} & \cellcolor{gray!6}{0.484} & \cellcolor{gray!6}{5.72} & \cellcolor{gray!6}{18.69} & \cellcolor{gray!6}{0.76}\\
-$\xi$ & 0.989 & 0.591 & 0.404 & 0.966\\
-\cellcolor{gray!6}{$\beta_1$} & \cellcolor{gray!6}{0.185} & \cellcolor{gray!6}{0.036} & \cellcolor{gray!6}{0.341} & \cellcolor{gray!6}{0.735}\\
-$\sigma^{-1}$ (Days) & 12.022 & 24.998 & 16.894 & 24.999\\
-\cellcolor{gray!6}{$\delta^{-1}$ (Years)} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{111.456} & \cellcolor{gray!6}{56.457} & \cellcolor{gray!6}{-}\\
-$\epsilon$ & - & - & - & 0.028\\
-\cellcolor{gray!6}{$t_{intro}$} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{2000}\\
-Booster shape & Constant & Sigmoid & Sigmoid & Constant\\
+\cellcolor{gray!6}{$\Delta AIC$} & \cellcolor{gray!6}{207.29} & \cellcolor{gray!6}{0} & \cellcolor{gray!6}{17.8} & \cellcolor{gray!6}{26.85} & \cellcolor{gray!6}{10.87}\\
+$\Delta log\big(\mathcal{L}(\Theta)\big)$ & 22.34 & 126.98 & 118.08 & 113.55 & 122.55\\
+\cellcolor{gray!6}{$R_0$} & \cellcolor{gray!6}{42.41} & \cellcolor{gray!6}{13.99} & \cellcolor{gray!6}{19.13} & \cellcolor{gray!6}{31.37} & \cellcolor{gray!6}{22.2}\\
+$R_p$ & 0.48 & 5.72 & 11.77 & 18.69 & 0.76\\
+\cellcolor{gray!6}{$\xi$} & \cellcolor{gray!6}{0.99} & \cellcolor{gray!6}{0.59} & \cellcolor{gray!6}{0.38} & \cellcolor{gray!6}{0.4} & \cellcolor{gray!6}{0.97}\\
+$\beta_1$ & 0.18 & 0.04 & 0.64 & 0.34 & 0.74\\
+\cellcolor{gray!6}{$\sigma^{-1}$ (Days)} & \cellcolor{gray!6}{12.02} & \cellcolor{gray!6}{25} & \cellcolor{gray!6}{24.97} & \cellcolor{gray!6}{16.89} & \cellcolor{gray!6}{25}\\
+$\delta^{-1}$ (Years) & - & 111.46 & 54.51 & 56.46 & -\\
+\cellcolor{gray!6}{$\epsilon$} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{-} & \cellcolor{gray!6}{0.03}\\
+$t_{intro}$ & - & - & - & - & 2000\\
+\cellcolor{gray!6}{Booster shape} & \cellcolor{gray!6}{Constant} & \cellcolor{gray!6}{Sigmoid} & \cellcolor{gray!6}{Sigmoid} & \cellcolor{gray!6}{Sigmoid} & \cellcolor{gray!6}{Constant}\\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -249,6 +248,18 @@ Booster shape & Constant & Sigmoid & Sigmoid & Constant\\
 
 \end{knitrout}
 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
+
+{\centering \includegraphics[width=17.8cm]{figure/plot-Rsq_roll_plot-1} 
+
+}
+
+\caption[\capRollRsqplot]{\capRollRsqplot}\label{fig:Rsq_roll_plot}
+\end{figure}
+
+\end{knitrout}
+
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
@@ -263,6 +274,7 @@ Booster shape & Constant & Sigmoid & Sigmoid & Constant\\
 \end{knitrout}
 
 
+
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
@@ -270,7 +282,7 @@ Booster shape & Constant & Sigmoid & Sigmoid & Constant\\
 
 }
 
-\caption[\capRelFitplot]{\capRelFitplot}\label{fig:rel_case_ditn_plot}
+\caption[\capRelageFitplot]{\capRelageFitplot}\label{fig:rel_case_ditn_plot}
 \end{figure}
 
 \end{knitrout}
@@ -288,5 +300,59 @@ Booster shape & Constant & Sigmoid & Sigmoid & Constant\\
 
 \end{knitrout}
 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
+
+{\centering \includegraphics[width=17.8cm]{figure/plot-proof_of_concept_plot-1} 
+
+}
+
+\caption[\capProofOfConceptplot]{\capProofOfConceptplot}\label{fig:proof_of_concept_plot}
+\end{figure}
+
+\end{knitrout}
+
+
+\begin{table}[H]
+
+\caption{\label{tab:loading_chunk}Model specific parameter estimates were obtained by maximizing the likelihood function}
+\resizebox{\linewidth}{!}{
+\begin{tabular}[t]{cccc}
+\toprule
+\multicolumn{2}{c}{\textbf{ }} & \multicolumn{2}{c}{\textbf{Model}} \\
+\cmidrule(l{3pt}r{3pt}){3-4}
+Parameter & True value & Observation
+Noise Only & Process
+ And Observation
+Noise\\
+\midrule
+\cellcolor{gray!6}{$R_0$} & \cellcolor{gray!6}{13.000} & \cellcolor{gray!6}{11.2546} & \cellcolor{gray!6}{11.1862}\\
+$\sigma^{-1}$ (Days) & 25.000 & 20.2032 & 19.6227\\
+\cellcolor{gray!6}{$\beta_1$} & \cellcolor{gray!6}{0.110} & \cellcolor{gray!6}{0.1100} & \cellcolor{gray!6}{0.1101}\\
+$\delta^{-1}$ (Years) & 100.000 & 104.3264 & 99.5652\\
+\cellcolor{gray!6}{$\rho$} & \cellcolor{gray!6}{0.001} & \cellcolor{gray!6}{0.0010} & \cellcolor{gray!6}{0.0010}\\
+$\psi$ & 0.100 & 0.1275 & 0.0977\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# `geom\_smooth()` using formula 'y \textasciitilde{} x'}}\end{kframe}\begin{figure}
+
+{\centering \includegraphics[width=11.4cm]{figure/plot-vacc_compare_plot-1} 
+
+}
+
+\caption[\capVaccCompareplot]{\capVaccCompareplot}\label{fig:vacc_compare_plot}
+\end{figure}
+
+\end{knitrout}
 
 \end{document}

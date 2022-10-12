@@ -9,7 +9,8 @@ waning_bootstrap_res <- (
            covar_name = "sigmoid", 
            log_vars = "dwan", 
            logit_vars = NULL, 
-           mc.cores = bs_n_cores, mc.set.seed = TRUE) %.>% 
+           mc.cores = bs_n_cores, 
+           mc.set.seed = TRUE) %.>% 
     do.call(rbind, 
             lapply(1:bs_nsim, 
                    FUN = function(x) {.[[x]]})

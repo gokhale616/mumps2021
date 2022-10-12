@@ -14,7 +14,8 @@ leaky2_bootstrap_res <- (
            params = mod_bs_param_vals_est, 
            log_vars = "t_intro", 
            logit_vars = "epsilon2", 
-           mc.cores = bs_n_cores, mc.set.seed = TRUE) %.>% 
+           mc.cores = bs_n_cores, 
+           mc.set.seed = TRUE) %.>% 
     do.call(rbind, 
             lapply(1:bs_nsim, 
                    FUN = function(x) {.[[x]]})

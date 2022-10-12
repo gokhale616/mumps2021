@@ -9,11 +9,11 @@
 }
 
 \newcommand{\capKLdiv}{
-\textbf{Relative age distribution of mumps true incidence.} (A) Qualitative comparsion between expected, assuming the model of waning immunity, and the observed incidence per $10^5$ age-distribution (purple gradient, left, y-axis). Simulated incidence is broken down into the two prediction epochs - within sample (seagreen gradient) and out of sample (orange gradient) to match the analysis presented in figure~\ref{fig:fit_plot}. Lines represent comparsion of temporal shifts in the mean age of first infection (right, y-axis) under the waning model (dotted) and observed incidence (dashed).  (B) Quantitative agreement between observed \textit{v/s.} expected age-distribution of incidence using the Kullback-Leibler Divergence (KLD, left y-axis) through time. Boxplots represent bootsrapped distribution of KLD calculated by comparing observed age-distribution to 1000 synthetically generated time-series under the estimated observation noise. The area plot represents an estimate of age-aggregated mumps incidence per $10^5$ (right, y-axis). 
+\textbf{Relative age distribution of mumps true incidence.} (A) Expected temporal shifts in the mean age of first infection under the waning model (dotted) relative to the observed incidence (dashed). (B) Qualitative comparsion between expected, assuming the model of waning immunity, and the observed incidence per $10^5$ age-distribution (purple gradient). Simulated incidence distribution is broken down into the two prediction epochs - within sample (seagreen) and out of sample (orange) to match the analysis presented in figure~\ref{fig:fit_plot}. Age classes are represented using the gradients of the correpponding colours and ar represented as grey in the legend. (C) Quantitative agreement between observed \textit{v/s.} expected age-distribution of incidence using the Kullback-Leibler Divergence (KLD, left y-axis) through time. Boxplots represent bootsrapped distribution of KLD calculated by comparing observed age-distribution to 1000 synthetically generated time-series under the estimated observation noise. The area plot represents an estimate of age-aggregated mumps incidence per $10^5$ (right, y-axis). 
 }
 
 \newcommand{\capSumplot}{
-\textbf{Dissecting dynamics of mumps remergence.} (A) Rate of vaccine immunity decay under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) post vaccination. Green dashed line represents the crtical vaccnation level calculated using $R_0 = 19.992$ for the waning model. (B) Age-specific weekly changes in the percent vaccinated across the age-cohorts (red gradient), and total (yellow). (C) Weekly changes in percent susceptible across age cohorts. (D) Weekly dynamics in the effective reproductive number highlighting supercritical (red) and subcritical (green) epidemic signatures (left, y-axis). Annual vaccination rates of neonatal (grey) and booster (black) doses (right, y-axis). (E) Expected weekly loss of vaccine derived immunity per $10^5$. (F) Prevalence per $10^5$ of mumps across various age classes. The model parameters were fixed at the estimated MLE and simulated forward for 55 y during 1965-2020}
+\textbf{Dissecting dynamics of mumps remergence.} (A) Rate of vaccine immunity decay under an exponentially distributed waning model ($\frac{1}{\delta} = $111.5 years) post vaccination. Green dashed line represents the crtical vaccnation level calculated using $R_0 = 19.992$ for the waning model. (B) Age-specific weekly changes in the percent vaccinated across the age-cohorts (red gradient), and total (yellow). (C) Weekly changes in percent susceptible across age cohorts. (D) Average weekly dynamics (solid) and corresponding 95\% confidence intervals (ribbons) of the effective reproductive number (left, y-axis). Annual vaccination rates of neonatal (grey) and booster (black) doses (right, y-axis). (E) Expected weekly loss of vaccine derived immunity per $10^5$. (F) Prevalence per $10^5$ of mumps across various age classes. The model parameters were fixed at the estimated MLE and simulated forward for 55 y during 1965-2020}
 
 \newcommand{\capVaccEffplot}{
 \textbf{Immune duration simulation study.} (A) Relative prevalence $\big(\frac{I_i^w(t)}{I_i^s(t)}\big)$ of infection after vaccination across the five age-cohorts (facet columns), as a function of varying probaility of immunity loss by the age of 18 years (colour gradient). Estimated MLE  of immune duration was converted to probability of immune loss (indigo); Time gets resetted to 0 years after administration of neonatal dose (grey background) and booster dose (black background). (B) Population level vaccine impact (solid lines) and reproductive number (dashed lines) calculated at 100\% vaccine coverage as a response, and (C) Stable-state prevalence distribution across five age-cohorts as afunction of varying probability of immune loss by age 18. Relationship  between duration of immunity and Probability of immune loss by age 18 are reseprsented on the secondary axis (dotdashed lines). Covariate values were fixed at the last known value in the year 2018. Dynamics were simulated for 100 y and final values in the infectious comprtments values we taken to be prevalence per $10^5$}
@@ -37,8 +37,22 @@
 
 
 \newcommand{\capRelFitplot}{
-\textbf{Relative Model Fit.}  Qualitative agreement of age-specific observed cases of mumps (facet rows, black) to 4 models of vaccine imperfection (facet columns) - No Loss (violet), Waning (Exponential, seagreen), Waning (Erlang, N = 3, darkblue), and Leaky (pink).
+\textbf{Relative Model Fit.}  Qualitative agreement of age-specific observed cases of mumps (facet rows, black) to 4 models of vaccine imperfection (facet columns) - No Loss (violet), Waning (Exponential, seagreen), Waning (Erlang, N = 2, cobalt blue), Waning (Erlang, N = 3, darkblue), and Leaky (pink).
 Colored solid lines represent median trajectories where as ribbons repsresent 80\% prediction intervals. Relative quantitative model-data agreement has been conveyed using Akaike information criterion ($\Delta$AIC, reported inset) among various models.
+}
+
+
+\newcommand{\capRelageFitplot}{
+\textbf{Relative distribution of average mumps cases.}  Barplots represent the mean age-distribution of cases during 2000-2018, calculated using the median trajectories for the 4 models of vaccine imperfection -- No Loss (violet), Waning (Exponential, seagreen), Waning (Erlang, x = 2, cobalt blue), 
+Waning (Erlang, x = 3, darkblue), and Leaky (pink). Solid lines represent observed case distribution over the same time period.
+}
+
+
+
+
+
+\newcommand{\capRollRsqplot}{
+\textbf{Coefficent of Detertmination} Solid blue line represent $R^2$ calculated using a six year rolling window comaparable to the width of the out-of-fit sample. Dashed lines indicate the corresponding $R^2$ for the within sample epoch (1977-2012, seagreen) and out of sample epoch (2012-2018, orange).    
 }
 
 
@@ -46,3 +60,12 @@ Colored solid lines represent median trajectories where as ribbons repsresent 80
 \textbf{Age-specific parameter estimates of Process and Observation model.} Faceted barplots represent maximum likelihood estimates of probability of infection (q), reporting probability ($\rho$) and dispersion parameter ($\psi$) corresponding to the four hypotheses of mumps reemergence (columns). Age-class has been reported using a blue gradient.
 }
 
+
+\newcommand{\capProofOfConceptplot}{
+\textbf{Simulation study comparing senitivity of model fits.} Facets represent a synthetic time series (solid red) generated using unstructured Vaccinated-Susceptible-Exposed-Infectious-Recovered models without (top) and with (bottom) incorporation of process noise. Best fitting deterministic models for both time series are represeted as median (solid black) and the correpnding prediction intervals (grey ribbons). Dynamics were simulated for 1000 years and subsequent 45 years were considered as synthetic data. Vaccination was introduced in the year 20 and was held constant at 91\% which is the latest decadal average.}
+
+
+
+\newcommand{\capVaccCompareplot}{
+\textbf{Comparsion of vaccine rate estimates between MMWR and WHO for the overlapping years}. Colours represent the neonatal (orange) and booster (blue) dose of MMR estimates as reported by the WHO broken down by year (fill gradient). MMR estimates from MMWR were reported as 1 category i.e. $\geq 1$ Dose. 
+}

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --job-name=leaky2              # Job name
-#SBATCH --partition=rohani_p                 # Partition (queue) name
-#SBATCH --nodes=1                            # Number of nodes
-#SBATCH --ntasks=24                          # Number of cores	
-#SBATCH --mem=16gb                            # Job memory request
-#SBATCH --time=240:00:00                      # Time limit hrs:min:sec
-#SBATCH --output=leaky2.%j.out          # Standard output log
+#SBATCH --partition=rohani_p                  # Partition (queue) name
+#SBATCH --nodes=1                             # Number of nodes
+#SBATCH --ntasks=64                           # Number of cores	
+#SBATCH --mem=120gb                           # Job memory request
+#SBATCH --time=360:00:00                      # Time limit hrs:min:sec
+#SBATCH --output=leaky2.%j.out         # Standard output log
 #SBATCH --error=leaky2.%j.err          # Standard error log          
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=dg34432@uga.edu   # Where to send mail	
