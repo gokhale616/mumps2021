@@ -203,7 +203,17 @@ sim_traj_at_mle <- (
 #   ggplot(., aes(x = year, y = cases, group = `.id`)) +
 #   geom_line()+
 #   facet_grid(rows = vars(age), scales = "free_y")
-  
+
+# these codes will be used if the estimation fails  
+# special treatment for the leaky hypothesis 
+# leaky_param_to_est_names <- param_range_leaky2$lower %.>% names(.)
+# t_intro_index <- which(leaky_param_to_est_names == "t_intro")
+# sigma_index <- which(leaky_param_to_est_names == "sigma")
+# t_intro_sigma_index <- which(leaky_param_to_est_names %in% c("t_intro", "sigma"))
+
+#leaky2_t_intro = leaky_param_to_est_names[-t_intro_index],
+#leaky2_sigma = leaky_param_to_est_names[-sigma_index],
+#leaky2_t_intro_sigma = leaky_param_to_est_names[-t_intro_sigma_index],
 
 
 # setting the parameter names to estimate   
@@ -265,7 +275,7 @@ trajmatch_protocol <- function(x, hypo_name, covar_name,
       traj_objfun(., 
                   est = param_to_est_int, 
                   paramnames = param_names_est,
-                  params = param_vals_est, 
+                  params = params, 
                   partrans = parameter_trans(log = c(indi_log_trans_param, log_vars), 
                                              logit = c(indi_logit_trans_param, logit_vars)), 
                   fail.value = 1e20, 

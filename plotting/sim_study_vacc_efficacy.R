@@ -383,6 +383,7 @@ vaccine_eff_panel_plt <- (
   )
 
 
-1-exp(-14/avg_imm_dur_s(37357.47))
-
+# (1-exp(-14/avg_imm_dur_s(93.23)))*100
+# (1-exp(-14/avg_imm_dur_s(111.46)))*100
+# (1-exp(-14/avg_imm_dur_s(144.05)))*100
 

@@ -155,7 +155,7 @@ est_mle_kbl <- (
       digits = 3, 
       linesep = "",
       booktabs = T, 
-      format = "latex", 
+      format = "html", 
       caption = "Model specific parameter estimates and derived quantitities were obtained by maximizing the likelihood function", 
       escape = FALSE) %.>% 
    kable_styling(.,
@@ -269,6 +269,15 @@ all_hypo_bootstrap_res_quants_l <- (
   )
 
 
+all_hypo_bootstrap_res_quants_l %.>%
+  filter(., parameter == "epsilon2") %.>%
+  summarise(.,
+            mean = mean(est_val),
+            max = max(est_val),
+            min = min(est_val),
+            qunatile0.025 = quantile(est_val, prob = 0.025),
+            qunatile0.0975 = quantile(est_val, prob = 0.999))
+
 
 # CI's find values for the table 
 all_hypo_CI_main <- (
@@ -321,11 +330,12 @@ all_hypo_CI_main <- (
   )
   
 
+
 CI_kbl <- (
   all_hypo_CI_main %.>%   
   kbl(., 
       align = "c", 
-      digits = 4, 
+      digits = 10, 
       linesep = "",
       booktabs = T, 
       format = "html", 

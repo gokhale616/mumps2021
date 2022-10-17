@@ -84,15 +84,15 @@ calculate_aic <- function(loglik, npar) {
 }
 
 
-# function: produces n replicates to implement R measure 
+# function to produce n replicates to implement R measure 
 param_replicate_matrix <- function(param_v, n = 1000) {
   t(t(param_v)) %*% rep(1, n)
 }   
 
-# function: converts a factor to numeric useful for preserving the Year vector 
+# function that converts a factor to numeric useful for preserving the Year vector 
 as_numeric_factor <- function(x) {as.numeric(levels(x))[x]}
 
-# function: simulates from the observation model specified in pomp
+# function that simulates from the observation model specified in pomp
 sim_obs_model <- function(po_obj, params, times, 
                           nsim, method = "ode23", 
                           summarise_obs_process = TRUE, 

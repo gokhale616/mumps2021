@@ -386,6 +386,10 @@ Reff_conf_data <- (
                by = "year")
   )
 
+
+axis_ratio <- Reff_conf_data$Reff_upper %.>% max(.)/vacc_plot_data$coverage %.>% max(.)
+
+
 Reff_plot <- (
   summarized_traj %.>% 
     filter(., year > 1967-1/52) %.>% 
@@ -399,18 +403,23 @@ Reff_plot <- (
                 alpha = 0.5, 
                 fill = "#f64f59") +
     geom_line(aes(x = year, y = Reff), colour = "#f64f59") +
-    geom_bar(data = vacc_plot_data, 
-             aes(x = year, y = coverage*2, fill = dose), 
-             position="dodge", stat="identity", 
+    geom_bar(data = vacc_plot_data,
+             aes(x = year, y = coverage*2, fill = dose),
+             position="dodge", stat="identity",
              alpha = 0.5) +
     geom_hline(yintercept = 1, linetype = "dashed", colour = "darkseagreen4", size = 0.8)+
     labs(x = "", y = "Effective Reproductive    \nNumber    ") +
-    # scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
-    #                     labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"), 
-    #                     name = "Epidemic\nSignature") +
+    scale_colour_manual(values = c("yes!" = "#f64f59", "nein!" = "darkseagreen4"), ##009FFF
+                        labels = c("yes!" = "Super-critical", "nein!" = "Sub-critical"),
+                        name = "Epidemic\nSignature") +
     scale_y_continuous(sec.axis = sec_axis(~./2,
                                            labels = function(x) scales::percent(x, suffix = ""),
-                                           name = "     Vaccine\n      Coverage (%)")) +
+                                           name = "     Vaccine\n      Coverage (%)", 
+                                           #breaks = c(0, 0.5, 0.75, 1, 1.25)
+                                           ),
+                       #limits = c(0, 1.5), 
+                       #breaks = c(0.5, 0.75, 1, 1.25)
+                      ) +
     scale_x_continuous(breaks = year_break_x) +
     scale_fill_manual(name = "Dose\nType", 
                       values = c("grey50", "black"), 
