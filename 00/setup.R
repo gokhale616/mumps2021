@@ -2,6 +2,16 @@
 options(knitr.kable.NA = '-')
 
 # Load packages ----------------------------------------------------------------------------------------------
+# this function will install the packages used in this this project if they are not present
+install_if_necessary <- function(x) {
+  if(!require(x, character.only = TRUE)){
+    install.packages(x)
+    library(x, character.only = TRUE)
+  } else {
+    library(x, character.only = TRUE)  
+  }
+}
+
 
 lib_dep <- c("tidyverse", "furrr", "pbmcapply",
              "pomp", "magrittr", "wrapr", "stringr",
@@ -21,8 +31,11 @@ lib_dep <- c("tidyverse", "furrr", "pbmcapply",
 
 
 
+#loading packages####
+lapply(lib_dep, 
+       install_if_necessary
+)
 
-sapply(lib_dep, require, character.only = TRUE)
 
 
 

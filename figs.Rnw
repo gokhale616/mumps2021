@@ -212,4 +212,12 @@ plot(vacc_ests_compare_plt)
 
 @
 
+
+<<session_info, warning = FALSE, echo = FALSE>>=
+
+utils::sessionInfo()
+
+@
+
+
 \end{document}
