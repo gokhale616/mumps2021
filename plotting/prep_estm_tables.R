@@ -155,7 +155,7 @@ est_mle_kbl <- (
       digits = 3, 
       linesep = "",
       booktabs = T, 
-      format = "html", 
+      format = "latex", 
       caption = "Model specific parameter estimates and derived quantitities were obtained by maximizing the likelihood function", 
       escape = FALSE) %.>% 
    kable_styling(.,
@@ -338,7 +338,7 @@ CI_kbl <- (
       digits = 10, 
       linesep = "",
       booktabs = T, 
-      format = "html", 
+      format = "latex", 
       caption = "Model specific 95% Bootstraped Confidence Intervals", 
       escape = FALSE) %.>% 
   kable_styling(.,

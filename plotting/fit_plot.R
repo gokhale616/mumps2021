@@ -87,6 +87,7 @@ data_to_compare <- (
                         `0.5_sim` = log(`0.5`^2, base = 10)))
   ) 
   
+
 age_specific_Rsq <- (
   data_to_compare %.>%
     drop_na(.) %.>% 

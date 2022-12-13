@@ -1,13 +1,16 @@
-load("../proof_of_concept/synthetic_data.rds")
-load("../proof_of_concept/o_noisy_optim.rds")
-load("../proof_of_concept/op_noisy_optim.rds")
+pof_dir <- "../proof_of_concept/"
 
-source("../proof_of_concept/SVEIR.R")
-source("../proof_of_concept/define_po.R")
+load(paste0(pof_dir,"synthetic_data.rds"))
+load(paste0(pof_dir, "o_noisy_optim.rds"))
+load(paste0(pof_dir,"op_noisy_optim.rds"))
+load(paste0(pof_dir,"o_noisy_bootstrap_res.rds"))
+load(paste0(pof_dir, "op_noisy_bootstrap_res.rds"))
 
-# table of mMLES
 
+source(paste0(pof_dir, "SVEIR.R"))
+source(paste0(pof_dir, "define_po.R"))
 
+# df of mMLES
 pof_param_ests <- (
   c(sigma = 365.25/25, R0 = 13, beta1 = 0.11, dwan = 100, rho = 1e-3, psi = 0.1) %.>% 
     rbind(., 
@@ -30,13 +33,64 @@ pof_param_ests <- (
                                  Parameter == "rho"~ "$\\rho$", 
                                  Parameter == "psi"~ "$\\psi$" 
                                  )
-           )
+           ) %>% 
+    gather(., key = "model", value = "mle", -Parameter) %>% 
+    mutate(mle = round(mle,5))
   )
 
 
-pof_param_ests_kbl <- (
+pof_param_ci <- (
+  o_noisy_bootstrap_res %.>% 
+  mutate(., model = "Observation\nNoise Only") %.>% 
+  rbind(., 
+        op_noisy_bootstrap_res %.>% 
+          mutate(., model = "Process\n And Observation\nNoise")
+        ) %.>% 
+  select(., 
+         -c(`.id`, iter)
+         ) %>% 
+  mutate(., sigma = 365.25/sigma) %.>% 
+  gather(., key = "Parameter", value = "Estimate", -model) %.>% 
+  filter(., Estimate >= 0 ) %.>%   
+  group_by(., model, Parameter) %>% 
+  summarise(., 
+            qs = quantile(Estimate, c(0.025, 0.975), na.rm = TRUE), 
+            prob = c("0.025", "0.975"), 
+            .groups = 'drop') %.>%
+  ungroup(.) %>% 
+  mutate(., 
+         Parameter = case_when(Parameter == "R0"~"$R_0$",
+                               Parameter == "beta1"~"$\\beta_1$", 
+                               Parameter == "sigma"~"$\\sigma^{-1}$ (Days)", 
+                               Parameter == "dwan"~ "$\\delta^{-1}$ (Years)",  
+                               Parameter == "rho"~ "$\\rho$", 
+                               Parameter == "psi"~ "$\\psi$" 
+         ),
+         qs = round(qs,5),
+         ) %.>%
+    spread(., key = prob, value= qs) %.>% 
+    mutate(., ci = paste0("(",`0.025`,", ", `0.975`,")")) %>% 
+    select(., 1, 2, 5)  
+    )
+  
+  
+pof_param_tbl_data <- (
   pof_param_ests %.>% 
-    select(., 1, 4, 2, 3) %.>% 
+    full_join(.,
+              pof_param_ci,
+              by = c("Parameter", "model")) %.>% 
+    mutate(., 
+           mle_ci = ifelse(is.na(ci) == TRUE, mle, paste(mle,ci))
+           ) %.>% 
+    select(., 1, 2, 5) %.>% 
+    spread(., key = model, value = mle_ci) %.>% 
+    select(., c(1,4,2,3)) %.>% 
+    slice(., c(6, 1, 5, 2, 4, 3))
+)
+
+
+pof_param_ests_kbl <- (
+  pof_param_tbl_data %.>% 
     kbl(., 
         align = "c", 
         digits = 4, 
