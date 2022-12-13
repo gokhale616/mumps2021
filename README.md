@@ -10,6 +10,8 @@ may also work with later versions.
 
 run - ./build.R to reproduce all the plots used in this analysis.
 
+a pdf containing all the plots used in this analysis will be produced in the directory ./output/ upon sucessful build.
+
 *NOTE* 
 
-'latest_build.pdf' contains a copy of all the plots used in this analysis. This file contains version related information fo all the R packages used in this analyisis. 
+'latest_build.pdf' contains a copy of all the plots used in this analysis. This file contains version related information for all the R packages used in this analyisis. 
